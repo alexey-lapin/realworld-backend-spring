@@ -10,4 +10,5 @@ public interface ArticleService {
 
     ArticlesDto findAll();
 
+    void deleteBySlug(String slug);
 }

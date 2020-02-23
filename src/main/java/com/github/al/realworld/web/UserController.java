@@ -1,17 +1,15 @@
 package com.github.al.realworld.web;
 
-import com.github.al.realworld.command.UserRegistrationCommand;
+import com.github.al.realworld.bus.Bus;
+import com.github.al.realworld.command.*;
 import com.github.al.realworld.domain.User;
+import com.github.al.realworld.service.JwtService;
 import com.github.al.realworld.service.UserService;
 import com.github.al.realworld.web.dto.UserDto;
+import com.github.al.realworld.web.mapper.UserMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 
@@ -21,26 +19,29 @@ import javax.validation.Valid;
 public class UserController {
 
     private final UserService userService;
+    private final UserMapper userMapper;
+    private final JwtService jwtService;
 
-    @GetMapping("/users/login")
-    public UserDto authenticate() {
-        return null;
+    private final Bus bus;
+
+    @PostMapping("/users/login")
+    public UserDto authenticate(@Valid @RequestBody UserAuthenticationCommand cmd) {
+        return userService.login(cmd);
     }
 
     @PostMapping("/users")
-    public UserDto register(@RequestBody @Valid UserRegistrationCommand cmd) {
-        return userService.register(cmd);
+    public RegisterUserResult register(@Valid @RequestBody RegisterUser cmd) {
+        return bus.executeCommand(cmd);
     }
 
     @GetMapping("/user")
-    public UserDto current(@AuthenticationPrincipal User currentUser) {
-        System.out.println("Current USer = " + currentUser);
-        return null;
+    public UserDto current(@AuthenticationPrincipal User user) {
+        return userMapper.toDto(user, jwtService.getToken(user));
     }
 
     @PutMapping("/user")
-    public UserDto update() {
-        return null;
+    public UpdateUserResult update(@AuthenticationPrincipal User user, @RequestBody UpdateUser cmd) {
+        return bus.executeCommand(cmd);
     }
 
 }

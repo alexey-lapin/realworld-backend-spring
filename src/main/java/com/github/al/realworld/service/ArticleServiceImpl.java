@@ -54,4 +54,9 @@ public class ArticleServiceImpl implements ArticleService {
     public ArticlesDto findAll() {
         return articleMapper.toListDto(articleRepository.findAll());
     }
+
+    @Override
+    public void deleteBySlug(String slug) {
+
+    }
 }
