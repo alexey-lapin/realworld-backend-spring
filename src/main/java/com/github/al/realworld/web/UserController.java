@@ -1,11 +1,13 @@
 package com.github.al.realworld.web;
 
+import com.github.al.realworld.application.query.GetCurrentUser;
+import com.github.al.realworld.application.query.GetCurrentUserQ;
+import com.github.al.realworld.application.query.GetCurrentUserResult;
 import com.github.al.realworld.bus.Bus;
 import com.github.al.realworld.command.*;
 import com.github.al.realworld.domain.User;
 import com.github.al.realworld.service.JwtService;
 import com.github.al.realworld.service.UserService;
-import com.github.al.realworld.web.dto.UserDto;
 import com.github.al.realworld.web.mapper.UserMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -24,9 +26,14 @@ public class UserController {
 
     private final Bus bus;
 
+//    @PostMapping("/users/login")
+//    public UserDto authenticate(@Valid @RequestBody UserAuthenticationCommand cmd) {
+//        return userService.login(cmd);
+//    }
+
     @PostMapping("/users/login")
-    public UserDto authenticate(@Valid @RequestBody UserAuthenticationCommand cmd) {
-        return userService.login(cmd);
+    public LoginUserResult login(@Valid @RequestBody LoginUser cmd) {
+        return bus.executeCommand(cmd);
     }
 
     @PostMapping("/users")
@@ -34,10 +41,16 @@ public class UserController {
         return bus.executeCommand(cmd);
     }
 
+//    @GetMapping("/user")
+//    public GetCurrentUserResult current(@AuthenticationPrincipal User user) {
+//        return bus.executeQuery(new GetCurrentUserQ(user));
+//    }
+
     @GetMapping("/user")
-    public UserDto current(@AuthenticationPrincipal User user) {
-        return userMapper.toDto(user, jwtService.getToken(user));
+    public GetCurrentUser.Result current(@AuthenticationPrincipal User user) {
+        return bus.executeQuery(new GetCurrentUser.Query(user));
     }
+
 
     @PutMapping("/user")
     public UpdateUserResult update(@AuthenticationPrincipal User user, @RequestBody UpdateUser cmd) {
