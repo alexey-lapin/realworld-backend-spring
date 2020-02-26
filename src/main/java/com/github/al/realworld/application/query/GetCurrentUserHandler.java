@@ -1,9 +1,11 @@
 package com.github.al.realworld.application.query;
 
+import com.github.al.realworld.api.query.GetCurrentUserQ;
+import com.github.al.realworld.api.query.GetCurrentUserResult;
 import com.github.al.realworld.bus.QueryHandler;
 import com.github.al.realworld.domain.User;
 import com.github.al.realworld.service.JwtService;
-import com.github.al.realworld.web.dto.UserDetails;
+import com.github.al.realworld.infrastructure.web.dto.UserDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 

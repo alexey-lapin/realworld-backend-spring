@@ -1,13 +1,13 @@
 package com.github.al.realworld.service;
 
-import com.github.al.realworld.command.ArticleCreateCommand;
+import com.github.al.realworld.application.command.ArticleCreateCommand;
 import com.github.al.realworld.domain.Article;
 import com.github.al.realworld.domain.ArticleRepository;
 import com.github.al.realworld.domain.Tag;
 import com.github.al.realworld.domain.TagRepository;
-import com.github.al.realworld.web.dto.ArticleDto;
-import com.github.al.realworld.web.dto.ArticlesDto;
-import com.github.al.realworld.web.mapper.ArticleMapper;
+import com.github.al.realworld.infrastructure.web.dto.ArticleDto;
+import com.github.al.realworld.infrastructure.web.dto.ArticlesDto;
+import com.github.al.realworld.infrastructure.web.mapper.ArticleMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

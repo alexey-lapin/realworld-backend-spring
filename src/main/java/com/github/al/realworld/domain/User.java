@@ -7,6 +7,8 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.MapsId;
+import javax.persistence.OneToOne;
 
 @Getter
 @AllArgsConstructor
@@ -14,12 +16,12 @@ import javax.persistence.Id;
 @Entity
 public class User {
 
-//    @Id
-//    @GeneratedValue
-//    private Long id;
     @Id
-    private String email;
     private String username;
+    private String email;
     private String password;
+    @MapsId
+    @OneToOne
+    private Profile profile;
 
 }

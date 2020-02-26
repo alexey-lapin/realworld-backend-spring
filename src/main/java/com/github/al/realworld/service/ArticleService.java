@@ -1,8 +1,8 @@
 package com.github.al.realworld.service;
 
-import com.github.al.realworld.command.ArticleCreateCommand;
-import com.github.al.realworld.web.dto.ArticleDto;
-import com.github.al.realworld.web.dto.ArticlesDto;
+import com.github.al.realworld.application.command.ArticleCreateCommand;
+import com.github.al.realworld.infrastructure.web.dto.ArticleDto;
+import com.github.al.realworld.infrastructure.web.dto.ArticlesDto;
 
 public interface ArticleService {
 

@@ -1,8 +1,8 @@
 package com.github.al.realworld.service;
 
-import com.github.al.realworld.command.UserAuthenticationCommand;
-import com.github.al.realworld.command.RegisterUser;
-import com.github.al.realworld.web.dto.UserDto;
+import com.github.al.realworld.application.command.UserAuthenticationCommand;
+import com.github.al.realworld.api.command.RegisterUser;
+import com.github.al.realworld.infrastructure.web.dto.UserDto;
 
 public interface UserService {
 
