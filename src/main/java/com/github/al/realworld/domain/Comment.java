@@ -8,6 +8,7 @@ import javax.persistence.Id;
 import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 
 @Getter
 @Entity
@@ -17,13 +18,13 @@ public class Comment {
     @GeneratedValue
     private Long id;
 
-    private LocalDate createdAt;
-    private LocalDate updatedAt;
+    private ZonedDateTime createdAt;
+    private ZonedDateTime updatedAt;
     @Lob
     private String body;
 
-    @ManyToOne
-    private Article article;
+//    @ManyToOne
+//    private Article article;
     //author
 
 }

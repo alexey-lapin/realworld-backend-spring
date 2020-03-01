@@ -15,6 +15,7 @@ import javax.persistence.Lob;
 import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -37,13 +38,20 @@ public class Article {
             inverseJoinColumns = @JoinColumn(name = "tag_id")
     )
     private final Set<Tag> tags = new HashSet<>();
-    private LocalDate createdAt;
-    private LocalDate updatedAt;
+    private ZonedDateTime createdAt;
+    private ZonedDateTime updatedAt;
     private Boolean favorited;
     private Integer favouritesCount;
     //author
     @OneToMany(cascade = CascadeType.ALL)
     private final Set<Comment> comments = new HashSet<>();
+
+    @ManyToMany
+    @JoinTable(name = "article_favorites",
+            joinColumns = @JoinColumn(name = "article_slug"),
+            inverseJoinColumns = @JoinColumn(name = "username")
+    )
+    private final Set<Profile> favoritedProfiles = new HashSet<>();
 
     public Article addTag(Tag tag) {
         tags.add(tag);
@@ -62,6 +70,16 @@ public class Article {
 
     public Article removeComment(Comment comment) {
         comments.remove(comment);
+        return this;
+    }
+
+    public Article addFavorite(Profile profile) {
+        favoritedProfiles.add(profile);
+        return this;
+    }
+
+    public Article removeFavorite(Profile profile) {
+        favoritedProfiles.remove(profile);
         return this;
     }
 }

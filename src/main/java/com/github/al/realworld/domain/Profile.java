@@ -5,8 +5,7 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
-import javax.persistence.MapsId;
-import javax.persistence.OneToOne;
+import java.util.Objects;
 
 @NoArgsConstructor
 @Getter
@@ -17,12 +16,21 @@ public class Profile {
     private String username;
     private String bio;
     private String image;
-//    @MapsId
-//    @OneToOne
-//    private User user;
-
 
     public Profile(String username) {
         this.username = username;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Profile)) return false;
+        Profile profile = (Profile) o;
+        return Objects.equals(username, profile.username);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(username);
     }
 }

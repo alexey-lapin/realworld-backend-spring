@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.Optional;
 
 @RequiredArgsConstructor
@@ -37,7 +38,7 @@ public class ArticleServiceImpl implements ArticleService {
                 .title(cmd.getTitle())
                 .description(cmd.getDescription())
                 .body(cmd.getBody())
-                .createdAt(LocalDate.now())
+                .createdAt(ZonedDateTime.now())
                 .build();
 
         cmd.getTagList().stream()

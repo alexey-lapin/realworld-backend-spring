@@ -1,4 +1,4 @@
-package com.github.al.realworld.infrastructure.web.dto;
+package com.github.al.realworld.api;
 
 import lombok.Builder;
 import lombok.Getter;
@@ -7,9 +7,9 @@ import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.List;
 
-@Getter
 @Builder
-public class ArticleDetails {
+@Getter
+public class ArticleDto {
 
     private String slug;
     private String title;
