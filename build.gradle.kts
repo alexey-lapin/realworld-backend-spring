@@ -1,7 +1,8 @@
 plugins {
     java
-    id("org.springframework.boot") version "2.2.2.RELEASE"
-    id("io.spring.dependency-management") version "1.0.8.RELEASE"
+    id("org.springframework.boot")
+    id("io.spring.dependency-management")
+    id("com.github.ben-manes.versions")
 }
 
 repositories {
@@ -16,11 +17,11 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-security")
 
-    implementation("io.jsonwebtoken:jjwt-api:0.10.7")
+    implementation("io.jsonwebtoken:jjwt-api:${Versions.jwt}")
 
     runtimeOnly("com.h2database:h2")
-    runtimeOnly("io.jsonwebtoken:jjwt-impl:0.10.7")
-    runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.10.7")
+    runtimeOnly("io.jsonwebtoken:jjwt-impl:${Versions.jwt}")
+    runtimeOnly("io.jsonwebtoken:jjwt-jackson:${Versions.jwt}")
 
     testAnnotationProcessor("org.projectlombok:lombok")
     testCompileOnly("org.projectlombok:lombok")
@@ -29,6 +30,7 @@ dependencies {
 
 configure<JavaPluginConvention> {
     sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
 }
 
 tasks {
