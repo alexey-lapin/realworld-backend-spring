@@ -6,14 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.Lob;
-import javax.persistence.ManyToMany;
-import javax.persistence.OneToMany;
+import javax.persistence.*;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.HashSet;
@@ -42,7 +35,8 @@ public class Article {
     private ZonedDateTime updatedAt;
     private Boolean favorited;
     private Integer favouritesCount;
-    //author
+    @OneToOne
+    private Profile author;
     @OneToMany(cascade = CascadeType.ALL)
     private final Set<Comment> comments = new HashSet<>();
 
