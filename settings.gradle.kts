@@ -8,4 +8,6 @@ pluginManagement {
 }
 
 rootProject.name = "realworld-spring-boot"
-
+include("service-bus")
+include("service-api")
+include("service")
