@@ -20,8 +20,8 @@ public class ProfileController {
     private final Bus bus;
 
     @GetMapping("/{username}")
-    public GetProfileResult findByUsername(@PathVariable String username) {
-        return bus.executeQuery(new GetProfile(username));
+    public GetProfileResult findByUsername(@AuthenticationPrincipal User user, @PathVariable String username) {
+        return bus.executeQuery(new GetProfile(safeUsername(user), username));
     }
 
     @PostMapping("/{username}/follow")
@@ -32,6 +32,13 @@ public class ProfileController {
     @DeleteMapping("/{username}/follow")
     public UnfollowProfileResult unfollow(@AuthenticationPrincipal User user, @PathVariable String username) {
         return bus.executeCommand(new UnfollowProfile(user.getUsername(), username));
+    }
+
+    private String safeUsername(User user) {
+        if (user != null) {
+            return user.getUsername();
+        }
+        return null;
     }
 
 }

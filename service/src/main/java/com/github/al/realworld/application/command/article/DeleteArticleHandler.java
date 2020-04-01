@@ -9,6 +9,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import static com.github.al.realworld.application.exception.ResourceNotFoundException.notFound;
+
 @RequiredArgsConstructor
 @Service
 public class DeleteArticleHandler implements CommandHandler<DeleteArticleResult, DeleteArticle> {
@@ -18,8 +20,11 @@ public class DeleteArticleHandler implements CommandHandler<DeleteArticleResult,
     @Transactional
     @Override
     public DeleteArticleResult handle(DeleteArticle command) {
-        Article article = articleRepository.findBySlug(command.getSlug()).orElseThrow(() -> new RuntimeException());
+        Article article = articleRepository.findBySlug(command.getSlug())
+                .orElseThrow(() -> notFound("article [slug=%s] does not exist", command.getSlug()));
+
         articleRepository.delete(article);
+
         return new DeleteArticleResult();
     }
 }

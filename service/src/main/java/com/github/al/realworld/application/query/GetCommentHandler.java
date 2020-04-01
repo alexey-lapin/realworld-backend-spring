@@ -6,27 +6,38 @@ import com.github.al.realworld.application.CommentAssembler;
 import com.github.al.realworld.bus.QueryHandler;
 import com.github.al.realworld.domain.Article;
 import com.github.al.realworld.domain.Comment;
+import com.github.al.realworld.domain.Profile;
+import com.github.al.realworld.domain.User;
 import com.github.al.realworld.domain.repository.ArticleRepository;
+import com.github.al.realworld.domain.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import static com.github.al.realworld.application.exception.ResourceNotFoundException.notFound;
 
 @RequiredArgsConstructor
 @Service
 public class GetCommentHandler implements QueryHandler<GetCommentResult, GetComment> {
 
     private final ArticleRepository articleRepository;
+    private final UserRepository userRepository;
 
-    @Transactional
+    @Transactional(readOnly = true)
     @Override
     public GetCommentResult handle(GetComment query) {
-        Article article = articleRepository.findBySlug(query.getSlug()).orElseThrow(() -> new RuntimeException());
+        Article article = articleRepository.findBySlug(query.getSlug())
+                .orElseThrow(() -> notFound("article [slug=%s] does not exists", query.getSlug()));
+
+        Profile currentProfile = userRepository.findByUsername(query.getCurrentUsername())
+                .map(User::getProfile)
+                .orElse(null);
 
         Comment comment = article.getComments().stream()
                 .filter(c -> c.getId().equals(query.getId()))
                 .findFirst()
-                .orElseThrow(() -> new RuntimeException());
+                .orElseThrow(() -> notFound("comment [id=%s] does not exists", query.getId()));
 
-        return new GetCommentResult(CommentAssembler.assemble(comment));
+        return new GetCommentResult(CommentAssembler.assemble(comment, currentProfile));
     }
 }

@@ -34,7 +34,7 @@ public class UserController {
     }
 
     @PutMapping("/user")
-    public UpdateUserResult update(@AuthenticationPrincipal User user, @RequestBody UpdateUser cmd) {
+    public UpdateUserResult update(@AuthenticationPrincipal User user, @Valid @RequestBody UpdateUser cmd) {
         return bus.executeCommand(cmd);
     }
 

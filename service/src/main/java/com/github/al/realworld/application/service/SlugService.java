@@ -7,7 +7,7 @@ import java.util.Locale;
 import java.util.regex.Pattern;
 
 @Component
-public class Slugify {
+public class SlugService {
 
     private static final Pattern NONLATIN = Pattern.compile("[^\\w_-]");
     private static final Pattern SEPARATORS = Pattern.compile("[\\s\\p{Punct}&&[^-]]");

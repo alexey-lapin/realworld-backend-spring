@@ -5,14 +5,15 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.MapsId;
 import javax.persistence.OneToOne;
 
-@Getter
-@AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PACKAGE)
+@AllArgsConstructor
+@Getter
 @Entity
 public class User {
 
@@ -21,7 +22,7 @@ public class User {
     private String email;
     private String password;
     @MapsId
-    @OneToOne
+    @OneToOne(cascade = CascadeType.ALL)
     private Profile profile;
 
 }

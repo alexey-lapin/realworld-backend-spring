@@ -8,6 +8,6 @@ import lombok.Getter;
 @Getter
 public class GetFeed implements Query<GetFeedResult> {
 
-    private String username;
+    private String currentUsername;
 
 }

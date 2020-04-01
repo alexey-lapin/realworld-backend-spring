@@ -1,5 +1,5 @@
 object Versions {
 
-    val jwt = "0.11.0"
+    val jwt = "0.11.1"
 
 }

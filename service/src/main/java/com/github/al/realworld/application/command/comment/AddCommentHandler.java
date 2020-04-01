@@ -4,9 +4,11 @@ import com.github.al.realworld.api.command.AddComment;
 import com.github.al.realworld.api.command.AddCommentResult;
 import com.github.al.realworld.api.dto.CommentDto;
 import com.github.al.realworld.application.CommentAssembler;
+import com.github.al.realworld.application.exception.ResourceNotFoundException;
 import com.github.al.realworld.bus.CommandHandler;
 import com.github.al.realworld.domain.Article;
 import com.github.al.realworld.domain.Comment;
+import com.github.al.realworld.domain.Profile;
 import com.github.al.realworld.domain.User;
 import com.github.al.realworld.domain.repository.ArticleRepository;
 import com.github.al.realworld.domain.repository.UserRepository;
@@ -25,8 +27,10 @@ public class AddCommentHandler implements CommandHandler<AddCommentResult, AddCo
 
     @Override
     public AddCommentResult handle(AddComment command) {
-        Article article = articleRepository.findBySlug(command.getSlug()).orElseThrow(() -> new RuntimeException());
-        User user = userRepository.findByUsername(command.getUsername()).orElseThrow(() -> new RuntimeException());
+        Article article = articleRepository.findBySlug(command.getSlug()).orElseThrow(ResourceNotFoundException::new);
+        Profile profile = userRepository.findByUsername(command.getUsername())
+                .map(User::getProfile)
+                .orElseThrow(() -> new RuntimeException());
 
         ZonedDateTime now = ZonedDateTime.now();
 
@@ -34,11 +38,13 @@ public class AddCommentHandler implements CommandHandler<AddCommentResult, AddCo
                 .body(command.getBody())
                 .createdAt(now)
                 .updatedAt(now)
-                .author(user.getProfile())
+                .author(profile)
                 .build();
-        article.addComment(comment);
-        articleRepository.save(article);
 
-        return new AddCommentResult(CommentAssembler.assemble(comment));
+        Article alteredArticle = article.toBuilder().comment(comment).build();
+
+        articleRepository.save(alteredArticle);
+
+        return new AddCommentResult(CommentAssembler.assemble(comment, profile));
     }
 }

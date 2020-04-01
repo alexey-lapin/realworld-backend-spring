@@ -1,36 +1,39 @@
 package com.github.al.realworld.domain;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Singular;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
-import java.util.Objects;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+import java.util.Set;
 
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder(toBuilder = true)
 @Getter
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Entity
 public class Profile {
 
+    @EqualsAndHashCode.Include
     @Id
     private String username;
     private String bio;
     private String image;
 
-    public Profile(String username) {
-        this.username = username;
-    }
+    @Singular
+    @ManyToMany
+    @JoinTable(name = "followers",
+            joinColumns = @JoinColumn(name = "follower", referencedColumnName = "username"),
+            inverseJoinColumns = @JoinColumn(name = "followee", referencedColumnName = "username")
+    )
+    private Set<Profile> followers;
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Profile)) return false;
-        Profile profile = (Profile) o;
-        return Objects.equals(username, profile.username);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(username);
-    }
 }

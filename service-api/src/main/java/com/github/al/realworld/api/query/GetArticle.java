@@ -8,7 +8,7 @@ import lombok.Getter;
 @Getter
 public class GetArticle implements Query<GetArticleResult> {
 
+    private String currentUsername;
     private String slug;
-    private String username;
 
 }

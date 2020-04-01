@@ -4,7 +4,9 @@ import com.github.al.realworld.domain.User;
 import com.github.al.realworld.domain.repository.UserRepository;
 import com.github.al.realworld.application.service.JwtService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
@@ -40,6 +42,15 @@ public class JwtFilter extends OncePerRequestFilter {
                         user,
                         null,
                         Collections.emptyList()
+                );
+                authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
+                SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+            } else {
+                AnonymousAuthenticationToken authenticationToken = new AnonymousAuthenticationToken(
+                        "none",
+                        Optional.empty(),
+                        Collections.singletonList(new SimpleGrantedAuthority("viewer"))
                 );
                 authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 

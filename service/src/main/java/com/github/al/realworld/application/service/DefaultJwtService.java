@@ -21,8 +21,9 @@ public class DefaultJwtService implements JwtService {
 
     @Override
     public String getSubject(String token) {
-        return Jwts.parser()
+        return Jwts.parserBuilder()
                 .setSigningKey(key)
+                .build()
                 .parseClaimsJws(token)
                 .getBody()
                 .getSubject();

@@ -9,7 +9,7 @@ import java.util.stream.Collectors;
 
 public class ArticleAssembler {
 
-    public static ArticleDto assemble(Article article, Profile profile) {
+    public static ArticleDto assemble(Article article, Profile currentProfile) {
         return ArticleDto.builder()
                 .slug(article.getSlug())
                 .title(article.getTitle())
@@ -18,9 +18,9 @@ public class ArticleAssembler {
                 .tagList(article.getTags().stream().map(Tag::getName).collect(Collectors.toList()))
                 .createdAt(article.getCreatedAt())
                 .updatedAt(article.getUpdatedAt())
-                .favorited(profile != null && article.getFavoritedProfiles().contains(profile))
+                .favorited(currentProfile != null && article.getFavoritedProfiles().contains(currentProfile))
                 .favoritesCount(article.getFavoritedProfiles().size())
-                .author(ProfileAssembler.assemble(article.getAuthor()))
+                .author(ProfileAssembler.assemble(article.getAuthor(), currentProfile))
                 .build();
     }
 

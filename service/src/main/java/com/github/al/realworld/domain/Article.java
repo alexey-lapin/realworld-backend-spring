@@ -5,16 +5,23 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Singular;
 
-import javax.persistence.*;
-import java.time.LocalDate;
+import javax.persistence.CascadeType;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.Lob;
+import javax.persistence.ManyToMany;
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import java.time.ZonedDateTime;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
-@NoArgsConstructor(access = AccessLevel.PACKAGE)
-@AllArgsConstructor(access = AccessLevel.PACKAGE)
+@NoArgsConstructor
+@AllArgsConstructor
 @Builder(toBuilder = true)
 @Getter
 @Entity
@@ -25,54 +32,33 @@ public class Article {
     private String slug;
     private String title;
     private String description;
-    @Lob
-    private String body;
-    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    @JoinTable(name = "article_tags",
-            joinColumns = @JoinColumn(name = "article_slug"),
-            inverseJoinColumns = @JoinColumn(name = "tag_id")
-    )
-    private final Set<Tag> tags = new HashSet<>();
     private ZonedDateTime createdAt;
     private ZonedDateTime updatedAt;
+
+    @Lob
+    private String body;
+
     @OneToOne
     private Profile author;
+
+    @Singular
     @OneToMany(cascade = CascadeType.ALL)
-    private final Set<Comment> comments = new HashSet<>();
+    private Set<Comment> comments;
+
+    @Singular
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinTable(name = "article_tags",
+            joinColumns = @JoinColumn(name = "article_id"),
+            inverseJoinColumns = @JoinColumn(name = "tag_id")
+    )
+    private Set<Tag> tags;
+
+    @Singular
     @ManyToMany
     @JoinTable(name = "article_favorites",
             joinColumns = @JoinColumn(name = "article_slug"),
             inverseJoinColumns = @JoinColumn(name = "username")
     )
-    private final Set<Profile> favoritedProfiles = new HashSet<>();
+    private Set<Profile> favoritedProfiles;
 
-    public Article addTag(Tag tag) {
-        tags.add(tag);
-        return this;
-    }
-
-    public Article removeTag(Tag tag) {
-        tags.remove(tag);
-        return this;
-    }
-
-    public Article addComment(Comment comment) {
-        comments.add(comment);
-        return this;
-    }
-
-    public Article removeComment(Comment comment) {
-        comments.remove(comment);
-        return this;
-    }
-
-    public Article addFavorite(Profile profile) {
-        favoritedProfiles.add(profile);
-        return this;
-    }
-
-    public Article removeFavorite(Profile profile) {
-        favoritedProfiles.remove(profile);
-        return this;
-    }
 }

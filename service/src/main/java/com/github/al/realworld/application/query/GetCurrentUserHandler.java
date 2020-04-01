@@ -9,6 +9,7 @@ import com.github.al.realworld.domain.repository.UserRepository;
 import com.github.al.realworld.application.service.JwtService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 @RequiredArgsConstructor
 @Component
@@ -17,9 +18,12 @@ public class GetCurrentUserHandler implements QueryHandler<GetCurrentUserResult,
     private final UserRepository userRepository;
     private final JwtService jwtService;
 
+    @Transactional(readOnly = true)
     @Override
     public GetCurrentUserResult handle(GetCurrentUser query) {
-        User user = userRepository.findByUsername(query.getUsername()).orElseThrow(() -> new RuntimeException(""));
+        User user = userRepository.findByUsername(query.getUsername())
+                .orElseThrow(() -> new RuntimeException(""));
+
         return new GetCurrentUserResult(UserDto.builder()
                 .email(user.getEmail())
                 .username(user.getUsername())

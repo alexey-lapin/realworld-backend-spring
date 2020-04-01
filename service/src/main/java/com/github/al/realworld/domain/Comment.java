@@ -2,22 +2,26 @@ package com.github.al.realworld.domain;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import javax.persistence.*;
-import java.time.LocalDate;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Lob;
+import javax.persistence.OneToOne;
 import java.time.ZonedDateTime;
-import java.util.Objects;
-import java.util.UUID;
 
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 @Builder
 @Getter
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Entity
 public class Comment {
 
+    @EqualsAndHashCode.Include
     @Id
     @GeneratedValue
     private Long id;
@@ -28,16 +32,4 @@ public class Comment {
     @OneToOne
     private Profile author;
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Comment)) return false;
-        Comment comment = (Comment) o;
-        return Objects.equals(id, comment.id);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id);
-    }
 }

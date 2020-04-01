@@ -8,6 +8,7 @@ import lombok.Getter;
 @Getter
 public class GetComments implements Query<GetCommentsResult> {
 
+    private String currentUsername;
     private String slug;
 
 }

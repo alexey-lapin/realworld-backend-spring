@@ -3,17 +3,18 @@ package com.github.al.realworld.application.command;
 import com.github.al.realworld.api.command.UpdateUser;
 import com.github.al.realworld.api.command.UpdateUserResult;
 import com.github.al.realworld.api.dto.UserDto;
+import com.github.al.realworld.application.exception.ResourceNotFoundException;
+import com.github.al.realworld.application.service.JwtService;
 import com.github.al.realworld.bus.CommandHandler;
 import com.github.al.realworld.domain.User;
 import com.github.al.realworld.domain.repository.UserRepository;
-import com.github.al.realworld.application.service.JwtService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 
 @RequiredArgsConstructor
-@Component
+@Service
 public class UpdateUserHandler implements CommandHandler<UpdateUserResult, UpdateUser> {
 
     private final UserRepository userRepository;
@@ -22,9 +23,11 @@ public class UpdateUserHandler implements CommandHandler<UpdateUserResult, Updat
     @Transactional
     @Override
     public UpdateUserResult handle(UpdateUser command) {
-        User byEmail = userRepository.findByEmail(command.getEmail()).orElseThrow(() -> new RuntimeException());
+        User user = userRepository.findByEmail(command.getEmail())
+                .orElseThrow(ResourceNotFoundException::new);
+
         return new UpdateUserResult(UserDto.builder()
-                .token(jwtService.getToken(byEmail))
+                .token(jwtService.getToken(user))
                 .build());
     }
 }
