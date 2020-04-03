@@ -1,6 +1,5 @@
-package com.github.al.realworld.domain;
+package com.github.al.realworld.domain.model;
 
-import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -43,6 +42,7 @@ public class Article {
 
     @Singular
     @OneToMany(cascade = CascadeType.ALL)
+    @JoinColumn(name = "article_id")
     private Set<Comment> comments;
 
     @Singular
@@ -56,9 +56,9 @@ public class Article {
     @Singular
     @ManyToMany
     @JoinTable(name = "article_favorites",
-            joinColumns = @JoinColumn(name = "article_slug"),
+            joinColumns = @JoinColumn(name = "article_id"),
             inverseJoinColumns = @JoinColumn(name = "username")
     )
-    private Set<Profile> favoritedProfiles;
+    private Set<Profile> favoredProfiles;
 
 }

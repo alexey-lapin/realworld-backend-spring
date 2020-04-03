@@ -1,5 +1,6 @@
 package com.github.al.realworld.domain;
 
+import com.github.al.realworld.domain.model.Profile;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;

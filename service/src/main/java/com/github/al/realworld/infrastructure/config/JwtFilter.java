@@ -1,6 +1,6 @@
 package com.github.al.realworld.infrastructure.config;
 
-import com.github.al.realworld.domain.User;
+import com.github.al.realworld.domain.model.User;
 import com.github.al.realworld.domain.repository.UserRepository;
 import com.github.al.realworld.application.service.JwtService;
 import lombok.RequiredArgsConstructor;

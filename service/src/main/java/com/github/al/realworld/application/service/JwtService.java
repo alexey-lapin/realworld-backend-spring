@@ -1,6 +1,6 @@
 package com.github.al.realworld.application.service;
 
-import com.github.al.realworld.domain.User;
+import com.github.al.realworld.domain.model.User;
 
 public interface JwtService {
 

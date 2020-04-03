@@ -1,22 +1,22 @@
-package com.github.al.realworld.application.command.comment;
+package com.github.al.realworld.application.command;
 
 import com.github.al.realworld.api.command.AddComment;
 import com.github.al.realworld.api.command.AddCommentResult;
-import com.github.al.realworld.api.dto.CommentDto;
 import com.github.al.realworld.application.CommentAssembler;
-import com.github.al.realworld.application.exception.ResourceNotFoundException;
 import com.github.al.realworld.bus.CommandHandler;
-import com.github.al.realworld.domain.Article;
-import com.github.al.realworld.domain.Comment;
-import com.github.al.realworld.domain.Profile;
-import com.github.al.realworld.domain.User;
+import com.github.al.realworld.domain.model.Article;
+import com.github.al.realworld.domain.model.Comment;
+import com.github.al.realworld.domain.model.Profile;
+import com.github.al.realworld.domain.model.User;
 import com.github.al.realworld.domain.repository.ArticleRepository;
 import com.github.al.realworld.domain.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.ZonedDateTime;
-import java.util.UUID;
+
+import static com.github.al.realworld.application.exception.InvalidRequestException.invalidRequest;
+import static com.github.al.realworld.application.exception.ResourceNotFoundException.notFound;
 
 @RequiredArgsConstructor
 @Service
@@ -27,10 +27,12 @@ public class AddCommentHandler implements CommandHandler<AddCommentResult, AddCo
 
     @Override
     public AddCommentResult handle(AddComment command) {
-        Article article = articleRepository.findBySlug(command.getSlug()).orElseThrow(ResourceNotFoundException::new);
-        Profile profile = userRepository.findByUsername(command.getUsername())
+        Article article = articleRepository.findBySlug(command.getSlug())
+                .orElseThrow(() -> notFound("article [slug=%s] does not exist", command.getSlug()));
+
+        Profile profile = userRepository.findByUsername(command.getCurrentUsername())
                 .map(User::getProfile)
-                .orElseThrow(() -> new RuntimeException());
+                .orElseThrow(() -> invalidRequest("user [name=%s] does not exist", command.getCurrentUsername()));
 
         ZonedDateTime now = ZonedDateTime.now();
 

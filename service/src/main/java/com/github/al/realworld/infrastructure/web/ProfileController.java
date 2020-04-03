@@ -7,7 +7,7 @@ import com.github.al.realworld.api.command.UnfollowProfileResult;
 import com.github.al.realworld.api.query.GetProfile;
 import com.github.al.realworld.api.query.GetProfileResult;
 import com.github.al.realworld.bus.Bus;
-import com.github.al.realworld.domain.User;
+import com.github.al.realworld.domain.model.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;

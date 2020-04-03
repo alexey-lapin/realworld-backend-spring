@@ -4,11 +4,14 @@ import com.github.al.realworld.api.command.FollowProfile;
 import com.github.al.realworld.api.command.FollowProfileResult;
 import com.github.al.realworld.application.ProfileAssembler;
 import com.github.al.realworld.bus.CommandHandler;
-import com.github.al.realworld.domain.Profile;
+import com.github.al.realworld.domain.model.Profile;
 import com.github.al.realworld.domain.repository.ProfileRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import static com.github.al.realworld.application.exception.InvalidRequestException.invalidRequest;
+import static com.github.al.realworld.application.exception.ResourceNotFoundException.notFound;
 
 /**
  * follower - one who follows someone (current user)
@@ -24,14 +27,16 @@ public class FollowProfileHandler implements CommandHandler<FollowProfileResult,
     @Override
     public FollowProfileResult handle(FollowProfile command) {
         Profile currentProfile = profileRepository.findByUsername(command.getFollower())
-                .orElseThrow(RuntimeException::new);
+                .orElseThrow(() -> invalidRequest("user [name=%s] does not exist", command.getFollower()));
 
         Profile followee = profileRepository.findByUsername(command.getFollowee())
-                .orElseThrow(() -> new RuntimeException("prof not f"));
+                .orElseThrow(() -> notFound("user [name=%s] does not exist", command.getFollowee()));
 
-        Profile alteredProfile = followee.toBuilder().follower(currentProfile).build();
-        Profile savedProfile = profileRepository.save(alteredProfile);
+        Profile alteredFollowee = followee.toBuilder().follower(currentProfile).build();
 
-        return new FollowProfileResult(ProfileAssembler.assemble(savedProfile, currentProfile));
+        Profile alteredCurrentProfile = currentProfile.toBuilder().followee(followee).build();
+        profileRepository.save(alteredCurrentProfile);
+
+        return new FollowProfileResult(ProfileAssembler.assemble(alteredFollowee, alteredCurrentProfile));
     }
 }

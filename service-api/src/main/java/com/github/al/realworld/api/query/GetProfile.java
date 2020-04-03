@@ -8,7 +8,7 @@ import lombok.Getter;
 @Getter
 public class GetProfile implements Query<GetProfileResult> {
 
-    private String currentUserName;
+    private String currentUsername;
     private String username;
 
 }

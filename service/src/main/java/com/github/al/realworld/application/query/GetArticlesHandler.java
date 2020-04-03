@@ -5,9 +5,9 @@ import com.github.al.realworld.api.query.GetArticles;
 import com.github.al.realworld.api.query.GetArticlesResult;
 import com.github.al.realworld.application.ArticleAssembler;
 import com.github.al.realworld.bus.QueryHandler;
-import com.github.al.realworld.domain.Article;
-import com.github.al.realworld.domain.Profile;
-import com.github.al.realworld.domain.User;
+import com.github.al.realworld.domain.model.Article;
+import com.github.al.realworld.domain.model.Profile;
+import com.github.al.realworld.domain.model.User;
 import com.github.al.realworld.domain.repository.ArticleRepository;
 import com.github.al.realworld.domain.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -36,9 +36,7 @@ public class GetArticlesHandler implements QueryHandler<GetArticlesResult, GetAr
 
         List<ArticleDto> results = new ArrayList<>();
 
-        articles.forEach(article -> {
-            results.add(ArticleAssembler.assemble(article, currentProfile));
-        });
+        articles.forEach(article -> results.add(ArticleAssembler.assemble(article, currentProfile)));
 
         return new GetArticlesResult(results, results.size());
     }

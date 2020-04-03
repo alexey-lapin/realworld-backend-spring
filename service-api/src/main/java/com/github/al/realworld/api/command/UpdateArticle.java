@@ -16,6 +16,6 @@ public class UpdateArticle implements Command<UpdateArticleResult> {
     private String title;
     private String description;
     private String body;
-    private String username;
+    private String currentUsername;
 
 }

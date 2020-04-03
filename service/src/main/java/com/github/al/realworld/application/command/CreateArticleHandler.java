@@ -1,14 +1,14 @@
-package com.github.al.realworld.application.command.article;
+package com.github.al.realworld.application.command;
 
 import com.github.al.realworld.api.command.CreateArticle;
 import com.github.al.realworld.api.command.CreateArticleResult;
 import com.github.al.realworld.application.ArticleAssembler;
 import com.github.al.realworld.application.service.SlugService;
 import com.github.al.realworld.bus.CommandHandler;
-import com.github.al.realworld.domain.Article;
-import com.github.al.realworld.domain.Profile;
-import com.github.al.realworld.domain.Tag;
-import com.github.al.realworld.domain.User;
+import com.github.al.realworld.domain.model.Article;
+import com.github.al.realworld.domain.model.Profile;
+import com.github.al.realworld.domain.model.Tag;
+import com.github.al.realworld.domain.model.User;
 import com.github.al.realworld.domain.repository.ArticleRepository;
 import com.github.al.realworld.domain.repository.TagRepository;
 import com.github.al.realworld.domain.repository.UserRepository;
@@ -39,9 +39,9 @@ public class CreateArticleHandler implements CommandHandler<CreateArticleResult,
             throw invalidRequest("article [title=%s] already exists", command.getTitle());
         }
 
-        Profile currentProfile = userRepository.findByUsername(command.getUsername())
+        Profile currentProfile = userRepository.findByUsername(command.getCurrentUsername())
                 .map(User::getProfile)
-                .orElseThrow(() -> invalidRequest("user [name=%s] does not exist", command.getUsername()));
+                .orElseThrow(() -> invalidRequest("user [name=%s] does not exist", command.getCurrentUsername()));
 
         ZonedDateTime now = ZonedDateTime.now();
 

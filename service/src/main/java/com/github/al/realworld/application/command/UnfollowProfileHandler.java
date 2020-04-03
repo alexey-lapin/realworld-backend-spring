@@ -3,9 +3,8 @@ package com.github.al.realworld.application.command;
 import com.github.al.realworld.api.command.UnfollowProfile;
 import com.github.al.realworld.api.command.UnfollowProfileResult;
 import com.github.al.realworld.application.ProfileAssembler;
-import com.github.al.realworld.application.exception.ResourceNotFoundException;
 import com.github.al.realworld.bus.CommandHandler;
-import com.github.al.realworld.domain.Profile;
+import com.github.al.realworld.domain.model.Profile;
 import com.github.al.realworld.domain.repository.ProfileRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -14,6 +13,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import static com.github.al.realworld.application.exception.InvalidRequestException.invalidRequest;
+import static com.github.al.realworld.application.exception.ResourceNotFoundException.notFound;
 
 /**
  * follower - one who follows someone (current user)
@@ -29,20 +31,30 @@ public class UnfollowProfileHandler implements CommandHandler<UnfollowProfileRes
     @Override
     public UnfollowProfileResult handle(UnfollowProfile command) {
         Profile currentProfile = profileRepository.findByUsername(command.getFollower())
-                .orElseThrow(RuntimeException::new);
+                .orElseThrow(() -> invalidRequest("user [name=%s] does not exist", command.getFollower()));
 
         Profile followee = profileRepository.findByUsername(command.getFollowee())
-                .orElseThrow(ResourceNotFoundException::new);
+                .orElseThrow(() -> notFound("user [name=%s] does not exist", command.getFollowee()));
 
         Set<Profile> alteredFollowers = followee.getFollowers().stream()
                 .filter(profile -> !Objects.equals(profile, currentProfile))
                 .collect(Collectors.toSet());
 
-        Profile alteredProfile = followee.toBuilder()
+        Profile alteredFollowee = followee.toBuilder()
                 .clearFollowers()
-                .followers(alteredFollowers).build();
-        Profile savedProfile = profileRepository.save(alteredProfile);
+                .followers(alteredFollowers)
+                .build();
 
-        return new UnfollowProfileResult(ProfileAssembler.assemble(savedProfile, currentProfile));
+        Set<Profile> alteredFollowees = currentProfile.getFollowees().stream()
+                .filter(profile -> !Objects.equals(profile, followee))
+                .collect(Collectors.toSet());
+
+        Profile alteredCurrentProfile = currentProfile.toBuilder()
+                .clearFollowees()
+                .followees(alteredFollowees)
+                .build();
+        profileRepository.save(alteredCurrentProfile);
+
+        return new UnfollowProfileResult(ProfileAssembler.assemble(alteredFollowee, alteredCurrentProfile));
     }
 }

@@ -4,7 +4,7 @@ import com.github.al.realworld.api.command.*;
 import com.github.al.realworld.api.query.GetCurrentUser;
 import com.github.al.realworld.api.query.GetCurrentUserResult;
 import com.github.al.realworld.bus.Bus;
-import com.github.al.realworld.domain.User;
+import com.github.al.realworld.domain.model.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;

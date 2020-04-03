@@ -1,12 +1,12 @@
-package com.github.al.realworld.application.command.article;
+package com.github.al.realworld.application.command;
 
 import com.github.al.realworld.api.command.FavoriteArticle;
 import com.github.al.realworld.api.command.FavoriteArticleResult;
 import com.github.al.realworld.application.ArticleAssembler;
 import com.github.al.realworld.bus.CommandHandler;
-import com.github.al.realworld.domain.Article;
-import com.github.al.realworld.domain.Profile;
-import com.github.al.realworld.domain.User;
+import com.github.al.realworld.domain.model.Article;
+import com.github.al.realworld.domain.model.Profile;
+import com.github.al.realworld.domain.model.User;
 import com.github.al.realworld.domain.repository.ArticleRepository;
 import com.github.al.realworld.domain.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -29,12 +29,12 @@ public class FavoriteArticleHandler implements CommandHandler<FavoriteArticleRes
         Article article = articleRepository.findBySlug(command.getSlug())
                 .orElseThrow(() -> notFound("article [slug=%s] does not exist", command.getSlug()));
 
-        Profile currentProfile = userRepository.findByUsername(command.getUsername())
+        Profile currentProfile = userRepository.findByUsername(command.getCurrentUsername())
                 .map(User::getProfile)
-                .orElseThrow(() -> invalidRequest("user [name=%s] does not exist", command.getUsername()));
+                .orElseThrow(() -> invalidRequest("user [name=%s] does not exist", command.getCurrentUsername()));
 
         Article alteredArticle = article.toBuilder()
-                .favoritedProfile(currentProfile)
+                .favoredProfile(currentProfile)
                 .build();
 
         Article savedArticle = articleRepository.save(alteredArticle);

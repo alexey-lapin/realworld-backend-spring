@@ -8,7 +8,7 @@ import lombok.Getter;
 @Getter
 public class FavoriteArticle implements Command<FavoriteArticleResult> {
 
+    private String currentUsername;
     private String slug;
-    private String username;
 
 }

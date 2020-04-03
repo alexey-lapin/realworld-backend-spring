@@ -1,9 +1,9 @@
 package com.github.al.realworld.application;
 
 import com.github.al.realworld.api.dto.ArticleDto;
-import com.github.al.realworld.domain.Article;
-import com.github.al.realworld.domain.Profile;
-import com.github.al.realworld.domain.Tag;
+import com.github.al.realworld.domain.model.Article;
+import com.github.al.realworld.domain.model.Profile;
+import com.github.al.realworld.domain.model.Tag;
 
 import java.util.stream.Collectors;
 
@@ -18,8 +18,8 @@ public class ArticleAssembler {
                 .tagList(article.getTags().stream().map(Tag::getName).collect(Collectors.toList()))
                 .createdAt(article.getCreatedAt())
                 .updatedAt(article.getUpdatedAt())
-                .favorited(currentProfile != null && article.getFavoritedProfiles().contains(currentProfile))
-                .favoritesCount(article.getFavoritedProfiles().size())
+                .favorited(currentProfile != null && article.getFavoredProfiles().contains(currentProfile))
+                .favoritesCount(article.getFavoredProfiles().size())
                 .author(ProfileAssembler.assemble(article.getAuthor(), currentProfile))
                 .build();
     }

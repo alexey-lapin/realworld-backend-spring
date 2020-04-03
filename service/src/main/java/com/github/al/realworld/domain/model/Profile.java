@@ -1,4 +1,4 @@
-package com.github.al.realworld.domain;
+package com.github.al.realworld.domain.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Singular;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
@@ -29,11 +30,15 @@ public class Profile {
     private String image;
 
     @Singular
-    @ManyToMany
-    @JoinTable(name = "followers",
-            joinColumns = @JoinColumn(name = "follower", referencedColumnName = "username"),
-            inverseJoinColumns = @JoinColumn(name = "followee", referencedColumnName = "username")
-    )
+    @ManyToMany(mappedBy = "followees", cascade = CascadeType.ALL)
     private Set<Profile> followers;
+
+    @Singular
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(name = "followers",
+            joinColumns = @JoinColumn(name = "followee", referencedColumnName = "username"),
+            inverseJoinColumns = @JoinColumn(name = "follower", referencedColumnName = "username")
+    )
+    private Set<Profile> followees;
 
 }

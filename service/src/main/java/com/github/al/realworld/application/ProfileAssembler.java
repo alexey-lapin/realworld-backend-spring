@@ -1,7 +1,7 @@
 package com.github.al.realworld.application;
 
 import com.github.al.realworld.api.dto.ProfileDto;
-import com.github.al.realworld.domain.Profile;
+import com.github.al.realworld.domain.model.Profile;
 
 public class ProfileAssembler {
 

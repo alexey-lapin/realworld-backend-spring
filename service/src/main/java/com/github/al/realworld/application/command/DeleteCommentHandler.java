@@ -1,11 +1,10 @@
-package com.github.al.realworld.application.command.comment;
+package com.github.al.realworld.application.command;
 
-import com.github.al.realworld.api.command.DeleteCommentResult;
 import com.github.al.realworld.api.command.DeleteComment;
-import com.github.al.realworld.application.exception.ResourceNotFoundException;
+import com.github.al.realworld.api.command.DeleteCommentResult;
 import com.github.al.realworld.bus.CommandHandler;
-import com.github.al.realworld.domain.Article;
-import com.github.al.realworld.domain.Comment;
+import com.github.al.realworld.domain.model.Article;
+import com.github.al.realworld.domain.model.Comment;
 import com.github.al.realworld.domain.repository.ArticleRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -14,6 +13,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import static com.github.al.realworld.application.exception.NoAuthorizationException.forbidden;
+import static com.github.al.realworld.application.exception.ResourceNotFoundException.notFound;
 
 @RequiredArgsConstructor
 @Service
@@ -24,12 +26,17 @@ public class DeleteCommentHandler implements CommandHandler<DeleteCommentResult,
     @Transactional
     @Override
     public DeleteCommentResult handle(DeleteComment command) {
-        Article article = articleRepository.findBySlug(command.getSlug()).orElseThrow(ResourceNotFoundException::new);
+        Article article = articleRepository.findBySlug(command.getSlug())
+                .orElseThrow(() -> notFound("article [slug=%s] does not exist", command.getSlug()));
 
         Comment comment = article.getComments().stream()
                 .filter(c -> c.getId().equals(command.getId()))
                 .findFirst()
-                .orElseThrow(ResourceNotFoundException::new);
+                .orElseThrow(() -> notFound("comment [id=%s] does not exist", command.getId()));
+
+        if (!comment.getAuthor().getUsername().equals(command.getCurrentUsername())) {
+            throw forbidden();
+        }
 
         Set<Comment> alteredComments = article.getComments().stream()
                 .filter(comment1 -> Objects.equals(comment1, comment))

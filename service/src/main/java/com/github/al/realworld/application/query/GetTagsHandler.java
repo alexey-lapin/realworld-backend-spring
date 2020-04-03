@@ -3,7 +3,7 @@ package com.github.al.realworld.application.query;
 import com.github.al.realworld.api.query.GetTags;
 import com.github.al.realworld.api.query.GetTagsResult;
 import com.github.al.realworld.bus.QueryHandler;
-import com.github.al.realworld.domain.Tag;
+import com.github.al.realworld.domain.model.Tag;
 import com.github.al.realworld.domain.repository.TagRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

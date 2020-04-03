@@ -8,6 +8,7 @@ import lombok.Getter;
 @Getter
 public class DeleteComment implements Command<DeleteCommentResult> {
 
+    private String currentUsername;
     private String slug;
     private Long id;
 

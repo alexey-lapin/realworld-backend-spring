@@ -1,6 +1,6 @@
 package com.github.al.realworld.infrastructure.db.jpa;
 
-import com.github.al.realworld.domain.Article;
+import com.github.al.realworld.domain.model.Article;
 import com.github.al.realworld.domain.repository.ArticleRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;

@@ -2,14 +2,14 @@ package com.github.al.realworld.application.command;
 
 import com.github.al.realworld.api.command.RegisterUser;
 import com.github.al.realworld.api.command.RegisterUserResult;
-import com.github.al.realworld.api.dto.UserDto;
+import com.github.al.realworld.application.UserAssembler;
 import com.github.al.realworld.application.service.JwtService;
 import com.github.al.realworld.bus.CommandHandler;
-import com.github.al.realworld.domain.Profile;
-import com.github.al.realworld.domain.User;
-import com.github.al.realworld.domain.repository.ProfileRepository;
+import com.github.al.realworld.domain.model.Profile;
+import com.github.al.realworld.domain.model.User;
 import com.github.al.realworld.domain.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,8 +22,8 @@ import static com.github.al.realworld.application.exception.InvalidRequestExcept
 public class RegisterUserHandler implements CommandHandler<RegisterUserResult, RegisterUser> {
 
     private final UserRepository userRepository;
-    private final ProfileRepository profileRepository;
     private final JwtService jwtService;
+    private final PasswordEncoder passwordEncoder;
 
     @Transactional
     @Override
@@ -40,16 +40,15 @@ public class RegisterUserHandler implements CommandHandler<RegisterUserResult, R
         Profile profile = Profile.builder()
                 .username(command.getUsername())
                 .build();
-        profileRepository.save(profile);
 
-        //todo encrypt password
-        User user = new User(command.getUsername(), command.getEmail(), command.getPassword(), profile);
-        User savedUser = userRepository.save(user);
+        User user = User.builder()
+                .username(command.getUsername())
+                .email(command.getEmail())
+                .password(passwordEncoder.encode(command.getPassword()))
+                .profile(profile)
+                .build();
+        userRepository.save(user);
 
-        return new RegisterUserResult(UserDto.builder()
-                .email(user.getEmail())
-                .username(user.getUsername())
-                .token(jwtService.getToken(user))
-                .build());
+        return new RegisterUserResult(UserAssembler.assemble(user, jwtService));
     }
 }

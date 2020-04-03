@@ -1,13 +1,13 @@
-package com.github.al.realworld.application.command.article;
+package com.github.al.realworld.application.command;
 
 import com.github.al.realworld.api.command.UpdateArticle;
 import com.github.al.realworld.api.command.UpdateArticleResult;
 import com.github.al.realworld.application.ArticleAssembler;
 import com.github.al.realworld.application.service.SlugService;
 import com.github.al.realworld.bus.CommandHandler;
-import com.github.al.realworld.domain.Article;
-import com.github.al.realworld.domain.Profile;
-import com.github.al.realworld.domain.User;
+import com.github.al.realworld.domain.model.Article;
+import com.github.al.realworld.domain.model.Profile;
+import com.github.al.realworld.domain.model.User;
 import com.github.al.realworld.domain.repository.ArticleRepository;
 import com.github.al.realworld.domain.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -15,8 +15,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.ZonedDateTime;
+import java.util.Objects;
 
 import static com.github.al.realworld.application.exception.InvalidRequestException.invalidRequest;
+import static com.github.al.realworld.application.exception.NoAuthorizationException.forbidden;
 import static com.github.al.realworld.application.exception.ResourceNotFoundException.notFound;
 
 @RequiredArgsConstructor
@@ -33,9 +35,13 @@ public class UpdateArticleHandler implements CommandHandler<UpdateArticleResult,
         Article article = articleRepository.findBySlug(command.getSlug())
                 .orElseThrow(() -> notFound("article [slug=%s] does not exist", command.getSlug()));
 
-        Profile currentProfile = userRepository.findByUsername(command.getUsername())
+        if (!Objects.equals(article.getAuthor().getUsername(), command.getCurrentUsername())) {
+            throw forbidden();
+        }
+
+        Profile currentProfile = userRepository.findByUsername(command.getCurrentUsername())
                 .map(User::getProfile)
-                .orElseThrow(() -> invalidRequest("user [name=%s] does not exist", command.getUsername()));
+                .orElseThrow(() -> invalidRequest("user [name=%s] does not exist", command.getCurrentUsername()));
 
         Article alteredArticle = article.toBuilder()
                 .slug(command.getTitle() != null ? slugService.makeSlug(command.getTitle()) : article.getSlug())

@@ -16,4 +16,5 @@ public class UpdateUser implements Command<UpdateUserResult> {
     private String password;
     private String image;
     private String bio;
+
 }

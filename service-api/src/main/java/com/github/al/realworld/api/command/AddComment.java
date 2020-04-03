@@ -12,6 +12,6 @@ public class AddComment implements Command<AddCommentResult> {
 
     private String slug;
     private String body;
-    private String username;
+    private String currentUsername;
 
 }

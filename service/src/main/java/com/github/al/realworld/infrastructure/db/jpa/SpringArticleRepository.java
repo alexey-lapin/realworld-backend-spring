@@ -1,14 +1,15 @@
 package com.github.al.realworld.infrastructure.db.jpa;
 
-import com.github.al.realworld.domain.Article;
+import com.github.al.realworld.domain.model.Article;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
-public interface SpringArticleRepository extends CrudRepository<Article, Long> {
+public interface SpringArticleRepository extends CrudRepository<Article, UUID> {
 
     Optional<Article> findBySlug(String slug);
 

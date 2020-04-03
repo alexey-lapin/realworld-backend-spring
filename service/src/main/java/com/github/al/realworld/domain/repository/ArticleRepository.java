@@ -1,9 +1,6 @@
 package com.github.al.realworld.domain.repository;
 
-import com.github.al.realworld.domain.Article;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.CrudRepository;
-import org.springframework.data.repository.query.Param;
+import com.github.al.realworld.domain.model.Article;
 
 import java.util.List;
 import java.util.Optional;

@@ -2,18 +2,18 @@ package com.github.al.realworld.application.command;
 
 import com.github.al.realworld.api.command.LoginUser;
 import com.github.al.realworld.api.command.LoginUserResult;
-import com.github.al.realworld.api.dto.UserDto;
-import com.github.al.realworld.application.exception.ResourceNotFoundException;
-import com.github.al.realworld.bus.CommandHandler;
-import com.github.al.realworld.domain.User;
-import com.github.al.realworld.domain.repository.UserRepository;
+import com.github.al.realworld.application.UserAssembler;
 import com.github.al.realworld.application.service.JwtService;
+import com.github.al.realworld.bus.CommandHandler;
+import com.github.al.realworld.domain.model.User;
+import com.github.al.realworld.domain.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
-import java.util.Optional;
+
+import static com.github.al.realworld.application.exception.InvalidRequestException.invalidRequest;
 
 @RequiredArgsConstructor
 @Service
@@ -21,17 +21,18 @@ public class LoginUserHandler implements CommandHandler<LoginUserResult, LoginUs
 
     private final UserRepository userRepository;
     private final JwtService jwtService;
+    private final PasswordEncoder passwordEncoder;
 
     @Transactional
     @Override
     public LoginUserResult handle(LoginUser command) {
         User user = userRepository.findByEmail(command.getEmail())
-                .orElseThrow(ResourceNotFoundException::new);
+                .orElseThrow(() -> invalidRequest("user [email=%s] does not exist", command.getEmail()));
 
-        return new LoginUserResult(UserDto.builder()
-                .email(user.getEmail())
-                .username(user.getUsername())
-                .token(jwtService.getToken(user))
-                .build());
+        if(!passwordEncoder.matches(command.getPassword(), user.getPassword())) {
+            throw invalidRequest("user [name=%s] password is incorrect");
+        }
+
+        return new LoginUserResult(UserAssembler.assemble(user, jwtService));
     }
 }

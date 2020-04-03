@@ -1,8 +1,9 @@
-package com.github.al.realworld.domain;
+package com.github.al.realworld.domain.model;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -10,16 +11,16 @@ import javax.persistence.Id;
 @NoArgsConstructor
 @Getter
 @Entity
-public class Follow {
+public class Tag {
 
     @Id
     @GeneratedValue
     private Long id;
-    private String follower;
-    private String followee;
 
-    public Follow(String follower, String followee) {
-        this.follower = follower;
-        this.followee = followee;
+    @Column(unique = true)
+    private String name;
+
+    public Tag(String name) {
+        this.name = name;
     }
 }

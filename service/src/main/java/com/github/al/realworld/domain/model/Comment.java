@@ -1,4 +1,4 @@
-package com.github.al.realworld.domain;
+package com.github.al.realworld.domain.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
