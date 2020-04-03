@@ -15,7 +15,7 @@ public interface SpringArticleRepository extends CrudRepository<Article, UUID> {
 
     Optional<Article> findByTitle(String title);
 
-    @Query("SELECT DISTINCT a FROM Article a LEFT JOIN a.tags t LEFT JOIN a.author p LEFT JOIN a.favoritedProfiles f WHERE " +
+    @Query("SELECT DISTINCT a FROM Article a LEFT JOIN a.tags t LEFT JOIN a.author p LEFT JOIN a.favoredProfiles f WHERE " +
             "(:tag IS NULL OR t.name = :tag) AND " +
             "(:author IS NULL OR p.username = :author) AND " +
             "(:favorited IS NULL OR f.username = :favorited)")

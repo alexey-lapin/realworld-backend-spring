@@ -6,11 +6,15 @@ import com.github.al.realworld.api.command.UnfollowProfile;
 import com.github.al.realworld.api.command.UnfollowProfileResult;
 import com.github.al.realworld.api.query.GetProfile;
 import com.github.al.realworld.api.query.GetProfileResult;
+import com.github.al.realworld.application.service.AuthenticationService;
 import com.github.al.realworld.bus.Bus;
-import com.github.al.realworld.domain.model.User;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RequiredArgsConstructor
 @RestController
@@ -18,27 +22,21 @@ import org.springframework.web.bind.annotation.*;
 public class ProfileController {
 
     private final Bus bus;
+    private final AuthenticationService auth;
 
     @GetMapping("/{username}")
-    public GetProfileResult findByUsername(@AuthenticationPrincipal User user, @PathVariable String username) {
-        return bus.executeQuery(new GetProfile(safeUsername(user), username));
+    public GetProfileResult findByUsername(@PathVariable String username) {
+        return bus.executeQuery(new GetProfile(auth.currentUsername(), username));
     }
 
     @PostMapping("/{username}/follow")
-    public FollowProfileResult follow(@AuthenticationPrincipal User user, @PathVariable String username) {
-        return bus.executeCommand(new FollowProfile(user.getUsername(), username));
+    public FollowProfileResult follow(@PathVariable String username) {
+        return bus.executeCommand(new FollowProfile(auth.currentUsername(), username));
     }
 
     @DeleteMapping("/{username}/follow")
-    public UnfollowProfileResult unfollow(@AuthenticationPrincipal User user, @PathVariable String username) {
-        return bus.executeCommand(new UnfollowProfile(user.getUsername(), username));
-    }
-
-    private String safeUsername(User user) {
-        if (user != null) {
-            return user.getUsername();
-        }
-        return null;
+    public UnfollowProfileResult unfollow(@PathVariable String username) {
+        return bus.executeCommand(new UnfollowProfile(auth.currentUsername(), username));
     }
 
 }

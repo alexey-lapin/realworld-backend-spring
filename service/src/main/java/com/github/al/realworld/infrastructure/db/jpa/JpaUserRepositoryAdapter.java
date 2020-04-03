@@ -3,12 +3,12 @@ package com.github.al.realworld.infrastructure.db.jpa;
 import com.github.al.realworld.domain.model.User;
 import com.github.al.realworld.domain.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
 @RequiredArgsConstructor
-@Service
+@Repository
 public class JpaUserRepositoryAdapter implements UserRepository {
 
     private final SpringUserRepository repository;

@@ -20,11 +20,10 @@ import com.github.al.realworld.api.query.GetComments;
 import com.github.al.realworld.api.query.GetCommentsResult;
 import com.github.al.realworld.api.query.GetFeed;
 import com.github.al.realworld.api.query.GetFeedResult;
+import com.github.al.realworld.application.service.AuthenticationService;
 import com.github.al.realworld.bus.Bus;
-import com.github.al.realworld.domain.model.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -44,16 +43,16 @@ import javax.validation.Valid;
 public class ArticleController {
 
     private final Bus bus;
+    private final AuthenticationService auth;
 
     @GetMapping("")
-    public GetArticlesResult findByFilters(@AuthenticationPrincipal User user,
-                                           @RequestParam(name = "tag", required = false) String tag,
+    public GetArticlesResult findByFilters(@RequestParam(name = "tag", required = false) String tag,
                                            @RequestParam(name = "author", required = false) String author,
                                            @RequestParam(name = "favorited", required = false) String favorited,
                                            @RequestParam(name = "limit", required = false) Integer limit,
                                            @RequestParam(name = "offset", required = false) Integer offset) {
         return bus.executeQuery(GetArticles.builder()
-                .currentUsername(safeUsername(user))
+                .currentUsername(auth.currentUsername())
                 .tag(tag)
                 .author(author)
                 .favorited(favorited)
@@ -64,73 +63,57 @@ public class ArticleController {
 
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("")
-    public CreateArticleResult create(@AuthenticationPrincipal User user,
-                                      @Valid @RequestBody CreateArticle command) {
-        return bus.executeCommand(command.toBuilder().currentUsername(safeUsername(user)).build());
+    public CreateArticleResult create(@Valid @RequestBody CreateArticle command) {
+        return bus.executeCommand(command.toBuilder().currentUsername(auth.currentUsername()).build());
     }
 
     @GetMapping("/feed")
-    public GetFeedResult feed(@AuthenticationPrincipal User user) {
-        return bus.executeQuery(new GetFeed(safeUsername(user)));
+    public GetFeedResult feed() {
+        return bus.executeQuery(new GetFeed(auth.currentUsername()));
     }
 
     @GetMapping("/{slug}")
-    public GetArticleResult findBySlug(@AuthenticationPrincipal User user,
-                                       @PathVariable String slug) {
-        return bus.executeQuery(new GetArticle(safeUsername(user), slug));
+    public GetArticleResult findBySlug(@PathVariable String slug) {
+        return bus.executeQuery(new GetArticle(auth.currentUsername(), slug));
     }
 
     @PutMapping("/{slug}")
-    public UpdateArticleResult updateBySlug(@AuthenticationPrincipal User user,
-                                            @PathVariable String slug,
+    public UpdateArticleResult updateBySlug(@PathVariable String slug,
                                             @Valid @RequestBody UpdateArticle command) {
-        return bus.executeCommand(command.toBuilder().slug(slug).currentUsername(safeUsername(user)).build());
+        return bus.executeCommand(command.toBuilder().slug(slug).currentUsername(auth.currentUsername()).build());
     }
 
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping("/{slug}")
-    public void deleteBySlug(@AuthenticationPrincipal User user,
-                             @PathVariable String slug) {
-        bus.executeCommand(new DeleteArticle(safeUsername(user), slug));
+    public void deleteBySlug(@PathVariable String slug) {
+        bus.executeCommand(new DeleteArticle(auth.currentUsername(), slug));
     }
 
     @PostMapping("/{slug}/favorite")
-    public FavoriteArticleResult favorite(@AuthenticationPrincipal User user,
-                                          @PathVariable String slug) {
-        return bus.executeCommand(new FavoriteArticle(safeUsername(user), slug));
+    public FavoriteArticleResult favorite(@PathVariable String slug) {
+        return bus.executeCommand(new FavoriteArticle(auth.currentUsername(), slug));
     }
 
     @DeleteMapping("/{slug}/favorite")
-    public UnfavoriteArticleResult unfavorite(@AuthenticationPrincipal User user,
-                                              @PathVariable String slug) {
-        return bus.executeCommand(new UnfavoriteArticle(safeUsername(user), slug));
+    public UnfavoriteArticleResult unfavorite(@PathVariable String slug) {
+        return bus.executeCommand(new UnfavoriteArticle(auth.currentUsername(), slug));
     }
 
     @GetMapping("/{slug}/comments")
-    public GetCommentsResult findAllComments(@AuthenticationPrincipal User user,
-                                             @PathVariable String slug) {
-        return bus.executeQuery(new GetComments(safeUsername(user), slug));
+    public GetCommentsResult findAllComments(@PathVariable String slug) {
+        return bus.executeQuery(new GetComments(auth.currentUsername(), slug));
     }
 
     @PostMapping("/{slug}/comments")
-    public AddCommentResult addComment(@AuthenticationPrincipal User user,
-                                       @PathVariable String slug,
+    public AddCommentResult addComment(@PathVariable String slug,
                                        @Valid @RequestBody AddComment command) {
-        return bus.executeCommand(command.toBuilder().slug(slug).currentUsername(safeUsername(user)).build());
+        return bus.executeCommand(command.toBuilder().slug(slug).currentUsername(auth.currentUsername()).build());
     }
 
     @DeleteMapping("/{slug}/comments/{id}")
-    public void deleteComment(@AuthenticationPrincipal User user,
-                              @PathVariable String slug,
+    public void deleteComment(@PathVariable String slug,
                               @PathVariable Long id) {
-        bus.executeCommand(new DeleteComment(safeUsername(user), slug, id));
-    }
-
-    private String safeUsername(User user) {
-        if (user != null) {
-            return user.getUsername();
-        }
-        return null;
+        bus.executeCommand(new DeleteComment(auth.currentUsername(), slug, id));
     }
 
 }

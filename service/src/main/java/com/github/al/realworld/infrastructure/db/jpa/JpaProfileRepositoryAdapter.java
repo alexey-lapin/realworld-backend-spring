@@ -3,12 +3,12 @@ package com.github.al.realworld.infrastructure.db.jpa;
 import com.github.al.realworld.domain.model.Profile;
 import com.github.al.realworld.domain.repository.ProfileRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
 @RequiredArgsConstructor
-@Service
+@Repository
 public class JpaProfileRepositoryAdapter implements ProfileRepository {
 
     private final SpringProfileRepository repository;

@@ -1,13 +1,22 @@
 package com.github.al.realworld.infrastructure.web;
 
-import com.github.al.realworld.api.command.*;
+import com.github.al.realworld.api.command.LoginUser;
+import com.github.al.realworld.api.command.LoginUserResult;
+import com.github.al.realworld.api.command.RegisterUser;
+import com.github.al.realworld.api.command.RegisterUserResult;
+import com.github.al.realworld.api.command.UpdateUser;
+import com.github.al.realworld.api.command.UpdateUserResult;
 import com.github.al.realworld.api.query.GetCurrentUser;
 import com.github.al.realworld.api.query.GetCurrentUserResult;
+import com.github.al.realworld.application.service.AuthenticationService;
 import com.github.al.realworld.bus.Bus;
-import com.github.al.realworld.domain.model.User;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
 
@@ -17,6 +26,7 @@ import javax.validation.Valid;
 public class UserController {
 
     private final Bus bus;
+    private final AuthenticationService auth;
 
     @PostMapping("/users/login")
     public LoginUserResult login(@Valid @RequestBody LoginUser cmd) {
@@ -29,12 +39,13 @@ public class UserController {
     }
 
     @GetMapping("/user")
-    public GetCurrentUserResult current(@AuthenticationPrincipal User user) {
-        return bus.executeQuery(new GetCurrentUser(user.getUsername()));
+    public GetCurrentUserResult current() {
+        return bus.executeQuery(new GetCurrentUser(auth.currentUsername()));
     }
 
     @PutMapping("/user")
-    public UpdateUserResult update(@AuthenticationPrincipal User user, @Valid @RequestBody UpdateUser cmd) {
+    public UpdateUserResult update(@Valid @RequestBody UpdateUser cmd) {
+        //auth.currentUsername()
         return bus.executeCommand(cmd);
     }
 
