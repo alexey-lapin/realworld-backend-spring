@@ -7,7 +7,7 @@ pluginManagement {
     }
 }
 
-rootProject.name = "realworld-spring-boot"
+rootProject.name = "realworld-backend-spring"
 include("service-bus")
 include("service-api")
 include("service")
