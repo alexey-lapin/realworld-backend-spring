@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2019 - present Alexey Lapin
+ * Copyright (c) 2020 - present Alexey Lapin
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,6 +29,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.With;
 
 import javax.validation.constraints.Email;
 
@@ -39,6 +40,8 @@ import javax.validation.constraints.Email;
 @JsonRootName("user")
 public class UpdateUser implements Command<UpdateUserResult> {
 
+    @With
+    private String currentUsername;
     @Email
     private String email;
     private String username;

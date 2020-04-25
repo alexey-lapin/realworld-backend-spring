@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2019 - present Alexey Lapin
+ * Copyright (c) 2020 - present Alexey Lapin
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -83,7 +83,7 @@ public class ArticleController implements ArticleOperations {
 
     @Override
     public GetFeedResult feed(Integer limit, Integer offset) {
-        return bus.executeQuery(new GetFeed(auth.currentUsername()));
+        return bus.executeQuery(new GetFeed(auth.currentUsername(), limit, offset));
     }
 
     @Override

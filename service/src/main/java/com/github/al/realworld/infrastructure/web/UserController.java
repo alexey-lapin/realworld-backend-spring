@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2019 - present Alexey Lapin
+ * Copyright (c) 2020 - present Alexey Lapin
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,10 +35,6 @@ import com.github.al.realworld.api.query.GetCurrentUserResult;
 import com.github.al.realworld.application.service.AuthenticationService;
 import com.github.al.realworld.bus.Bus;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -53,12 +49,12 @@ public class UserController implements UserOperations {
     private final AuthenticationService auth;
 
     @Override
-    public LoginUserResult login(@Valid @RequestBody LoginUser cmd) {
+    public LoginUserResult login(@Valid LoginUser cmd) {
         return bus.executeCommand(cmd);
     }
 
     @Override
-    public RegisterUserResult register(@Valid @RequestBody RegisterUser cmd) {
+    public RegisterUserResult register(@Valid RegisterUser cmd) {
         return bus.executeCommand(cmd);
     }
 
@@ -68,9 +64,8 @@ public class UserController implements UserOperations {
     }
 
     @Override
-    public UpdateUserResult update(@Valid @RequestBody UpdateUser cmd) {
-        //auth.currentUsername()
-        return bus.executeCommand(cmd);
+    public UpdateUserResult update(@Valid UpdateUser cmd) {
+        return bus.executeCommand(cmd.withCurrentUsername(auth.currentUsername()));
     }
 
 }

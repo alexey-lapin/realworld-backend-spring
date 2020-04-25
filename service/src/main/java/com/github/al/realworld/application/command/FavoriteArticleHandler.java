@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2019 - present Alexey Lapin
+ * Copyright (c) 2020 - present Alexey Lapin
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,7 +28,6 @@ import com.github.al.realworld.api.command.FavoriteArticleResult;
 import com.github.al.realworld.application.ArticleAssembler;
 import com.github.al.realworld.bus.CommandHandler;
 import com.github.al.realworld.domain.model.Article;
-import com.github.al.realworld.domain.model.Profile;
 import com.github.al.realworld.domain.model.User;
 import com.github.al.realworld.domain.repository.ArticleRepository;
 import com.github.al.realworld.domain.repository.UserRepository;
@@ -52,16 +51,16 @@ public class FavoriteArticleHandler implements CommandHandler<FavoriteArticleRes
         Article article = articleRepository.findBySlug(command.getSlug())
                 .orElseThrow(() -> notFound("article [slug=%s] does not exist", command.getSlug()));
 
-        Profile currentProfile = userRepository.findByUsername(command.getCurrentUsername())
-                .map(User::getProfile)
+        User currentUser = userRepository.findByUsername(command.getCurrentUsername())
                 .orElseThrow(() -> badRequest("user [name=%s] does not exist", command.getCurrentUsername()));
 
         Article alteredArticle = article.toBuilder()
-                .favoredProfile(currentProfile)
+                .favoredUser(currentUser)
                 .build();
 
         Article savedArticle = articleRepository.save(alteredArticle);
 
-        return new FavoriteArticleResult(ArticleAssembler.assemble(savedArticle, currentProfile));
+        return new FavoriteArticleResult(ArticleAssembler.assemble(savedArticle, currentUser));
     }
+
 }

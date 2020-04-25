@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2019 - present Alexey Lapin
+ * Copyright (c) 2020 - present Alexey Lapin
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,8 +36,8 @@ public class ForbiddenException extends RuntimeException {
         super(message);
     }
 
-    public static ForbiddenException forbidden() {
-        return new ForbiddenException();
+    public static ForbiddenException forbidden(String message, Object... args) {
+        return new ForbiddenException(String.format(message, args));
     }
 
 }
