@@ -8,7 +8,7 @@ val enableJacoco = project.hasProperty("enableJacoco")
 val jacocoClassesDir = file("$buildDir/jacoco/classes")
 
 allprojects {
-    apply(plugin = "idea")
+    apply(plugin="idea")
     apply(plugin = "com.diffplug.gradle.spotless")
 
     if (enableJacoco) {
@@ -24,7 +24,7 @@ allprojects {
 }
 
 subprojects {
-    apply(plugin = "java")
+    apply(plugin="java")
 
     pluginManager.withPlugin("java") {
 
@@ -62,13 +62,7 @@ subprojects {
     tasks {
         withType<Test> {
             useJUnitPlatform()
-            testLogging {
-                showStackTraces = true
-                exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
-            }
         }
-
-        named("build").get().shouldRunAfter("spotlessJava")
     }
 }
 

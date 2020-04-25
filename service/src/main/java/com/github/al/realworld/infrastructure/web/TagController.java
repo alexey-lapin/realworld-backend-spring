@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2019 - present Alexey Lapin
+ * Copyright (c) 2020 - present Alexey Lapin
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,15 +21,26 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.github.al.realworld.infrastructure.db.jpa;
+package com.github.al.realworld.infrastructure.web;
 
-import com.github.al.realworld.domain.model.Profile;
-import org.springframework.data.repository.CrudRepository;
+import com.github.al.realworld.api.operation.TagOperations;
+import com.github.al.realworld.api.query.GetTags;
+import com.github.al.realworld.api.query.GetTagsResult;
+import com.github.al.realworld.bus.Bus;
+import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Optional;
+@RequiredArgsConstructor
+@RestController
+@RequestMapping("${api.version}")
+public class TagController implements TagOperations {
 
-public interface SpringProfileRepository extends CrudRepository<Profile, String> {
+    private final Bus bus;
 
-    Optional<Profile> findByUsername(String username);
+    @Override
+    public GetTagsResult findAll() {
+        return bus.executeQuery(new GetTags());
+    }
 
 }

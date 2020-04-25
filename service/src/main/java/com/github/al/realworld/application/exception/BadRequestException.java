@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2019 - present Alexey Lapin
+ * Copyright (c) 2020 - present Alexey Lapin
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,15 +21,23 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.github.al.realworld.domain.repository;
+package com.github.al.realworld.application.exception;
 
-import com.github.al.realworld.domain.model.Profile;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
-import java.util.Optional;
+@ResponseStatus(HttpStatus.BAD_REQUEST)
+public class BadRequestException extends RuntimeException {
 
-public interface ProfileRepository {
+    public BadRequestException() {
+    }
 
-    Optional<Profile> findByUsername(String username);
+    public BadRequestException(String message) {
+        super(message);
+    }
 
-    Profile save(Profile profile);
+    public static BadRequestException badRequest(String message, Object... args) {
+        return new BadRequestException(String.format(message, args));
+    }
+
 }

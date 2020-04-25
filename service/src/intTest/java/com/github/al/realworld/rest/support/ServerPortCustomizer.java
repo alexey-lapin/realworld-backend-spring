@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2019 - present Alexey Lapin
+ * Copyright (c) 2020 - present Alexey Lapin
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,15 +21,19 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.github.al.realworld.infrastructure.db.jpa;
+package com.github.al.realworld.rest.support;
 
-import com.github.al.realworld.domain.model.Tag;
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.boot.web.server.ConfigurableWebServerFactory;
+import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 
-import java.util.Optional;
+public class ServerPortCustomizer implements WebServerFactoryCustomizer<ConfigurableWebServerFactory> {
 
-public interface SpringTagRepository extends CrudRepository<Tag, Long> {
-
-    Optional<Tag> findByName(String name);
+    @Override
+    public void customize(ConfigurableWebServerFactory factory) {
+        String port = System.getProperty("server.port");
+        if (port != null) {
+            factory.setPort(Integer.parseInt(port));
+        }
+    }
 
 }

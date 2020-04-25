@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2019 - present Alexey Lapin
+ * Copyright (c) 2020 - present Alexey Lapin
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -61,7 +61,7 @@ public class Article {
     private String body;
 
     @OneToOne
-    private Profile author;
+    private User author;
 
     @Singular
     @OneToMany(cascade = CascadeType.ALL)
@@ -80,8 +80,8 @@ public class Article {
     @ManyToMany
     @JoinTable(name = "article_favorites",
             joinColumns = @JoinColumn(name = "article_id"),
-            inverseJoinColumns = @JoinColumn(name = "username")
+            inverseJoinColumns = @JoinColumn(name = "user_id")
     )
-    private Set<Profile> favoredProfiles;
+    private Set<User> favoredUsers;
 
 }

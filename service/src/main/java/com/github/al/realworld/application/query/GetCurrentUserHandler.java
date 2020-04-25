@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2019 - present Alexey Lapin
+ * Copyright (c) 2020 - present Alexey Lapin
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,7 +34,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import static com.github.al.realworld.application.exception.InvalidRequestException.invalidRequest;
+import static com.github.al.realworld.application.exception.BadRequestException.badRequest;
 
 @RequiredArgsConstructor
 @Component
@@ -47,8 +47,9 @@ public class GetCurrentUserHandler implements QueryHandler<GetCurrentUserResult,
     @Override
     public GetCurrentUserResult handle(GetCurrentUser query) {
         User user = userRepository.findByUsername(query.getUsername())
-                .orElseThrow(() -> invalidRequest("user [name=%s] does not exist", query.getUsername()));
+                .orElseThrow(() -> badRequest("user [name=%s] does not exist", query.getUsername()));
 
         return new GetCurrentUserResult(UserAssembler.assemble(user, jwtService));
     }
+
 }

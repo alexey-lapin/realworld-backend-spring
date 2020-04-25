@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2019 - present Alexey Lapin
+ * Copyright (c) 2020 - present Alexey Lapin
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,18 +27,19 @@ import com.github.al.realworld.api.command.UnfollowProfile;
 import com.github.al.realworld.api.command.UnfollowProfileResult;
 import com.github.al.realworld.application.ProfileAssembler;
 import com.github.al.realworld.bus.CommandHandler;
-import com.github.al.realworld.domain.model.Profile;
-import com.github.al.realworld.domain.repository.ProfileRepository;
+import com.github.al.realworld.domain.model.FollowRelation;
+import com.github.al.realworld.domain.model.User;
+import com.github.al.realworld.domain.repository.FollowRelationRepository;
+import com.github.al.realworld.domain.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Objects;
-import java.util.Set;
+import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.github.al.realworld.application.exception.InvalidRequestException.invalidRequest;
-import static com.github.al.realworld.application.exception.ResourceNotFoundException.notFound;
+import static com.github.al.realworld.application.exception.BadRequestException.badRequest;
+import static com.github.al.realworld.application.exception.NotFoundException.notFound;
 
 /**
  * follower - one who follows someone (current user)
@@ -48,36 +49,31 @@ import static com.github.al.realworld.application.exception.ResourceNotFoundExce
 @Service
 public class UnfollowProfileHandler implements CommandHandler<UnfollowProfileResult, UnfollowProfile> {
 
-    private final ProfileRepository profileRepository;
+    private final UserRepository userRepository;
+    private final FollowRelationRepository followRelationRepository;
 
     @Transactional
     @Override
     public UnfollowProfileResult handle(UnfollowProfile command) {
-        Profile currentProfile = profileRepository.findByUsername(command.getFollower())
-                .orElseThrow(() -> invalidRequest("user [name=%s] does not exist", command.getFollower()));
+        User currentUser = userRepository.findByUsername(command.getFollower())
+                .orElseThrow(() -> badRequest("user [name=%s] does not exist", command.getFollower()));
 
-        Profile followee = profileRepository.findByUsername(command.getFollowee())
+        User followee = userRepository.findByUsername(command.getFollowee())
                 .orElseThrow(() -> notFound("user [name=%s] does not exist", command.getFollowee()));
 
-        Set<Profile> alteredFollowers = followee.getFollowers().stream()
-                .filter(profile -> !Objects.equals(profile, currentProfile))
-                .collect(Collectors.toSet());
+        followRelationRepository.deleteByFollowerAndFollowee(currentUser, followee);
 
-        Profile alteredFollowee = followee.toBuilder()
-                .clearFollowers()
-                .followers(alteredFollowers)
+        List<FollowRelation> filteredFollowers = followee.getFollowers().stream()
+                .filter(followRelation -> !followRelation.getFollower().equals(currentUser))
+                .collect(Collectors.toList());
+
+        User alteredFollowee = followee.toBuilder().clearFollowers()
+                .followers(filteredFollowers)
                 .build();
 
-        Set<Profile> alteredFollowees = currentProfile.getFollowees().stream()
-                .filter(profile -> !Objects.equals(profile, followee))
-                .collect(Collectors.toSet());
+        userRepository.save(alteredFollowee);
 
-        Profile alteredCurrentProfile = currentProfile.toBuilder()
-                .clearFollowees()
-                .followees(alteredFollowees)
-                .build();
-        profileRepository.save(alteredCurrentProfile);
-
-        return new UnfollowProfileResult(ProfileAssembler.assemble(alteredFollowee, alteredCurrentProfile));
+        return new UnfollowProfileResult(ProfileAssembler.assemble(alteredFollowee, currentUser));
     }
+
 }

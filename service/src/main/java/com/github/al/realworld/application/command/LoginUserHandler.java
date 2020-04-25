@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2019 - present Alexey Lapin
+ * Copyright (c) 2020 - present Alexey Lapin
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,7 +36,8 @@ import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 
-import static com.github.al.realworld.application.exception.InvalidRequestException.invalidRequest;
+import static com.github.al.realworld.application.exception.BadRequestException.badRequest;
+import static com.github.al.realworld.application.exception.UnauthorizedException.unauthorized;
 
 @RequiredArgsConstructor
 @Service
@@ -50,12 +51,13 @@ public class LoginUserHandler implements CommandHandler<LoginUserResult, LoginUs
     @Override
     public LoginUserResult handle(LoginUser command) {
         User user = userRepository.findByEmail(command.getEmail())
-                .orElseThrow(() -> invalidRequest("user [email=%s] does not exist", command.getEmail()));
+                .orElseThrow(() -> badRequest("user [email=%s] does not exist", command.getEmail()));
 
-        if(!passwordEncoder.matches(command.getPassword(), user.getPassword())) {
-            throw invalidRequest("user [name=%s] password is incorrect");
+        if (!passwordEncoder.matches(command.getPassword(), user.getPassword())) {
+            throw unauthorized("user [email=%s] password is incorrect", command.getEmail());
         }
 
         return new LoginUserResult(UserAssembler.assemble(user, jwtService));
     }
+
 }

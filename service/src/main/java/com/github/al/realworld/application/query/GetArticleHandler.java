@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2019 - present Alexey Lapin
+ * Copyright (c) 2020 - present Alexey Lapin
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,7 +28,6 @@ import com.github.al.realworld.api.query.GetArticleResult;
 import com.github.al.realworld.application.ArticleAssembler;
 import com.github.al.realworld.bus.QueryHandler;
 import com.github.al.realworld.domain.model.Article;
-import com.github.al.realworld.domain.model.Profile;
 import com.github.al.realworld.domain.model.User;
 import com.github.al.realworld.domain.repository.ArticleRepository;
 import com.github.al.realworld.domain.repository.UserRepository;
@@ -36,7 +35,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import static com.github.al.realworld.application.exception.ResourceNotFoundException.notFound;
+import static com.github.al.realworld.application.exception.NotFoundException.notFound;
 
 @RequiredArgsConstructor
 @Service
@@ -51,10 +50,10 @@ public class GetArticleHandler implements QueryHandler<GetArticleResult, GetArti
         Article article = articleRepository.findBySlug(query.getSlug())
                 .orElseThrow(() -> notFound("article [slug=%s] does not exists", query.getSlug()));
 
-        Profile currentProfile = userRepository.findByUsername(query.getCurrentUsername())
-                .map(User::getProfile)
+        User currentUser = userRepository.findByUsername(query.getCurrentUsername())
                 .orElse(null);
 
-        return new GetArticleResult(ArticleAssembler.assemble(article, currentProfile));
+        return new GetArticleResult(ArticleAssembler.assemble(article, currentUser));
     }
+
 }

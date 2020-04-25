@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2019 - present Alexey Lapin
+ * Copyright (c) 2020 - present Alexey Lapin
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,8 +34,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Objects;
 
-import static com.github.al.realworld.application.exception.NoAuthorizationException.forbidden;
-import static com.github.al.realworld.application.exception.ResourceNotFoundException.notFound;
+import static com.github.al.realworld.application.exception.ForbiddenException.forbidden;
+import static com.github.al.realworld.application.exception.NotFoundException.notFound;
 
 @RequiredArgsConstructor
 @Service
@@ -50,11 +50,12 @@ public class DeleteArticleHandler implements CommandHandler<DeleteArticleResult,
                 .orElseThrow(() -> notFound("article [slug=%s] does not exist", command.getSlug()));
 
         if (!Objects.equals(article.getAuthor().getUsername(), command.getCurrentUsername())) {
-            throw forbidden();
+            throw forbidden("article [slug=%s] is not owned by %s", command.getSlug(), command.getCurrentUsername());
         }
 
         articleRepository.delete(article);
 
         return new DeleteArticleResult();
     }
+
 }

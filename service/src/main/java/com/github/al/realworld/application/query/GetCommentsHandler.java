@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2019 - present Alexey Lapin
+ * Copyright (c) 2020 - present Alexey Lapin
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,7 +29,6 @@ import com.github.al.realworld.api.query.GetCommentsResult;
 import com.github.al.realworld.application.CommentAssembler;
 import com.github.al.realworld.bus.QueryHandler;
 import com.github.al.realworld.domain.model.Article;
-import com.github.al.realworld.domain.model.Profile;
 import com.github.al.realworld.domain.model.User;
 import com.github.al.realworld.domain.repository.ArticleRepository;
 import com.github.al.realworld.domain.repository.UserRepository;
@@ -39,7 +38,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 
-import static com.github.al.realworld.application.exception.ResourceNotFoundException.notFound;
+import static com.github.al.realworld.application.exception.NotFoundException.notFound;
 
 @RequiredArgsConstructor
 @Service
@@ -54,14 +53,14 @@ public class GetCommentsHandler implements QueryHandler<GetCommentsResult, GetCo
         Article article = articleRepository.findBySlug(query.getSlug())
                 .orElseThrow(() -> notFound("article [slug=%s] does not exists", query.getSlug()));
 
-        Profile currentProfile = userRepository.findByUsername(query.getCurrentUsername())
-                .map(User::getProfile)
+        User currentUser = userRepository.findByUsername(query.getCurrentUsername())
                 .orElse(null);
 
         ArrayList<CommentDto> result = new ArrayList<>();
 
-        article.getComments().forEach(comment -> result.add(CommentAssembler.assemble(comment, currentProfile)));
+        article.getComments().forEach(comment -> result.add(CommentAssembler.assemble(comment, currentUser)));
 
         return new GetCommentsResult(result);
     }
+
 }

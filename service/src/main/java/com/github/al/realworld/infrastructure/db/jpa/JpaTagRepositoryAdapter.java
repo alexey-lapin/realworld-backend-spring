@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2019 - present Alexey Lapin
+ * Copyright (c) 2020 - present Alexey Lapin
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,7 +34,7 @@ import java.util.Optional;
 @Repository
 public class JpaTagRepositoryAdapter implements TagRepository {
 
-    private final SpringTagRepository repository;
+    private final DataTagRepository repository;
 
     @Override
     public Optional<Tag> findByName(String name) {
@@ -45,4 +45,5 @@ public class JpaTagRepositoryAdapter implements TagRepository {
     public Iterable<Tag> findAll() {
         return repository.findAll();
     }
+
 }

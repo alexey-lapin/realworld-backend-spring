@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2019 - present Alexey Lapin
+ * Copyright (c) 2020 - present Alexey Lapin
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,7 +34,7 @@ import java.util.Optional;
 @Repository
 public class JpaUserRepositoryAdapter implements UserRepository {
 
-    private final SpringUserRepository repository;
+    private final DataUserRepository repository;
 
     @Override
     public Optional<User> findByEmail(String email) {
@@ -50,4 +50,5 @@ public class JpaUserRepositoryAdapter implements UserRepository {
     public User save(User user) {
         return repository.save(user);
     }
+
 }

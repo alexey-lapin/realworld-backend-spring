@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2019 - present Alexey Lapin
+ * Copyright (c) 2020 - present Alexey Lapin
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,17 +21,25 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.github.al.realworld.infrastructure.db.jpa;
+package com.github.al.realworld.domain.model;
 
-import com.github.al.realworld.domain.model.User;
-import org.springframework.data.repository.CrudRepository;
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
-import java.util.Optional;
+import javax.persistence.Embeddable;
+import java.io.Serializable;
+import java.util.UUID;
 
-public interface SpringUserRepository extends CrudRepository<User, String> {
+@NoArgsConstructor
+@AllArgsConstructor
+@Getter
+@EqualsAndHashCode
+@Embeddable
+public class FollowRelationId implements Serializable {
 
-    Optional<User> findByEmail(String email);
-
-    Optional<User> findByUsername(String username);
+    private UUID followerId;
+    private UUID followeeId;
 
 }

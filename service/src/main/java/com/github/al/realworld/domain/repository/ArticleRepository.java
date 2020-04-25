@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2019 - present Alexey Lapin
+ * Copyright (c) 2020 - present Alexey Lapin
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,6 +27,7 @@ import com.github.al.realworld.domain.model.Article;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 public interface ArticleRepository {
 
@@ -34,9 +35,9 @@ public interface ArticleRepository {
 
     Optional<Article> findByTitle(String title);
 
-    List<Article> findByFilters(String tag, String author, String favorited);
+    List<Article> findByFilters(String tag, String author, String favorited, Integer limit, Integer offset);
 
-    List<Article> findByFollowees(List<String> followees);
+    List<Article> findByFollowees(List<UUID> followees, Integer limit, Integer offset);
 
     void delete(Article article);
 

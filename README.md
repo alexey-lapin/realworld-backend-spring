@@ -3,7 +3,7 @@
 > ### Spring Boot codebase containing real world examples (CRUD, auth, advanced patterns, etc) that adheres to the [RealWorld](https://github.com/gothinkster/realworld) spec and API
 
 [![CI](https://github.com/alexey-lapin/realworld-backend-spring/workflows/CI/badge.svg)](https://github.com/alexey-lapin/realworld-backend-spring/actions)
-[![Codecov](https://img.shields.io/codecov/c/gh/alexey-lapin/realworld-backend-spring?logo=codecov)](https://codecov.io/gh/alexey-lapin/realworld-backend-spring)
+[![Codecov](https://codecov.io/gh/alexey-lapin/realworld-backend-spring/branch/master/graph/badge.svg)](https://codecov.io/gh/alexey-lapin/realworld-backend-spring)
 
 This codebase was created to demonstrate a fully fledged fullstack application built with **[Spring Boot](https://spring.io/projects/spring-boot)** including CRUD operations, authentication, routing, pagination, and more.
 

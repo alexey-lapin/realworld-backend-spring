@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2019 - present Alexey Lapin
+ * Copyright (c) 2020 - present Alexey Lapin
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,11 +25,17 @@ package com.github.al.realworld.api.command;
 
 import com.fasterxml.jackson.annotation.JsonRootName;
 import com.github.al.realworld.bus.Command;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Getter
 @JsonRootName("user")
 public class RegisterUser implements Command<RegisterUserResult> {

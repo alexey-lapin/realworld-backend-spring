@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2019 - present Alexey Lapin
+ * Copyright (c) 2020 - present Alexey Lapin
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,14 +27,13 @@ import com.github.al.realworld.api.query.GetProfile;
 import com.github.al.realworld.api.query.GetProfileResult;
 import com.github.al.realworld.application.ProfileAssembler;
 import com.github.al.realworld.bus.QueryHandler;
-import com.github.al.realworld.domain.model.Profile;
 import com.github.al.realworld.domain.model.User;
 import com.github.al.realworld.domain.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import static com.github.al.realworld.application.exception.ResourceNotFoundException.notFound;
+import static com.github.al.realworld.application.exception.NotFoundException.notFound;
 
 @RequiredArgsConstructor
 @Service
@@ -45,14 +44,13 @@ public class GetProfileHandler implements QueryHandler<GetProfileResult, GetProf
     @Transactional(readOnly = true)
     @Override
     public GetProfileResult handle(GetProfile query) {
-        Profile currentProfile = userRepository.findByUsername(query.getCurrentUsername())
-                .map(User::getProfile)
+        User currentUser = userRepository.findByUsername(query.getCurrentUsername())
                 .orElse(null);
 
-        Profile profile = userRepository.findByUsername(query.getUsername())
-                .map(User::getProfile)
+        User user = userRepository.findByUsername(query.getUsername())
                 .orElseThrow(() -> notFound("user [name=%s] does not exist", query.getUsername()));
 
-        return new GetProfileResult(ProfileAssembler.assemble(profile, currentProfile));
+        return new GetProfileResult(ProfileAssembler.assemble(user, currentUser));
     }
+
 }

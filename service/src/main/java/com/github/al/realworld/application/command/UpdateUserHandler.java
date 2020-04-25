@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2019 - present Alexey Lapin
+ * Copyright (c) 2020 - present Alexey Lapin
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,11 +31,13 @@ import com.github.al.realworld.bus.CommandHandler;
 import com.github.al.realworld.domain.model.User;
 import com.github.al.realworld.domain.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 
-import static com.github.al.realworld.application.exception.InvalidRequestException.invalidRequest;
+import static com.github.al.realworld.application.exception.BadRequestException.badRequest;
+import static com.github.al.realworld.application.exception.NotFoundException.notFound;
 
 @RequiredArgsConstructor
 @Service
@@ -43,13 +45,37 @@ public class UpdateUserHandler implements CommandHandler<UpdateUserResult, Updat
 
     private final UserRepository userRepository;
     private final JwtService jwtService;
+    private final PasswordEncoder encoder;
 
     @Transactional
     @Override
     public UpdateUserResult handle(UpdateUser command) {
-        User user = userRepository.findByEmail(command.getEmail())
-                .orElseThrow(() -> invalidRequest("user [email=%s] does not exist", command.getEmail()));
+        User user = userRepository.findByUsername(command.getCurrentUsername())
+                .orElseThrow(() -> notFound("user [name=%s] does not exist", command.getCurrentUsername()));
 
-        return new UpdateUserResult(UserAssembler.assemble(user, jwtService));
+        if (command.getUsername() != null
+                && !command.getUsername().equals(user.getUsername())
+                && userRepository.findByUsername(command.getUsername()).isPresent()) {
+            throw badRequest("user [name=%s] already exists", command.getUsername());
+        }
+
+        if (command.getEmail() != null
+                && !command.getEmail().equals(user.getEmail())
+                && userRepository.findByEmail(command.getEmail()).isPresent()) {
+            throw badRequest("user [email=%s] already exists", command.getEmail());
+        }
+
+        User alteredUser = user.toBuilder()
+                .email(command.getEmail() != null ? command.getEmail() : user.getEmail())
+                .username(command.getUsername() != null ? command.getUsername() : user.getUsername())
+                .password(command.getPassword() != null ? encoder.encode(command.getPassword()) : user.getPassword())
+                .bio(command.getBio() != null ? command.getBio() : user.getBio())
+                .image(command.getImage() != null ? command.getImage() : user.getImage())
+                .build();
+
+        User savedUser = userRepository.save(alteredUser);
+
+        return new UpdateUserResult(UserAssembler.assemble(savedUser, jwtService));
     }
+
 }

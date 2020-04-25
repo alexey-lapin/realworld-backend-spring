@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2019 - present Alexey Lapin
+ * Copyright (c) 2020 - present Alexey Lapin
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,16 +26,19 @@ package com.github.al.realworld.infrastructure.db.jpa;
 import com.github.al.realworld.domain.model.Article;
 import com.github.al.realworld.domain.repository.ArticleRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @RequiredArgsConstructor
 @Repository
 public class JpaArticleRepositoryAdapter implements ArticleRepository {
 
-    private final SpringArticleRepository repository;
+    private final DataArticleRepository repository;
 
     @Override
     public Optional<Article> findBySlug(String slug) {
@@ -48,13 +51,15 @@ public class JpaArticleRepositoryAdapter implements ArticleRepository {
     }
 
     @Override
-    public List<Article> findByFilters(String tag, String author, String favorited) {
-        return repository.findByFilters(tag, author, favorited);
+    public List<Article> findByFilters(String tag, String author, String favorited, Integer limit, Integer offset) {
+        Pageable pageable = new OffsetBasedPageRequest(limit, offset, Sort.by(Sort.Order.desc("createdAt")));
+        return repository.findByFilters(tag, author, favorited, pageable);
     }
 
     @Override
-    public List<Article> findByFollowees(List<String> followees) {
-        return repository.findByFollowees(followees);
+    public List<Article> findByFollowees(List<UUID> followees, Integer limit, Integer offset) {
+        Pageable pageable = new OffsetBasedPageRequest(limit, offset, Sort.by(Sort.Order.desc("createdAt")));
+        return repository.findByFollowees(followees, pageable);
     }
 
     @Override
@@ -66,4 +71,5 @@ public class JpaArticleRepositoryAdapter implements ArticleRepository {
     public Article save(Article article) {
         return repository.save(article);
     }
+
 }

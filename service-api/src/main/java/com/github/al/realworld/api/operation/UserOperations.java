@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2019 - present Alexey Lapin
+ * Copyright (c) 2020 - present Alexey Lapin
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,26 +21,34 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.github.al.realworld.infrastructure.web;
+package com.github.al.realworld.api.operation;
 
-import com.github.al.realworld.api.query.GetTags;
-import com.github.al.realworld.api.query.GetTagsResult;
-import com.github.al.realworld.bus.Bus;
-import lombok.RequiredArgsConstructor;
+import com.github.al.realworld.api.command.LoginUser;
+import com.github.al.realworld.api.command.LoginUserResult;
+import com.github.al.realworld.api.command.RegisterUser;
+import com.github.al.realworld.api.command.RegisterUserResult;
+import com.github.al.realworld.api.command.UpdateUser;
+import com.github.al.realworld.api.command.UpdateUserResult;
+import com.github.al.realworld.api.query.GetCurrentUserResult;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 
-@RequiredArgsConstructor
-@RestController
-@RequestMapping("/api/tags")
-public class TagsController {
+import javax.validation.Valid;
 
-    private final Bus bus;
+public interface UserOperations {
 
-    @GetMapping
-    public GetTagsResult findAll() {
-        return bus.executeQuery(new GetTags());
-    }
+    @PostMapping("/users/login")
+    LoginUserResult login(@Valid @RequestBody LoginUser command);
+
+    @PostMapping("/users")
+    RegisterUserResult register(@Valid @RequestBody RegisterUser command);
+
+    @GetMapping("/user")
+    GetCurrentUserResult current();
+
+    @PutMapping("/user")
+    UpdateUserResult update(@Valid @RequestBody UpdateUser command);
 
 }

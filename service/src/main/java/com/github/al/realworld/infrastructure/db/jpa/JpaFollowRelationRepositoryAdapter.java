@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2019 - present Alexey Lapin
+ * Copyright (c) 2020 - present Alexey Lapin
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,30 +23,38 @@
  */
 package com.github.al.realworld.infrastructure.db.jpa;
 
-import com.github.al.realworld.domain.model.Article;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.CrudRepository;
-import org.springframework.data.repository.query.Param;
+import com.github.al.realworld.domain.model.FollowRelation;
+import com.github.al.realworld.domain.model.User;
+import com.github.al.realworld.domain.repository.FollowRelationRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
-public interface SpringArticleRepository extends CrudRepository<Article, UUID> {
+@RequiredArgsConstructor
+@Repository
+public class JpaFollowRelationRepositoryAdapter implements FollowRelationRepository {
 
-    Optional<Article> findBySlug(String slug);
+    private final DataFollowRelationRepository repository;
 
-    Optional<Article> findByTitle(String title);
+    @Override
+    public FollowRelation save(FollowRelation entity) {
+        return repository.save(entity);
+    }
 
-    @Query("SELECT DISTINCT a FROM Article a LEFT JOIN a.tags t LEFT JOIN a.author p LEFT JOIN a.favoredProfiles f WHERE " +
-            "(:tag IS NULL OR t.name = :tag) AND " +
-            "(:author IS NULL OR p.username = :author) AND " +
-            "(:favorited IS NULL OR f.username = :favorited)")
-    List<Article> findByFilters(@Param("tag") String tag,
-                                @Param("author") String author,
-                                @Param("favorited") String favorited);
+    @Override
+    public List<FollowRelation> findByFollowerId(UUID followerId) {
+        return repository.findByFollowerId(followerId);
+    }
 
-    @Query("SELECT a FROM Article a JOIN a.author au WHERE au.username IN :followees")
-    List<Article> findByFollowees(@Param("followees") List<String> followees);
+    @Override
+    public List<FollowRelation> findByFolloweeId(UUID followeeId) {
+        return repository.findByFolloweeId(followeeId);
+    }
 
+    @Override
+    public void deleteByFollowerAndFollowee(User follower, User followee) {
+        repository.deleteByFollowerAndFollowee(follower, followee);
+    }
 }

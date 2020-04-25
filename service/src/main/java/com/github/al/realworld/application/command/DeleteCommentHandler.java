@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2019 - present Alexey Lapin
+ * Copyright (c) 2020 - present Alexey Lapin
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,8 +37,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static com.github.al.realworld.application.exception.NoAuthorizationException.forbidden;
-import static com.github.al.realworld.application.exception.ResourceNotFoundException.notFound;
+import static com.github.al.realworld.application.exception.ForbiddenException.forbidden;
+import static com.github.al.realworld.application.exception.NotFoundException.notFound;
 
 @RequiredArgsConstructor
 @Service
@@ -58,7 +58,7 @@ public class DeleteCommentHandler implements CommandHandler<DeleteCommentResult,
                 .orElseThrow(() -> notFound("comment [id=%s] does not exist", command.getId()));
 
         if (!comment.getAuthor().getUsername().equals(command.getCurrentUsername())) {
-            throw forbidden();
+            throw forbidden("comment [id=%s] is not owned by %s", comment.getId(), command.getCurrentUsername());
         }
 
         Set<Comment> alteredComments = article.getComments().stream()
@@ -70,4 +70,5 @@ public class DeleteCommentHandler implements CommandHandler<DeleteCommentResult,
 
         return new DeleteCommentResult();
     }
+
 }

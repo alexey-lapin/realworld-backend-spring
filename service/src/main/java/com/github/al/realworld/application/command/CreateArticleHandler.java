@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2019 - present Alexey Lapin
+ * Copyright (c) 2020 - present Alexey Lapin
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,7 +29,6 @@ import com.github.al.realworld.application.ArticleAssembler;
 import com.github.al.realworld.application.service.SlugService;
 import com.github.al.realworld.bus.CommandHandler;
 import com.github.al.realworld.domain.model.Article;
-import com.github.al.realworld.domain.model.Profile;
 import com.github.al.realworld.domain.model.Tag;
 import com.github.al.realworld.domain.model.User;
 import com.github.al.realworld.domain.repository.ArticleRepository;
@@ -43,7 +42,7 @@ import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
-import static com.github.al.realworld.application.exception.InvalidRequestException.invalidRequest;
+import static com.github.al.realworld.application.exception.BadRequestException.badRequest;
 
 @RequiredArgsConstructor
 @Service
@@ -59,12 +58,11 @@ public class CreateArticleHandler implements CommandHandler<CreateArticleResult,
     public CreateArticleResult handle(CreateArticle command) {
         Optional<Article> articleByTitleOptional = articleRepository.findByTitle(command.getTitle());
         if (articleByTitleOptional.isPresent()) {
-            throw invalidRequest("article [title=%s] already exists", command.getTitle());
+            throw badRequest("article [title=%s] already exists", command.getTitle());
         }
 
-        Profile currentProfile = userRepository.findByUsername(command.getCurrentUsername())
-                .map(User::getProfile)
-                .orElseThrow(() -> invalidRequest("user [name=%s] does not exist", command.getCurrentUsername()));
+        User currentUser = userRepository.findByUsername(command.getCurrentUsername())
+                .orElseThrow(() -> badRequest("user [name=%s] does not exist", command.getCurrentUsername()));
 
         ZonedDateTime now = ZonedDateTime.now();
 
@@ -76,14 +74,17 @@ public class CreateArticleHandler implements CommandHandler<CreateArticleResult,
                 .body(command.getBody())
                 .createdAt(now)
                 .updatedAt(now)
-                .author(currentProfile);
+                .author(currentUser);
 
-        command.getTagList().stream()
-                .map(t -> tagRepository.findByName(t).orElseGet(() -> new Tag(t)))
-                .forEach(articleBuilder::tag);
+        if (command.getTagList() != null) {
+            command.getTagList().stream()
+                    .map(t -> tagRepository.findByName(t).orElseGet(() -> new Tag(t)))
+                    .forEach(articleBuilder::tag);
+        }
 
         Article savedArticle = articleRepository.save(articleBuilder.build());
 
-        return new CreateArticleResult(ArticleAssembler.assemble(savedArticle, currentProfile));
+        return new CreateArticleResult(ArticleAssembler.assemble(savedArticle, currentUser));
     }
+
 }

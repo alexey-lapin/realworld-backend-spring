@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2019 - present Alexey Lapin
+ * Copyright (c) 2020 - present Alexey Lapin
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,18 +26,19 @@ package com.github.al.realworld.application.exception;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-@ResponseStatus(HttpStatus.FORBIDDEN)
-public class NoAuthorizationException extends RuntimeException {
+@ResponseStatus(HttpStatus.UNAUTHORIZED)
+public class UnauthorizedException extends RuntimeException {
 
-    public NoAuthorizationException() {
+    public UnauthorizedException() {
+        super();
     }
 
-    public NoAuthorizationException(String message) {
+    public UnauthorizedException(String message) {
         super(message);
     }
 
-    public static NoAuthorizationException forbidden() {
-        return new NoAuthorizationException();
+    public static UnauthorizedException unauthorized(String message, Object... args) {
+        return new UnauthorizedException(String.format(message, args));
     }
 
 }

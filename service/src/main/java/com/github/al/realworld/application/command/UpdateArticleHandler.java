@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2019 - present Alexey Lapin
+ * Copyright (c) 2020 - present Alexey Lapin
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,7 +29,6 @@ import com.github.al.realworld.application.ArticleAssembler;
 import com.github.al.realworld.application.service.SlugService;
 import com.github.al.realworld.bus.CommandHandler;
 import com.github.al.realworld.domain.model.Article;
-import com.github.al.realworld.domain.model.Profile;
 import com.github.al.realworld.domain.model.User;
 import com.github.al.realworld.domain.repository.ArticleRepository;
 import com.github.al.realworld.domain.repository.UserRepository;
@@ -40,9 +39,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.ZonedDateTime;
 import java.util.Objects;
 
-import static com.github.al.realworld.application.exception.InvalidRequestException.invalidRequest;
-import static com.github.al.realworld.application.exception.NoAuthorizationException.forbidden;
-import static com.github.al.realworld.application.exception.ResourceNotFoundException.notFound;
+import static com.github.al.realworld.application.exception.BadRequestException.badRequest;
+import static com.github.al.realworld.application.exception.ForbiddenException.forbidden;
+import static com.github.al.realworld.application.exception.NotFoundException.notFound;
 
 @RequiredArgsConstructor
 @Service
@@ -59,12 +58,11 @@ public class UpdateArticleHandler implements CommandHandler<UpdateArticleResult,
                 .orElseThrow(() -> notFound("article [slug=%s] does not exist", command.getSlug()));
 
         if (!Objects.equals(article.getAuthor().getUsername(), command.getCurrentUsername())) {
-            throw forbidden();
+            throw forbidden("article [slug=%s] is not owned by %s", command.getSlug(), command.getCurrentUsername());
         }
 
-        Profile currentProfile = userRepository.findByUsername(command.getCurrentUsername())
-                .map(User::getProfile)
-                .orElseThrow(() -> invalidRequest("user [name=%s] does not exist", command.getCurrentUsername()));
+        User currentUser = userRepository.findByUsername(command.getCurrentUsername())
+                .orElseThrow(() -> badRequest("user [name=%s] does not exist", command.getCurrentUsername()));
 
         Article alteredArticle = article.toBuilder()
                 .slug(command.getTitle() != null ? slugService.makeSlug(command.getTitle()) : article.getSlug())
@@ -76,6 +74,7 @@ public class UpdateArticleHandler implements CommandHandler<UpdateArticleResult,
 
         articleRepository.save(alteredArticle);
 
-        return new UpdateArticleResult(ArticleAssembler.assemble(alteredArticle, currentProfile));
+        return new UpdateArticleResult(ArticleAssembler.assemble(alteredArticle, currentUser));
     }
+
 }

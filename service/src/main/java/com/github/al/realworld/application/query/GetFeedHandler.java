@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2019 - present Alexey Lapin
+ * Copyright (c) 2020 - present Alexey Lapin
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,9 +29,10 @@ import com.github.al.realworld.api.query.GetFeedResult;
 import com.github.al.realworld.application.ArticleAssembler;
 import com.github.al.realworld.bus.QueryHandler;
 import com.github.al.realworld.domain.model.Article;
-import com.github.al.realworld.domain.model.Profile;
+import com.github.al.realworld.domain.model.FollowRelation;
 import com.github.al.realworld.domain.model.User;
 import com.github.al.realworld.domain.repository.ArticleRepository;
+import com.github.al.realworld.domain.repository.FollowRelationRepository;
 import com.github.al.realworld.domain.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -39,10 +40,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
-import static com.github.al.realworld.application.exception.InvalidRequestException.invalidRequest;
+import static com.github.al.realworld.application.exception.BadRequestException.badRequest;
 
 @RequiredArgsConstructor
 @Service
@@ -50,23 +51,28 @@ public class GetFeedHandler implements QueryHandler<GetFeedResult, GetFeed> {
 
     private final ArticleRepository articleRepository;
     private final UserRepository userRepository;
+    private final FollowRelationRepository followRelationRepository;
 
     @Transactional(readOnly = true)
     @Override
     public GetFeedResult handle(GetFeed query) {
-        Profile currentProfile = userRepository.findByUsername(query.getCurrentUsername())
-                .map(User::getProfile)
-                .orElseThrow(() -> invalidRequest("user [name=%s] does not exist", query.getCurrentUsername()));
+        User currentUser = userRepository.findByUsername(query.getCurrentUsername())
+                .orElseThrow(() -> badRequest("user [name=%s] does not exist", query.getCurrentUsername()));
 
-        Set<Profile> followees = currentProfile.getFollowees();
+        List<FollowRelation> relations = followRelationRepository.findByFollowerId(currentUser.getId());
+
+        List<UUID> followeesUsernames = relations.stream()
+                .map(followRelation -> followRelation.getFollowee().getId())
+                .collect(Collectors.toList());
 
         List<Article> articles = articleRepository
-                .findByFollowees(followees.stream().map(Profile::getUsername).collect(Collectors.toList()));
+                .findByFollowees(followeesUsernames, query.getLimit(), query.getOffset());
 
         ArrayList<ArticleDto> results = new ArrayList<>();
 
-        articles.forEach(article -> results.add(ArticleAssembler.assemble(article, currentProfile)));
+        articles.forEach(article -> results.add(ArticleAssembler.assemble(article, currentUser)));
 
         return new GetFeedResult(results, results.size());
     }
+
 }
