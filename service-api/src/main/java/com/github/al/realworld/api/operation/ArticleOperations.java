@@ -50,9 +50,9 @@ import javax.validation.Valid;
 public interface ArticleOperations {
 
     @GetMapping("/articles{?tag,author,favorited,limit,offset}")
-    GetArticlesResult findByFilters(@RequestParam String tag,
-                                    @RequestParam String author,
-                                    @RequestParam String favorited,
+    GetArticlesResult findByFilters(@RequestParam(required = false) String tag,
+                                    @RequestParam(required = false) String author,
+                                    @RequestParam(required = false) String favorited,
                                     @RequestParam(defaultValue = "20") Integer limit,
                                     @RequestParam(defaultValue = "0") Integer offset);
 
