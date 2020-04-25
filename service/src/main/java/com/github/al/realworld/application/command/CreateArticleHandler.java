@@ -20,7 +20,7 @@ import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
-import static com.github.al.realworld.application.exception.InvalidRequestException.invalidRequest;
+import static com.github.al.realworld.application.exception.BadRequestException.badRequest;
 
 @RequiredArgsConstructor
 @Service
@@ -36,12 +36,12 @@ public class CreateArticleHandler implements CommandHandler<CreateArticleResult,
     public CreateArticleResult handle(CreateArticle command) {
         Optional<Article> articleByTitleOptional = articleRepository.findByTitle(command.getTitle());
         if (articleByTitleOptional.isPresent()) {
-            throw invalidRequest("article [title=%s] already exists", command.getTitle());
+            throw badRequest("article [title=%s] already exists", command.getTitle());
         }
 
         Profile currentProfile = userRepository.findByUsername(command.getCurrentUsername())
                 .map(User::getProfile)
-                .orElseThrow(() -> invalidRequest("user [name=%s] does not exist", command.getCurrentUsername()));
+                .orElseThrow(() -> badRequest("user [name=%s] does not exist", command.getCurrentUsername()));
 
         ZonedDateTime now = ZonedDateTime.now();
 
@@ -55,9 +55,11 @@ public class CreateArticleHandler implements CommandHandler<CreateArticleResult,
                 .updatedAt(now)
                 .author(currentProfile);
 
-        command.getTagList().stream()
-                .map(t -> tagRepository.findByName(t).orElseGet(() -> new Tag(t)))
-                .forEach(articleBuilder::tag);
+        if (command.getTagList() != null) {
+            command.getTagList().stream()
+                    .map(t -> tagRepository.findByName(t).orElseGet(() -> new Tag(t)))
+                    .forEach(articleBuilder::tag);
+        }
 
         Article savedArticle = articleRepository.save(articleBuilder.build());
 

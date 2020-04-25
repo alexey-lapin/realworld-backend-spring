@@ -13,7 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import static com.github.al.realworld.application.exception.ResourceNotFoundException.notFound;
+import static com.github.al.realworld.application.exception.NotFoundException.notFound;
 
 @RequiredArgsConstructor
 @Service

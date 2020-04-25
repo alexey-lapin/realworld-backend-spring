@@ -16,7 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 
-import static com.github.al.realworld.application.exception.ResourceNotFoundException.notFound;
+import static com.github.al.realworld.application.exception.NotFoundException.notFound;
 
 @RequiredArgsConstructor
 @Service

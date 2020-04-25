@@ -14,8 +14,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static com.github.al.realworld.application.exception.NoAuthorizationException.forbidden;
-import static com.github.al.realworld.application.exception.ResourceNotFoundException.notFound;
+import static com.github.al.realworld.application.exception.ForbiddenException.forbidden;
+import static com.github.al.realworld.application.exception.NotFoundException.notFound;
 
 @RequiredArgsConstructor
 @Service

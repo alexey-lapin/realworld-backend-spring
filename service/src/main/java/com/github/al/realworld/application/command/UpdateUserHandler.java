@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 
-import static com.github.al.realworld.application.exception.InvalidRequestException.invalidRequest;
+import static com.github.al.realworld.application.exception.BadRequestException.badRequest;
 
 @RequiredArgsConstructor
 @Service
@@ -25,7 +25,7 @@ public class UpdateUserHandler implements CommandHandler<UpdateUserResult, Updat
     @Override
     public UpdateUserResult handle(UpdateUser command) {
         User user = userRepository.findByEmail(command.getEmail())
-                .orElseThrow(() -> invalidRequest("user [email=%s] does not exist", command.getEmail()));
+                .orElseThrow(() -> badRequest("user [email=%s] does not exist", command.getEmail()));
 
         return new UpdateUserResult(UserAssembler.assemble(user, jwtService));
     }
