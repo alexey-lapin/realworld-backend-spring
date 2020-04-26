@@ -39,6 +39,7 @@ dependencies {
     runtimeOnly("com.h2database:h2")
     runtimeOnly("io.jsonwebtoken:jjwt-impl:${Versions.jwt}")
     runtimeOnly("io.jsonwebtoken:jjwt-jackson:${Versions.jwt}")
+    runtimeOnly("org.liquibase:liquibase-core:${Versions.liquibase}")
 
     testAnnotationProcessor("org.projectlombok:lombok")
     testCompileOnly("org.projectlombok:lombok")
@@ -47,8 +48,8 @@ dependencies {
     "intTestAnnotationProcessor"("org.projectlombok:lombok")
     "intTestCompileOnly"("org.projectlombok:lombok")
 
-    "intTestImplementation"("org.springframework.cloud:spring-cloud-starter-openfeign:2.2.2.RELEASE")
-    "intTestImplementation"("io.github.openfeign:feign-jackson:10.7.4")
+    "intTestImplementation"("org.springframework.cloud:spring-cloud-starter-openfeign:${Versions.springFeign}")
+    "intTestImplementation"("io.github.openfeign:feign-jackson:${Versions.feign}")
 }
 
 tasks {

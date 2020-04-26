@@ -14,12 +14,16 @@ For more information on how to this works with other frontends/backends, head ov
 Actual application is accessible on **Heroku**: https://realworld-backend-spring.herokuapp.com/api
 
 # How it works
-This application basically uses Spring Boot Framework with Java 8 with some other modules:
+This application basically uses Spring Boot Framework with Java 8 with some other principles and modules:
+- Ports and Adapters architecture
+- Command and Query Responsibility Segregation (CQRS)
 - [Spring Data](https://spring.io/projects/spring-data-jpa) with Hibernate
 - Json Web Token [jjwt](https://github.com/jwtk/jjwt)
 - H2 in memory database
 
 Some other highlights:
+- [Liquibase](https://www.liquibase.org/) for the database changes management
+- [Open Feign declarative http clients](https://github.com/OpenFeign/feign) for integration tests to show how to utilize separate api package
 - [Github Actions](https://github.com/alexey-lapin/realworld-backend-spring/actions) as CI
 - Execution of [Realworld Postman collection](https://github.com/gothinkster/realworld/blob/master/api/Conduit.postman_collection.json) is part of CI
 - Deployment on [Heroku](https://realworld-backend-spring.herokuapp.com/api) is part of CI
