@@ -1,8 +1,8 @@
 pluginManagement {
     plugins {
         id("com.github.ben-manes.versions") version "0.28.0"
-        id("com.diffplug.gradle.spotless") version "3.28.1"
-        id("org.springframework.boot") version "2.2.6.RELEASE"
+        id("com.diffplug.gradle.spotless") version "4.3.0"
+        id("org.springframework.boot") version "2.3.0.RELEASE"
         id("io.spring.dependency-management") version "1.0.9.RELEASE"
     }
 }
