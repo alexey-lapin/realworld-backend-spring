@@ -91,4 +91,9 @@ public class OffsetBasedPageRequest implements Pageable {
         return offset > limit;
     }
 
+    @Override
+    public Pageable withPage(int pageNumber) {
+        return new OffsetBasedPageRequest(limit, pageNumber * limit, getSort());
+    }
+
 }

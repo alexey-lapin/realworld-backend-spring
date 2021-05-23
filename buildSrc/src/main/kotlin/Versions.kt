@@ -1,7 +1,7 @@
 object Versions {
 
     val jwt = "0.11.2"
-    val liquibase = "4.3.4"
+    val liquibase = "4.3.5"
 
     val jacoco = "0.8.5"
 
