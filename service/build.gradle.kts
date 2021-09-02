@@ -1,27 +1,8 @@
 plugins {
-    id("org.springframework.boot")
     id("io.spring.dependency-management")
+    id("org.springframework.boot")
+    id("java-conventions")
 }
-
-sourceSets {
-    create("intTest") {
-        compileClasspath += sourceSets.main.get().output
-        runtimeClasspath += sourceSets.main.get().output
-    }
-}
-
-configurations["intTestImplementation"].extendsFrom(configurations["implementation"])
-configurations["intTestImplementation"].extendsFrom(configurations["testImplementation"])
-configurations["intTestRuntimeOnly"].extendsFrom(configurations["runtimeOnly"])
-configurations["intTestRuntimeOnly"].extendsFrom(configurations["testRuntimeOnly"])
-
-//idea {
-//    module {
-//        testSourceDirs.addAll(sourceSets["intTest"].java.srcDirs)
-//        testResourceDirs.addAll(sourceSets["intTest"].resources.srcDirs)
-//        scopes["TEST"]!!["plus"]!!.add(configurations["intTestCompile"])
-//    }
-//}
 
 dependencies {
     annotationProcessor("org.projectlombok:lombok")
@@ -52,19 +33,4 @@ dependencies {
 
     "intTestImplementation"("org.springframework.cloud:spring-cloud-starter-openfeign:${libs.versions.springFeign.get()}")
     "intTestImplementation"("io.github.openfeign:feign-jackson:${libs.versions.feign.get()}")
-}
-
-tasks {
-
-    register<Test>("integrationTest") {
-        description = "Runs the integration tests."
-        group = "verification"
-
-        testClassesDirs = sourceSets["intTest"].output.classesDirs
-        classpath = sourceSets["intTest"].runtimeClasspath
-        shouldRunAfter("test")
-    }
-
-    named("check") { dependsOn("integrationTest") }
-
 }

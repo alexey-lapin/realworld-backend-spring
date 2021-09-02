@@ -1,0 +1,6 @@
+[versions]
+jwt = "0.11.2"
+liquibase = "4.4.2"
+feign = "11.0"
+springFeign = "3.0.3"
+jacoco = "0.8.5"
