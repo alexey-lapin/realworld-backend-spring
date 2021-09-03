@@ -23,6 +23,16 @@ jobs:
 
       - uses: actions/setup-node@v1
 
+      - name: Cache Gradle wrapper and dependencies
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.gradle/caches/
+            ~/.gradle/wrapper/dists
+          key: test-${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle', '**/*.gradle.kts', '**/gradle.properties', 'gradle/**', 'buildSrc/src/main/**') }}
+          restore-keys: |
+            test-${{ runner.os }}-gradle-
+
       - name: Build with Gradle
         run: ./gradlew build
 
@@ -58,10 +68,20 @@ jobs:
         with:
           java-version: 1.8
 
+      - name: Cache Gradle wrapper and dependencies
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.gradle/caches/
+            ~/.gradle/wrapper/dists
+          key: test-${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle', '**/*.gradle.kts', '**/gradle.properties', 'gradle/**', 'buildSrc/src/main/**') }}
+          restore-keys: |
+            test-${{ runner.os }}-gradle-
+
       - name: 'Run tests with JaCoCo'
         shell: bash
         run: |
           ./gradlew --version
-          ./gradlew --scan --no-parallel --stacktrace --warning-mode=all -PenableJacoco build jacocoRootReport
+          ./gradlew --scan --no-parallel --stacktrace --warning-mode=all jacocoReport
 
       - uses: codecov/codecov-action@v1
