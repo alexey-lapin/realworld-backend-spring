@@ -1,3 +1,6 @@
+import org.springframework.boot.gradle.tasks.bundling.BootBuildImage
+import org.springframework.boot.gradle.tasks.bundling.BootJar
+
 plugins {
     id("io.spring.dependency-management")
     id("org.springframework.boot")
@@ -33,4 +36,24 @@ dependencies {
 
     "intTestImplementation"("org.springframework.cloud:spring-cloud-starter-openfeign:${libs.versions.springFeign.get()}")
     "intTestImplementation"("io.github.openfeign:feign-jackson:${libs.versions.feign.get()}")
+}
+
+tasks {
+    named<BootJar>("bootJar") {
+        archiveFileName.set("${rootProject.name}-${archiveVersion.get()}.${archiveExtension.get()}")
+    }
+
+    named<BootBuildImage>("bootBuildImage") {
+        val registry = System.getenv("CR_REGISTRY")!!
+        val namespace = System.getenv("CR_NAMESPACE")!!
+        imageName = "${registry}/${namespace}/${rootProject.name}:${project.version}"
+        isPublish = true
+        docker {
+            publishRegistry {
+                url = System.getenv("CR_REGISTRY")
+                username = System.getenv("CR_USERNAME")
+                password = System.getenv("CR_PASSWORD")
+            }
+        }
+    }
 }
