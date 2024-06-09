@@ -2,10 +2,9 @@ import org.springframework.boot.gradle.tasks.bundling.BootBuildImage
 import org.springframework.boot.gradle.tasks.bundling.BootJar
 
 plugins {
-    java
-    id("io.spring.dependency-management")
-    id("org.springframework.boot")
-//    id("java-conventions")
+    alias(libs.plugins.spring.dependency.management)
+    alias(libs.plugins.spring.boot)
+    id("realworld.java-conventions")
 }
 
 dependencies {
@@ -32,11 +31,11 @@ dependencies {
     testCompileOnly("org.projectlombok:lombok")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
 
-//    "intTestAnnotationProcessor"("org.projectlombok:lombok")
-//    "intTestCompileOnly"("org.projectlombok:lombok")
-//
-//    "intTestImplementation"("org.springframework.cloud:spring-cloud-starter-openfeign:${libs.versions.springFeign.get()}")
-//    "intTestImplementation"("io.github.openfeign:feign-jackson:${libs.versions.feign.get()}")
+    "intTestAnnotationProcessor"("org.projectlombok:lombok")
+    "intTestCompileOnly"("org.projectlombok:lombok")
+
+    "intTestImplementation"("org.springframework.cloud:spring-cloud-starter-openfeign:${libs.versions.springFeign.get()}")
+    "intTestImplementation"("io.github.openfeign:feign-jackson:${libs.versions.feign.get()}")
 }
 
 tasks {
