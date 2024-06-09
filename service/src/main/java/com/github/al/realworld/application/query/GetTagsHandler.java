@@ -48,6 +48,7 @@ public class GetTagsHandler implements QueryHandler<GetTagsResult, GetTags> {
 
         StreamSupport.stream(tagRepository.findAll().spliterator(), false)
                 .map(Tag::getName)
+                .sorted()
                 .forEach(t -> result.getTags().add(t));
 
         return result;

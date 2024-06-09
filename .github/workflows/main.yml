@@ -44,7 +44,7 @@ jobs:
 
       - name: Run app for testing
         run: |
-          nohup java -jar service/build/libs/service.jar &
+          nohup java -jar service/build/libs/realworld-backend-spring*.jar &
           sleep 5
 
       - name: Run postman collection
@@ -62,7 +62,7 @@ jobs:
         with:
           name: app-jar
           path: |
-            service/build/libs/service.jar
+            service/build/libs/realworld-backend-spring*.jar
           retention-days: 7
 
   coverage:
@@ -144,5 +144,5 @@ jobs:
           username: ${{ env.CR_USERNAME }}
           password: ${{ env.CR_PASSWORD }}
 
-      - name: Gradle dockerPushNative
-        run: ./gradlew dockerPushNative
+      - name: Gradle bootBuildImage
+        run: ./gradlew :service:bootBuildImage
