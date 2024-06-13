@@ -30,12 +30,12 @@ import com.github.al.realworld.api.dto.ArticleDto;
 import com.github.al.realworld.api.dto.CommentDto;
 import com.github.al.realworld.api.operation.ArticleClient;
 import com.github.al.realworld.rest.auth.AuthSupport;
-import com.github.al.realworld.rest.support.FeignBasedRestTest;
-import feign.FeignException;
+import com.github.al.realworld.rest.support.BaseRestTest;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.client.RestClientResponseException;
 
 import java.util.List;
 import java.util.UUID;
@@ -43,7 +43,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowableOfType;
 
-public class ArticleApiTest extends FeignBasedRestTest {
+public class ArticleApiTest extends BaseRestTest {
 
     public static final String TEST_TITLE = "test-title";
     public static final String TEST_DESCRIPTION = "test-description";
@@ -100,12 +100,12 @@ public class ArticleApiTest extends FeignBasedRestTest {
 
         articleClient.deleteBySlug(created.getSlug());
 
-        FeignException exception = catchThrowableOfType(
+        RestClientResponseException exception = catchThrowableOfType(
                 () -> articleClient.findBySlug(created.getSlug()),
-                FeignException.class
+                RestClientResponseException.class
         );
 
-        assertThat(exception.status()).isEqualTo(HttpStatus.NOT_FOUND.value());
+        assertThat(exception.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
 
     }
 
@@ -117,24 +117,24 @@ public class ArticleApiTest extends FeignBasedRestTest {
 
         auth.register().login();
 
-        FeignException exception = catchThrowableOfType(
+        RestClientResponseException exception = catchThrowableOfType(
                 () -> articleClient.deleteBySlug(created.getSlug()),
-                FeignException.class
+                RestClientResponseException.class
         );
 
-        assertThat(exception.status()).isEqualTo(HttpStatus.FORBIDDEN.value());
+        assertThat(exception.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
     }
 
     @Test
     void should_returnCorrectArticleData_when_deleteNotExisting() {
         auth.register().login();
 
-        FeignException exception = catchThrowableOfType(
+        RestClientResponseException exception = catchThrowableOfType(
                 () -> articleClient.deleteBySlug("not-existing"),
-                FeignException.class
+                RestClientResponseException.class
         );
 
-        assertThat(exception.status()).isEqualTo(HttpStatus.NOT_FOUND.value());
+        assertThat(exception.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     }
 
     @Test
@@ -195,12 +195,12 @@ public class ArticleApiTest extends FeignBasedRestTest {
 
         auth.register().login();
 
-        FeignException exception = catchThrowableOfType(
+        RestClientResponseException exception = catchThrowableOfType(
                 () -> articleClient.deleteComment(article.getSlug(), comment.getId()),
-                FeignException.class
+                RestClientResponseException.class
         );
 
-        assertThat(exception.status()).isEqualTo(HttpStatus.FORBIDDEN.value());
+        assertThat(exception.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
     }
 
     @Test
@@ -208,24 +208,24 @@ public class ArticleApiTest extends FeignBasedRestTest {
         auth.register().login();
 
         AddComment addComment = AddComment.builder().body(TEST_BODY).build();
-        FeignException exception = catchThrowableOfType(
+        RestClientResponseException exception = catchThrowableOfType(
                 () -> articleClient.addComment(UUID.randomUUID().toString(), addComment),
-                FeignException.class
+                RestClientResponseException.class
         );
 
-        assertThat(exception.status()).isEqualTo(HttpStatus.NOT_FOUND.value());
+        assertThat(exception.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     }
 
     @Test
     void should_throw404_when_deleteCommentArticleDoesNotExist() {
         auth.register().login();
 
-        FeignException exception = catchThrowableOfType(
+        RestClientResponseException exception = catchThrowableOfType(
                 () -> articleClient.deleteComment(UUID.randomUUID().toString(), 9999999L),
-                FeignException.class
+                RestClientResponseException.class
         );
 
-        assertThat(exception.status()).isEqualTo(HttpStatus.NOT_FOUND.value());
+        assertThat(exception.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     }
 
     @Test
@@ -234,12 +234,12 @@ public class ArticleApiTest extends FeignBasedRestTest {
 
         ArticleDto article = articleClient.create(createArticleCommand()).getArticle();
 
-        FeignException exception = catchThrowableOfType(
+        RestClientResponseException exception = catchThrowableOfType(
                 () -> articleClient.deleteComment(article.getSlug(), 9999999L),
-                FeignException.class
+                RestClientResponseException.class
         );
 
-        assertThat(exception.status()).isEqualTo(HttpStatus.NOT_FOUND.value());
+        assertThat(exception.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     }
 
     private static CreateArticle createArticleCommand() {

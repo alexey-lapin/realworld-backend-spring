@@ -26,20 +26,20 @@ package com.github.al.realworld.api.operation;
 import com.github.al.realworld.api.command.FollowProfileResult;
 import com.github.al.realworld.api.command.UnfollowProfileResult;
 import com.github.al.realworld.api.query.GetProfileResult;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.service.annotation.DeleteExchange;
+import org.springframework.web.service.annotation.GetExchange;
+import org.springframework.web.service.annotation.PostExchange;
 
 public interface ProfileOperations {
 
-    @GetMapping("/profiles/{username}")
+    @GetExchange("/profiles/{username}")
     GetProfileResult findByUsername(@PathVariable("username") String username);
 
-    @PostMapping("/profiles/{username}/follow")
+    @PostExchange("/profiles/{username}/follow")
     FollowProfileResult follow(@PathVariable("username") String username);
 
-    @DeleteMapping("/profiles/{username}/follow")
+    @DeleteExchange("/profiles/{username}/follow")
     UnfollowProfileResult unfollow(@PathVariable("username") String username);
 
 }

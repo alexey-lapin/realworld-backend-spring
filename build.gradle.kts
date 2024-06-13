@@ -1,6 +1,6 @@
 plugins {
-    id("com.github.ben-manes.versions")
-    id("jacoco-aggregation")
+    alias(libs.plugins.versions)
+    id("realworld.jacoco-aggregation")
 }
 
 description = "Real world backend API built in Spring Boot"

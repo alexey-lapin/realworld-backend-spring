@@ -23,9 +23,8 @@
  */
 package com.github.al.realworld.api.operation;
 
-import com.github.al.realworld.rest.support.LocalFeignConfig;
-import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.web.service.annotation.HttpExchange;
 
-@FeignClient(name = "tag", path = "${api.version}", configuration = LocalFeignConfig.class)
+@HttpExchange
 public interface TagClient {
 }

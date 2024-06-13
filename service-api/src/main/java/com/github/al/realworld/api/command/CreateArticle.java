@@ -28,7 +28,7 @@ import com.github.al.realworld.bus.Command;
 import lombok.Builder;
 import lombok.Getter;
 
-import javax.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotBlank;
 import java.util.List;
 
 @Builder(toBuilder = true)

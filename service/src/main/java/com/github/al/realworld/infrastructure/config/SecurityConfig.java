@@ -30,44 +30,50 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @RequiredArgsConstructor
-@Configuration
 @EnableWebSecurity
-public class SecurityConfig extends WebSecurityConfigurerAdapter {
+@Configuration
+public class SecurityConfig {
 
     private final JwtFilter jwtFilter;
 
-    @Override
-    protected void configure(HttpSecurity http) throws Exception {
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .authorizeRequests()
-                .antMatchers("/h2-console", "/h2-console/**").permitAll()
-                .and()
-                .headers().frameOptions().sameOrigin();
+                .authorizeHttpRequests(requests ->
+                        requests.requestMatchers("/h2-console", "/h2-console/**").permitAll())
+                .headers(configurer -> configurer.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin));
 
         http
-                .csrf().disable()
-                .cors().and()
-                .exceptionHandling()
-                .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)).and()
+                .csrf(AbstractHttpConfigurer::disable)
+                .cors(Customizer.withDefaults())
+                .exceptionHandling(configurer -> configurer.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
-                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
-                .authorizeRequests()
-                .requestMatchers(EndpointRequest.to(StartupEndpoint.class)).permitAll()
-                .antMatchers(HttpMethod.OPTIONS).permitAll()
-                .antMatchers(HttpMethod.GET, "/api/articles/feed").authenticated()
-                .antMatchers(HttpMethod.POST, "/api/users", "/api/users/login").permitAll()
-                .antMatchers(HttpMethod.GET, "/api/articles/**", "/api/profiles/**", "/api/tags").permitAll()
-                .anyRequest().authenticated();
+                .sessionManagement(configurer -> configurer.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(configurer -> {
+                    configurer.requestMatchers(EndpointRequest.to(StartupEndpoint.class)).permitAll();
+                    configurer.requestMatchers("/error").permitAll();
+                    configurer.requestMatchers(HttpMethod.OPTIONS).permitAll();
+                    configurer.requestMatchers(HttpMethod.GET, "/api/articles/feed").authenticated();
+                    configurer.requestMatchers(HttpMethod.POST, "/api/users", "/api/users/login").permitAll();
+                    configurer.requestMatchers(HttpMethod.GET, "/api/articles/**").permitAll();
+                    configurer.requestMatchers(HttpMethod.GET, "/api/profiles/**").permitAll();
+                    configurer.requestMatchers(HttpMethod.GET, "/api/tags").permitAll();
+                    configurer.anyRequest().authenticated();
+                });
+        return http.build();
     }
 
     @Bean

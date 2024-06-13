@@ -26,17 +26,17 @@ package com.github.al.realworld.rest;
 import com.github.al.realworld.api.dto.ProfileDto;
 import com.github.al.realworld.api.operation.ProfileClient;
 import com.github.al.realworld.rest.auth.AuthSupport;
-import com.github.al.realworld.rest.support.FeignBasedRestTest;
-import feign.FeignException;
+import com.github.al.realworld.rest.support.BaseRestTest;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.client.RestClientResponseException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowableOfType;
 
-public class ProfileApiTest extends FeignBasedRestTest {
+public class ProfileApiTest extends BaseRestTest {
 
     @Autowired
     private AuthSupport auth;
@@ -52,12 +52,12 @@ public class ProfileApiTest extends FeignBasedRestTest {
     @Test
     void should_returnNull_when_userIsNotRegistered() {
 
-        FeignException exception = catchThrowableOfType(
+        RestClientResponseException exception = catchThrowableOfType(
                 () -> profileClient.findByUsername("u3"),
-                FeignException.class
+                RestClientResponseException.class
         );
 
-        assertThat(exception.status()).isEqualTo(HttpStatus.NOT_FOUND.value());
+        assertThat(exception.getStatusCode().value()).isEqualTo(HttpStatus.NOT_FOUND.value());
     }
 
     @Test
@@ -71,12 +71,12 @@ public class ProfileApiTest extends FeignBasedRestTest {
 
     @Test
     void should_throw401_when_unauthorized() {
-        FeignException ex = catchThrowableOfType(
+        RestClientResponseException ex = catchThrowableOfType(
                 () -> profileClient.follow("u2"),
-                FeignException.class
+                RestClientResponseException.class
         );
 
-        assertThat(ex.status()).isEqualTo(HttpStatus.UNAUTHORIZED.value());
+        assertThat(ex.getStatusCode().value()).isEqualTo(HttpStatus.UNAUTHORIZED.value());
     }
 
     @Test

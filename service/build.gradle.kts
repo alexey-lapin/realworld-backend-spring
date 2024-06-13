@@ -2,9 +2,9 @@ import org.springframework.boot.gradle.tasks.bundling.BootBuildImage
 import org.springframework.boot.gradle.tasks.bundling.BootJar
 
 plugins {
-    id("io.spring.dependency-management")
-    id("org.springframework.boot")
-    id("java-conventions")
+    alias(libs.plugins.spring.dependency.management)
+    alias(libs.plugins.spring.boot)
+    id("realworld.java-conventions")
 }
 
 dependencies {
@@ -25,17 +25,14 @@ dependencies {
     runtimeOnly("com.h2database:h2")
     runtimeOnly("io.jsonwebtoken:jjwt-impl:${libs.versions.jwt.get()}")
     runtimeOnly("io.jsonwebtoken:jjwt-jackson:${libs.versions.jwt.get()}")
-    runtimeOnly("org.liquibase:liquibase-core:${libs.versions.liquibase.get()}")
+    runtimeOnly("org.liquibase:liquibase-core")
 
     testAnnotationProcessor("org.projectlombok:lombok")
     testCompileOnly("org.projectlombok:lombok")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
 
-    "intTestAnnotationProcessor"("org.projectlombok:lombok")
-    "intTestCompileOnly"("org.projectlombok:lombok")
-
-    "intTestImplementation"("org.springframework.cloud:spring-cloud-starter-openfeign:${libs.versions.springFeign.get()}")
-    "intTestImplementation"("io.github.openfeign:feign-jackson:${libs.versions.feign.get()}")
+    intTestAnnotationProcessor("org.projectlombok:lombok")
+    intTestCompileOnly("org.projectlombok:lombok")
 }
 
 tasks {
@@ -47,7 +44,8 @@ tasks {
         val registry = System.getenv("CR_REGISTRY")!!
         val namespace = System.getenv("CR_NAMESPACE")!!
         imageName = "${registry}/${namespace}/${rootProject.name}:${project.version}"
-        isPublish = true
+        publish = true
+        tags = setOf("${registry}/${namespace}/${rootProject.name}:latest")
         docker {
             publishRegistry {
                 url = System.getenv("CR_REGISTRY")

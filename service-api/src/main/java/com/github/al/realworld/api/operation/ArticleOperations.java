@@ -35,21 +35,20 @@ import com.github.al.realworld.api.query.GetArticleResult;
 import com.github.al.realworld.api.query.GetArticlesResult;
 import com.github.al.realworld.api.query.GetCommentsResult;
 import com.github.al.realworld.api.query.GetFeedResult;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
-
-import javax.validation.Valid;
+import org.springframework.web.service.annotation.DeleteExchange;
+import org.springframework.web.service.annotation.GetExchange;
+import org.springframework.web.service.annotation.PostExchange;
+import org.springframework.web.service.annotation.PutExchange;
 
 public interface ArticleOperations {
 
-    @GetMapping("/articles{?tag,author,favorited,limit,offset}")
+    @GetExchange("/articles")
     GetArticlesResult findByFilters(@RequestParam(required = false) String tag,
                                     @RequestParam(required = false) String author,
                                     @RequestParam(required = false) String favorited,
@@ -57,36 +56,36 @@ public interface ArticleOperations {
                                     @RequestParam(defaultValue = "0") Integer offset);
 
     @ResponseStatus(HttpStatus.CREATED)
-    @PostMapping("/articles")
+    @PostExchange("/articles")
     CreateArticleResult create(@Valid @RequestBody CreateArticle command);
 
-    @GetMapping("/articles/feed")
+    @GetExchange("/articles/feed")
     GetFeedResult feed(@RequestParam(defaultValue = "20") Integer limit,
                        @RequestParam(defaultValue = "0") Integer offset);
 
-    @GetMapping("/articles/{slug}")
+    @GetExchange("/articles/{slug}")
     GetArticleResult findBySlug(@PathVariable("slug") String slug);
 
-    @PutMapping("/articles/{slug}")
+    @PutExchange("/articles/{slug}")
     UpdateArticleResult updateBySlug(@PathVariable("slug") String slug, @Valid @RequestBody UpdateArticle command);
 
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    @DeleteMapping("/articles/{slug}")
+    @DeleteExchange("/articles/{slug}")
     void deleteBySlug(@PathVariable("slug") String slug);
 
-    @PostMapping("/articles/{slug}/favorite")
+    @PostExchange("/articles/{slug}/favorite")
     FavoriteArticleResult favorite(@PathVariable("slug") String slug);
 
-    @DeleteMapping("/articles/{slug}/favorite")
+    @DeleteExchange("/articles/{slug}/favorite")
     UnfavoriteArticleResult unfavorite(@PathVariable("slug") String slug);
 
-    @GetMapping("/articles/{slug}/comments")
+    @GetExchange("/articles/{slug}/comments")
     GetCommentsResult findAllComments(@PathVariable("slug") String slug);
 
-    @PostMapping("/articles/{slug}/comments")
+    @PostExchange("/articles/{slug}/comments")
     AddCommentResult addComment(@PathVariable("slug") String slug, @Valid @RequestBody AddComment command);
 
-    @DeleteMapping("/articles/{slug}/comments/{id}")
+    @DeleteExchange("/articles/{slug}/comments/{id}")
     void deleteComment(@PathVariable("slug") String slug, @PathVariable("id") Long id);
 
 }

@@ -30,25 +30,24 @@ import com.github.al.realworld.api.command.RegisterUserResult;
 import com.github.al.realworld.api.command.UpdateUser;
 import com.github.al.realworld.api.command.UpdateUserResult;
 import com.github.al.realworld.api.query.GetCurrentUserResult;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.RequestBody;
-
-import javax.validation.Valid;
+import org.springframework.web.service.annotation.GetExchange;
+import org.springframework.web.service.annotation.PostExchange;
+import org.springframework.web.service.annotation.PutExchange;
 
 public interface UserOperations {
 
-    @PostMapping("/users/login")
+    @PostExchange("/users/login")
     LoginUserResult login(@Valid @RequestBody LoginUser command);
 
-    @PostMapping("/users")
+    @PostExchange("/users")
     RegisterUserResult register(@Valid @RequestBody RegisterUser command);
 
-    @GetMapping("/user")
+    @GetExchange("/user")
     GetCurrentUserResult current();
 
-    @PutMapping("/user")
+    @PutExchange("/user")
     UpdateUserResult update(@Valid @RequestBody UpdateUser command);
 
 }
