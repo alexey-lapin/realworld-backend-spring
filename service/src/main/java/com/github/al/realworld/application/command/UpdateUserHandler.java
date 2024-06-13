@@ -34,7 +34,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import javax.transaction.Transactional;
+import jakarta.transaction.Transactional;
 
 import static com.github.al.realworld.application.exception.BadRequestException.badRequest;
 import static com.github.al.realworld.application.exception.NotFoundException.notFound;

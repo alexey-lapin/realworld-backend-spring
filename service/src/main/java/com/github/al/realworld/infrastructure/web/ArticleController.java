@@ -46,11 +46,10 @@ import com.github.al.realworld.api.query.GetFeed;
 import com.github.al.realworld.api.query.GetFeedResult;
 import com.github.al.realworld.application.service.AuthenticationService;
 import com.github.al.realworld.bus.Bus;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import javax.validation.Valid;
 
 @RequiredArgsConstructor
 @RestController

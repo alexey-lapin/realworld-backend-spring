@@ -25,17 +25,14 @@ dependencies {
     runtimeOnly("com.h2database:h2")
     runtimeOnly("io.jsonwebtoken:jjwt-impl:${libs.versions.jwt.get()}")
     runtimeOnly("io.jsonwebtoken:jjwt-jackson:${libs.versions.jwt.get()}")
-    runtimeOnly("org.liquibase:liquibase-core:${libs.versions.liquibase.get()}")
+    runtimeOnly("org.liquibase:liquibase-core")
 
     testAnnotationProcessor("org.projectlombok:lombok")
     testCompileOnly("org.projectlombok:lombok")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
 
-    "intTestAnnotationProcessor"("org.projectlombok:lombok")
-    "intTestCompileOnly"("org.projectlombok:lombok")
-
-    "intTestImplementation"("org.springframework.cloud:spring-cloud-starter-openfeign:${libs.versions.springFeign.get()}")
-    "intTestImplementation"("io.github.openfeign:feign-jackson:${libs.versions.feign.get()}")
+    intTestAnnotationProcessor("org.projectlombok:lombok")
+    intTestCompileOnly("org.projectlombok:lombok")
 }
 
 tasks {
@@ -46,8 +43,9 @@ tasks {
     named<BootBuildImage>("bootBuildImage") {
         val registry = System.getenv("CR_REGISTRY")!!
         val namespace = System.getenv("CR_NAMESPACE")!!
-        imageName = "${registry}/${namespace}/${rootProject.name}:${project.version}"
-        isPublish = true
+        imageName = "${registry}/${namespace}/${rootProject.name}"
+        publish = false
+        tags = setOf("latest", project.version.toString())
         docker {
             publishRegistry {
                 url = System.getenv("CR_REGISTRY")

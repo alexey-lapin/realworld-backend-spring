@@ -29,18 +29,18 @@ import com.github.al.realworld.api.command.UpdateUser;
 import com.github.al.realworld.api.dto.UserDto;
 import com.github.al.realworld.api.operation.UserClient;
 import com.github.al.realworld.rest.auth.AuthSupport;
-import com.github.al.realworld.rest.support.FeignBasedRestTest;
-import feign.FeignException;
+import com.github.al.realworld.rest.support.BaseRestTest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.client.RestClientResponseException;
 
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowableOfType;
 
-public class UserApiTest extends FeignBasedRestTest {
+public class UserApiTest extends BaseRestTest {
 
     public static final String ALTERED_EMAIL = "altered-email@example.com";
     public static final String ALTERED_USERNAME = "altered-username";
@@ -82,23 +82,23 @@ public class UserApiTest extends FeignBasedRestTest {
 
         userClient.register(command);
 
-        FeignException exception = catchThrowableOfType(
+        RestClientResponseException exception = catchThrowableOfType(
                 () -> userClient.login(new LoginUser(command.getEmail(), UUID.randomUUID().toString())),
-                FeignException.class
+                RestClientResponseException.class
         );
 
-        assertThat(exception.status()).isEqualTo(HttpStatus.UNAUTHORIZED.value());
+        assertThat(exception.getStatusCode().value()).isEqualTo(HttpStatus.UNAUTHORIZED.value());
     }
 
     @Test
     void should_return400_whenLoginUser() {
         String s = UUID.randomUUID().toString();
-        FeignException exception = catchThrowableOfType(
+        RestClientResponseException exception = catchThrowableOfType(
                 () -> userClient.login(new LoginUser(s + "@ex.com", s)),
-                FeignException.class
+                RestClientResponseException.class
         );
 
-        assertThat(exception.status()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+        assertThat(exception.getStatusCode().value()).isEqualTo(HttpStatus.BAD_REQUEST.value());
     }
 
     @Test
@@ -131,9 +131,9 @@ public class UserApiTest extends FeignBasedRestTest {
                 .email(registeredUser.getEmail())
                 .build();
 
-        FeignException exception = catchThrowableOfType(
+        RestClientResponseException exception = catchThrowableOfType(
                 () -> userClient.update(updateUser),
-                FeignException.class
+                RestClientResponseException.class
         );
 
         assertThat(exception).isNotNull();
@@ -149,9 +149,9 @@ public class UserApiTest extends FeignBasedRestTest {
                 .username(registeredUser.getUsername())
                 .build();
 
-        FeignException exception = catchThrowableOfType(
+        RestClientResponseException exception = catchThrowableOfType(
                 () -> userClient.update(updateUser),
-                FeignException.class
+                RestClientResponseException.class
         );
 
         assertThat(exception).isNotNull();
