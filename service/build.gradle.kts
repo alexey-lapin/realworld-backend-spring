@@ -43,9 +43,9 @@ tasks {
     named<BootBuildImage>("bootBuildImage") {
         val registry = System.getenv("CR_REGISTRY")!!
         val namespace = System.getenv("CR_NAMESPACE")!!
-        imageName = "${registry}/${namespace}/${rootProject.name}"
+        imageName = "${registry}/${namespace}/${rootProject.name}:${project.version}"
         publish = false
-        tags = setOf("latest", project.version.toString())
+        tags = setOf("${registry}/${namespace}/${rootProject.name}:latest")
         docker {
             publishRegistry {
                 url = System.getenv("CR_REGISTRY")
