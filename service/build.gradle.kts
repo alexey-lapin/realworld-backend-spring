@@ -44,7 +44,7 @@ tasks {
         val registry = System.getenv("CR_REGISTRY")!!
         val namespace = System.getenv("CR_NAMESPACE")!!
         imageName = "${registry}/${namespace}/${rootProject.name}:${project.version}"
-        publish = false
+        publish = true
         tags = setOf("${registry}/${namespace}/${rootProject.name}:latest")
         docker {
             publishRegistry {
