@@ -30,6 +30,7 @@ spotless {
     val headerFile = rootProject.file("src/spotless/mit-license.java")
 
     java {
+        targetExclude("build/generated/**/*.java")
         licenseHeaderFile(headerFile, "(package|import|open|module) ")
         removeUnusedImports()
         trimTrailingWhitespace()
