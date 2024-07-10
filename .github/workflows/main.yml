@@ -207,7 +207,7 @@ jobs:
 
   build-docker:
     runs-on: ubuntu-latest
-#    if: startsWith(github.ref, 'refs/tags/')
+    if: startsWith(github.ref, 'refs/tags/')
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -230,3 +230,7 @@ jobs:
 
       - name: Gradle bootBuildImage
         run: ./gradlew :service:bootBuildImage
+
+      - name: Deploy on Render
+        run: |
+          curl -X POST ${{ secrets.RENDER_WEBHOOK }}
