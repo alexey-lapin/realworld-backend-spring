@@ -25,6 +25,9 @@ package com.github.al.realworld.infrastructure.config;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.actuate.autoconfigure.security.servlet.EndpointRequest;
+import org.springframework.boot.actuate.health.HealthEndpoint;
+import org.springframework.boot.actuate.info.InfoEndpoint;
+import org.springframework.boot.actuate.metrics.export.prometheus.PrometheusScrapeEndpoint;
 import org.springframework.boot.actuate.startup.StartupEndpoint;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -63,7 +66,12 @@ public class SecurityConfig {
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .sessionManagement(configurer -> configurer.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(configurer -> {
-                    configurer.requestMatchers(EndpointRequest.to(StartupEndpoint.class)).permitAll();
+                    configurer.requestMatchers(EndpointRequest.to(
+                                    HealthEndpoint.class,
+                                    InfoEndpoint.class,
+                                    PrometheusScrapeEndpoint.class,
+                                    StartupEndpoint.class))
+                            .permitAll();
                     configurer.requestMatchers("/error").permitAll();
                     configurer.requestMatchers(HttpMethod.OPTIONS).permitAll();
                     configurer.requestMatchers(HttpMethod.GET, "/api/articles/feed").authenticated();
@@ -71,6 +79,7 @@ public class SecurityConfig {
                     configurer.requestMatchers(HttpMethod.GET, "/api/articles/**").permitAll();
                     configurer.requestMatchers(HttpMethod.GET, "/api/profiles/**").permitAll();
                     configurer.requestMatchers(HttpMethod.GET, "/api/tags").permitAll();
+                    configurer.requestMatchers(HttpMethod.GET, "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll();
                     configurer.anyRequest().authenticated();
                 });
         return http.build();

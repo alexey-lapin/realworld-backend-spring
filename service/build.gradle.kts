@@ -4,8 +4,8 @@ import org.springframework.boot.gradle.tasks.bundling.BootBuildImage
 import org.springframework.boot.gradle.tasks.bundling.BootJar
 
 plugins {
-    alias(libs.plugins.spring.dependency.management)
     alias(libs.plugins.spring.boot)
+    alias(libs.plugins.spring.dependency.management)
     alias(libs.plugins.graalvm)
     id("realworld.java-conventions")
 }
@@ -22,6 +22,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation(libs.springdoc.starter.webmvc.ui)
 
     implementation("io.jsonwebtoken:jjwt-api:${libs.versions.jwt.get()}")
 
@@ -44,6 +45,14 @@ graalvmNative {
         named("main") {
             imageName.set(rootProject.name)
             buildArgs.add("--verbose")
+        }
+    }
+}
+
+springBoot {
+    buildInfo {
+        properties {
+            artifact = rootProject.name
         }
     }
 }
