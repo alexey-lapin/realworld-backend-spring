@@ -22,13 +22,10 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
     implementation(libs.springdoc.starter.webmvc.ui)
 
-    implementation("io.jsonwebtoken:jjwt-api:${libs.versions.jwt.get()}")
-
     runtimeOnly("com.h2database:h2")
-    runtimeOnly("io.jsonwebtoken:jjwt-impl:${libs.versions.jwt.get()}")
-    runtimeOnly("io.jsonwebtoken:jjwt-jackson:${libs.versions.jwt.get()}")
     runtimeOnly("org.liquibase:liquibase-core")
 
     testAnnotationProcessor("org.projectlombok:lombok")
