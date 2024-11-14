@@ -23,7 +23,14 @@
  */
 package com.github.al.realworld.infrastructure.config;
 
+import com.nimbusds.jose.jwk.JWKSet;
+import com.nimbusds.jose.jwk.OctetSequenceKey;
+import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
+import com.nimbusds.jose.jwk.source.JWKSource;
+import com.nimbusds.jose.proc.SecurityContext;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.actuate.autoconfigure.security.servlet.EndpointRequest;
 import org.springframework.boot.actuate.health.HealthEndpoint;
 import org.springframework.boot.actuate.info.InfoEndpoint;
@@ -31,6 +38,7 @@ import org.springframework.boot.actuate.metrics.export.prometheus.PrometheusScra
 import org.springframework.boot.actuate.startup.StartupEndpoint;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.config.Customizer;
@@ -41,16 +49,26 @@ import org.springframework.security.config.annotation.web.configurers.HeadersCon
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.JwtEncoder;
+import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
+import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
+import org.springframework.security.oauth2.server.resource.BearerTokenError;
+import org.springframework.security.oauth2.server.resource.BearerTokenErrors;
+import org.springframework.security.oauth2.server.resource.web.BearerTokenResolver;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import javax.crypto.spec.SecretKeySpec;
+import java.util.Base64;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @RequiredArgsConstructor
 @EnableWebSecurity
 @Configuration
 public class SecurityConfig {
-
-    private final JwtFilter jwtFilter;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -63,8 +81,8 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(Customizer.withDefaults())
                 .exceptionHandling(configurer -> configurer.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
-                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .sessionManagement(configurer -> configurer.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .oauth2ResourceServer(configurer -> configurer.jwt(Customizer.withDefaults()))
                 .authorizeHttpRequests(configurer -> {
                     configurer.requestMatchers(EndpointRequest.to(
                                     HealthEndpoint.class,
@@ -88,6 +106,50 @@ public class SecurityConfig {
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public JwtDecoder jwtDecoder(@Value("${security.jwt.secret}") String secret) {
+        byte[] bytes = Base64.getDecoder().decode(secret);
+        SecretKeySpec secretKeySpec = new SecretKeySpec(bytes, "HmacSHA256");
+        return NimbusJwtDecoder.withSecretKey(secretKeySpec).build();
+    }
+
+    @Bean
+    public JwtEncoder jwtEncoder(@Value("${security.jwt.secret}") String secret) {
+        byte[] bytes = Base64.getDecoder().decode(secret);
+        SecretKeySpec secretKeySpec = new SecretKeySpec(bytes, "HmacSHA256");
+        OctetSequenceKey jwk = new OctetSequenceKey.Builder(secretKeySpec).build();
+        JWKSource<SecurityContext> jwkSource = new ImmutableJWKSet<>(new JWKSet(jwk));
+        return new NimbusJwtEncoder(jwkSource);
+    }
+
+    /**
+     * This is usually not necessary and oauth2-resource-server config works out-of-the-box,
+     * but we need to support "Token" scheme in addition to "Bearer" scheme.
+     *
+     * @see org.springframework.security.oauth2.server.resource.web.DefaultBearerTokenResolver
+     */
+    @Bean
+    public BearerTokenResolver bearerTokenResolver() {
+        return new BearerTokenResolver() {
+            private static final Pattern pattern = Pattern.compile("^(Bearer|Token) (?<token>[a-zA-Z0-9-._~+/]+=*)$",
+                    Pattern.CASE_INSENSITIVE);
+
+            @Override
+            public String resolve(HttpServletRequest request) {
+                String authorization = request.getHeader(HttpHeaders.AUTHORIZATION);
+                if (authorization == null) {
+                    return null;
+                }
+                Matcher matcher = pattern.matcher(authorization);
+                if (!matcher.matches()) {
+                    BearerTokenError error = BearerTokenErrors.invalidToken("Bearer token is malformed");
+                    throw new OAuth2AuthenticationException(error);
+                }
+                return matcher.group("token");
+            }
+        };
     }
 
 }
