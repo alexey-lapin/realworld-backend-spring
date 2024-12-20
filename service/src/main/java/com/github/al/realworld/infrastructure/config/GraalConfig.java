@@ -39,11 +39,15 @@ public class GraalConfig {
         @Override
         public void registerHints(RuntimeHints hints, ClassLoader classLoader) {
             hints.reflection()
-                    .registerType(TypeReference.of("liquibase.ui.LoggerUIService"),
+                    .registerType(TypeReference.of("liquibase.changelog.FastCheckService"),
+                            MemberCategory.INVOKE_DECLARED_CONSTRUCTORS)
+                    .registerType(TypeReference.of("liquibase.changelog.visitor.ValidatingVisitorGeneratorFactory"),
                             MemberCategory.INVOKE_DECLARED_CONSTRUCTORS)
                     .registerType(TypeReference.of("liquibase.database.LiquibaseTableNamesFactory"),
                             MemberCategory.INVOKE_DECLARED_CONSTRUCTORS)
                     .registerType(TypeReference.of("liquibase.report.ShowSummaryGeneratorFactory"),
+                            MemberCategory.INVOKE_DECLARED_CONSTRUCTORS)
+                    .registerType(TypeReference.of("liquibase.ui.LoggerUIService"),
                             MemberCategory.INVOKE_DECLARED_CONSTRUCTORS)
             ;
         }
