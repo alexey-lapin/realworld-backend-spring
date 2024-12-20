@@ -21,34 +21,16 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.github.al.realworld.infrastructure.db.jpa;
+package com.github.al.realworld.infrastructure.db.jdbc;
 
-import com.github.al.realworld.domain.model.User;
-import com.github.al.realworld.domain.repository.UserRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Repository;
+import org.springframework.data.repository.ListCrudRepository;
 
-import java.util.Optional;
+public interface ArticleFavoriteJdbcRepository extends ListCrudRepository<ArticleFavoriteJdbcEntity, Long> {
 
-@RequiredArgsConstructor
-@Repository
-public class JpaUserRepositoryAdapter implements UserRepository {
+    boolean existsByArticleIdAndUserId(long articleId, long userId);
 
-    private final DataUserRepository repository;
+    void deleteByArticleIdAndUserId(long articleId, long userId);
 
-    @Override
-    public Optional<User> findByEmail(String email) {
-        return repository.findByEmail(email);
-    }
-
-    @Override
-    public Optional<User> findByUsername(String username) {
-        return repository.findByUsername(username);
-    }
-
-    @Override
-    public User save(User user) {
-        return repository.save(user);
-    }
+    void deleteAllByArticleId(long articleId);
 
 }

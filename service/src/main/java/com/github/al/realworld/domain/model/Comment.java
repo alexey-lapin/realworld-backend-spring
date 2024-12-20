@@ -23,39 +23,18 @@
  */
 package com.github.al.realworld.domain.model;
 
-import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.NonNull;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Lob;
-import jakarta.persistence.OneToOne;
-import java.time.ZonedDateTime;
+import java.time.Instant;
 
-@NoArgsConstructor
-@AllArgsConstructor
 @Builder
-@Getter
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@Entity
-@Table(name = "tbl_comment")
-public class Comment {
-
-    @EqualsAndHashCode.Include
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long id;
-    private ZonedDateTime createdAt;
-    private ZonedDateTime updatedAt;
-    @Lob
-    private String body;
-    @OneToOne
-    private User author;
-
+public record Comment(
+        long id,
+        Instant createdAt,
+        Instant updatedAt,
+        long articleId,
+        long authorId,
+        @NonNull String body
+) {
 }

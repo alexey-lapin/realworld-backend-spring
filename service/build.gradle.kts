@@ -12,17 +12,24 @@ plugins {
 
 dependencies {
     annotationProcessor("org.projectlombok:lombok")
+    annotationProcessor(libs.mapstruct.springAnnotations)
+    annotationProcessor(libs.mapstruct.springExtensions)
+    annotationProcessor(libs.mapstruct.processor)
     compileOnly("org.projectlombok:lombok")
 
     implementation(project(":service-bus"))
     implementation(project(":service-api"))
 
     implementation("org.springframework.boot:spring-boot-starter-actuator")
-    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+    implementation("org.springframework.boot:spring-boot-starter-data-jdbc")
+
+    implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-web")
-    implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
+    implementation(libs.mapstruct.core)
+    implementation(libs.mapstruct.springAnnotations)
+    implementation(libs.mapstruct.springExtensions)
     implementation(libs.springdoc.starter.webmvc.ui)
 
     runtimeOnly("com.h2database:h2")

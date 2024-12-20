@@ -25,16 +25,16 @@ package com.github.al.realworld.application.command;
 
 import com.github.al.realworld.api.command.LoginUser;
 import com.github.al.realworld.api.command.LoginUserResult;
-import com.github.al.realworld.application.UserAssembler;
+import com.github.al.realworld.api.dto.UserDto;
 import com.github.al.realworld.application.service.JwtService;
 import com.github.al.realworld.bus.CommandHandler;
-import com.github.al.realworld.domain.model.User;
+import com.github.al.realworld.domain.model.UserWithToken;
 import com.github.al.realworld.domain.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 
 import static com.github.al.realworld.application.exception.BadRequestException.badRequest;
 import static com.github.al.realworld.application.exception.UnauthorizedException.unauthorized;
@@ -46,18 +46,22 @@ public class LoginUserHandler implements CommandHandler<LoginUserResult, LoginUs
     private final UserRepository userRepository;
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
+    private final ConversionService conversionService;
 
     @Transactional
     @Override
     public LoginUserResult handle(LoginUser command) {
-        User user = userRepository.findByEmail(command.getEmail())
+        var user = userRepository.findByEmail(command.getEmail())
                 .orElseThrow(() -> badRequest("user [email=%s] does not exist", command.getEmail()));
 
-        if (!passwordEncoder.matches(command.getPassword(), user.getPassword())) {
+        if (!passwordEncoder.matches(command.getPassword(), user.password())) {
             throw unauthorized("user [email=%s] password is incorrect", command.getEmail());
         }
 
-        return new LoginUserResult(UserAssembler.assemble(user, jwtService));
+        var token = jwtService.getToken(user);
+        var data = conversionService.convert(new UserWithToken(user, token), UserDto.class);
+
+        return new LoginUserResult(data);
     }
 
 }

@@ -23,14 +23,15 @@
  */
 package com.github.al.realworld.application.query;
 
+import com.github.al.realworld.api.dto.UserDto;
 import com.github.al.realworld.api.query.GetCurrentUser;
 import com.github.al.realworld.api.query.GetCurrentUserResult;
-import com.github.al.realworld.application.UserAssembler;
 import com.github.al.realworld.application.service.JwtService;
 import com.github.al.realworld.bus.QueryHandler;
-import com.github.al.realworld.domain.model.User;
+import com.github.al.realworld.domain.model.UserWithToken;
 import com.github.al.realworld.domain.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,14 +43,18 @@ public class GetCurrentUserHandler implements QueryHandler<GetCurrentUserResult,
 
     private final UserRepository userRepository;
     private final JwtService jwtService;
+    private final ConversionService conversionService;
 
     @Transactional(readOnly = true)
     @Override
     public GetCurrentUserResult handle(GetCurrentUser query) {
-        User user = userRepository.findByUsername(query.getUsername())
+        var user = userRepository.findByUsername(query.getUsername())
                 .orElseThrow(() -> badRequest("user [name=%s] does not exist", query.getUsername()));
 
-        return new GetCurrentUserResult(UserAssembler.assemble(user, jwtService));
+        var token = jwtService.getToken(user);
+        var data = conversionService.convert(new UserWithToken(user, token), UserDto.class);
+
+        return new GetCurrentUserResult(data);
     }
 
 }

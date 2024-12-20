@@ -25,13 +25,14 @@ package com.github.al.realworld.application.command;
 
 import com.github.al.realworld.api.command.FavoriteArticle;
 import com.github.al.realworld.api.command.FavoriteArticleResult;
-import com.github.al.realworld.application.ArticleAssembler;
+import com.github.al.realworld.api.dto.ArticleDto;
 import com.github.al.realworld.bus.CommandHandler;
-import com.github.al.realworld.domain.model.Article;
-import com.github.al.realworld.domain.model.User;
+import com.github.al.realworld.domain.model.ArticleFavorite;
+import com.github.al.realworld.domain.repository.ArticleFavoriteRepository;
 import com.github.al.realworld.domain.repository.ArticleRepository;
 import com.github.al.realworld.domain.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -43,24 +44,29 @@ import static com.github.al.realworld.application.exception.NotFoundException.no
 public class FavoriteArticleHandler implements CommandHandler<FavoriteArticleResult, FavoriteArticle> {
 
     private final ArticleRepository articleRepository;
+    private final ArticleFavoriteRepository articleFavoriteRepository;
     private final UserRepository userRepository;
+    private final ConversionService conversionService;
 
     @Transactional
     @Override
     public FavoriteArticleResult handle(FavoriteArticle command) {
-        Article article = articleRepository.findBySlug(command.getSlug())
+        var id = articleRepository.findIdBySlug(command.getSlug())
                 .orElseThrow(() -> notFound("article [slug=%s] does not exist", command.getSlug()));
 
-        User currentUser = userRepository.findByUsername(command.getCurrentUsername())
+        var currentUser = userRepository.findByUsername(command.getCurrentUsername())
                 .orElseThrow(() -> badRequest("user [name=%s] does not exist", command.getCurrentUsername()));
 
-        Article alteredArticle = article.toBuilder()
-                .favoredUser(currentUser)
-                .build();
+        var articleFavorite = new ArticleFavorite(id, currentUser.id());
+        if (!articleFavoriteRepository.exists(articleFavorite)) {
+            articleFavoriteRepository.save(articleFavorite);
+            articleRepository.incrementFavoriteCount(id);
+        }
 
-        Article savedArticle = articleRepository.save(alteredArticle);
+        var articleAssembly = articleRepository.findAssemblyById(currentUser.id(), id).orElseThrow();
+        var data = conversionService.convert(articleAssembly, ArticleDto.class);
 
-        return new FavoriteArticleResult(ArticleAssembler.assemble(savedArticle, currentUser));
+        return new FavoriteArticleResult(data);
     }
 
 }

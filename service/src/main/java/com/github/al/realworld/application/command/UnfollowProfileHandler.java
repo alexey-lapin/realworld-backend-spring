@@ -25,18 +25,16 @@ package com.github.al.realworld.application.command;
 
 import com.github.al.realworld.api.command.UnfollowProfile;
 import com.github.al.realworld.api.command.UnfollowProfileResult;
-import com.github.al.realworld.application.ProfileAssembler;
+import com.github.al.realworld.api.dto.ProfileDto;
 import com.github.al.realworld.bus.CommandHandler;
 import com.github.al.realworld.domain.model.FollowRelation;
-import com.github.al.realworld.domain.model.User;
+import com.github.al.realworld.domain.model.Profile;
 import com.github.al.realworld.domain.repository.FollowRelationRepository;
 import com.github.al.realworld.domain.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 import static com.github.al.realworld.application.exception.BadRequestException.badRequest;
 import static com.github.al.realworld.application.exception.NotFoundException.notFound;
@@ -51,29 +49,26 @@ public class UnfollowProfileHandler implements CommandHandler<UnfollowProfileRes
 
     private final UserRepository userRepository;
     private final FollowRelationRepository followRelationRepository;
+    private final ConversionService conversionService;
 
     @Transactional
     @Override
     public UnfollowProfileResult handle(UnfollowProfile command) {
-        User currentUser = userRepository.findByUsername(command.getFollower())
+        var currentUser = userRepository.findByUsername(command.getFollower())
                 .orElseThrow(() -> badRequest("user [name=%s] does not exist", command.getFollower()));
 
-        User followee = userRepository.findByUsername(command.getFollowee())
+        var followee = userRepository.findByUsername(command.getFollowee())
                 .orElseThrow(() -> notFound("user [name=%s] does not exist", command.getFollowee()));
 
-        followRelationRepository.deleteByFollowerAndFollowee(currentUser, followee);
+        var followRelation = new FollowRelation(currentUser.id(), followee.id());
+        if (followRelationRepository.exists(followRelation)) {
+            followRelationRepository.delete(followRelation);
+        }
 
-        List<FollowRelation> filteredFollowers = followee.getFollowers().stream()
-                .filter(followRelation -> !followRelation.getFollower().equals(currentUser))
-                .collect(Collectors.toList());
+        var profileAssembly = new Profile(followee.username(), followee.bio(), followee.image(), false);
+        var data = conversionService.convert(profileAssembly, ProfileDto.class);
 
-        User alteredFollowee = followee.toBuilder().clearFollowers()
-                .followers(filteredFollowers)
-                .build();
-
-        userRepository.save(alteredFollowee);
-
-        return new UnfollowProfileResult(ProfileAssembler.assemble(alteredFollowee, currentUser));
+        return new UnfollowProfileResult(data);
     }
 
 }

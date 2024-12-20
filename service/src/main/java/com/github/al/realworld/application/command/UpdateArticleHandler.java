@@ -25,18 +25,16 @@ package com.github.al.realworld.application.command;
 
 import com.github.al.realworld.api.command.UpdateArticle;
 import com.github.al.realworld.api.command.UpdateArticleResult;
-import com.github.al.realworld.application.ArticleAssembler;
+import com.github.al.realworld.api.dto.ArticleDto;
 import com.github.al.realworld.application.service.SlugService;
 import com.github.al.realworld.bus.CommandHandler;
-import com.github.al.realworld.domain.model.Article;
-import com.github.al.realworld.domain.model.User;
 import com.github.al.realworld.domain.repository.ArticleRepository;
 import com.github.al.realworld.domain.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.ZonedDateTime;
 import java.util.Objects;
 
 import static com.github.al.realworld.application.exception.BadRequestException.badRequest;
@@ -50,31 +48,35 @@ public class UpdateArticleHandler implements CommandHandler<UpdateArticleResult,
     private final ArticleRepository articleRepository;
     private final UserRepository userRepository;
     private final SlugService slugService;
+    private final ConversionService conversionService;
 
     @Transactional
     @Override
     public UpdateArticleResult handle(UpdateArticle command) {
-        Article article = articleRepository.findBySlug(command.getSlug())
+        var article = articleRepository.findBySlug(command.getSlug())
                 .orElseThrow(() -> notFound("article [slug=%s] does not exist", command.getSlug()));
 
-        if (!Objects.equals(article.getAuthor().getUsername(), command.getCurrentUsername())) {
-            throw forbidden("article [slug=%s] is not owned by %s", command.getSlug(), command.getCurrentUsername());
-        }
-
-        User currentUser = userRepository.findByUsername(command.getCurrentUsername())
+        var currentUser = userRepository.findByUsername(command.getCurrentUsername())
                 .orElseThrow(() -> badRequest("user [name=%s] does not exist", command.getCurrentUsername()));
 
-        Article alteredArticle = article.toBuilder()
-                .slug(command.getTitle() != null ? slugService.makeSlug(command.getTitle()) : article.getSlug())
-                .title(command.getTitle() != null ? command.getTitle() : article.getTitle())
-                .description(command.getDescription() != null ? command.getDescription() : article.getDescription())
-                .body(command.getBody() != null ? command.getBody() : article.getBody())
-                .updatedAt(ZonedDateTime.now())
+        if (!Objects.equals(article.authorId(), currentUser.id())) {
+            throw forbidden("article [slug=%s] is not owned by %s",
+                    command.getSlug(), command.getCurrentUsername());
+        }
+
+        var alteredArticle = article.toBuilder()
+                .slug(command.getTitle() != null ? slugService.makeSlug(command.getTitle()) : article.slug())
+                .title(command.getTitle() != null ? command.getTitle() : article.title())
+                .description(command.getDescription() != null ? command.getDescription() : article.description())
+                .body(command.getBody() != null ? command.getBody() : article.body())
                 .build();
 
         articleRepository.save(alteredArticle);
 
-        return new UpdateArticleResult(ArticleAssembler.assemble(alteredArticle, currentUser));
+        var articleAssembly = articleRepository.findAssemblyById(currentUser.id(), article.id()).orElseThrow();
+        var data = conversionService.convert(articleAssembly, ArticleDto.class);
+
+        return new UpdateArticleResult(data);
     }
 
 }

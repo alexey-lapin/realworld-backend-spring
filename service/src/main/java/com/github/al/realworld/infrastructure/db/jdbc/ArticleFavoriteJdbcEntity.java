@@ -21,29 +21,16 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.github.al.realworld.infrastructure.db.jpa;
+package com.github.al.realworld.infrastructure.db.jdbc;
 
-import com.github.al.realworld.domain.model.Tag;
-import com.github.al.realworld.domain.repository.TagRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Repository;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Table;
 
-import java.util.Optional;
-
-@RequiredArgsConstructor
-@Repository
-public class JpaTagRepositoryAdapter implements TagRepository {
-
-    private final DataTagRepository repository;
-
-    @Override
-    public Optional<Tag> findByName(String name) {
-        return repository.findByName(name);
-    }
-
-    @Override
-    public Iterable<Tag> findAll() {
-        return repository.findAll();
-    }
-
+@Table("t_favorites")
+public record ArticleFavoriteJdbcEntity(
+        @Id
+        long id,
+        long articleId,
+        long userId
+) {
 }

@@ -21,18 +21,30 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.github.al.realworld.application;
+package com.github.al.realworld.infrastructure.db.jdbc;
 
-import com.github.al.realworld.api.dto.ProfileDto;
-import com.github.al.realworld.domain.model.User;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Table;
 
-public class ProfileAssembler {
+import java.time.Instant;
 
-    public static ProfileDto assemble(User user, User currentUser) {
-        boolean isFollow = currentUser != null && user.getFollowers().stream()
-                .map(followRelation -> followRelation.getFollower().getId())
-                .anyMatch(uuid -> uuid.equals(currentUser.getId()));
-        return new ProfileDto(user.getUsername(), user.getBio(), user.getImage(), isFollow);
-    }
-
+@Table("v_articles_read")
+public record ArticleAssemblyJdbcEntity(
+        @Id
+        long id,
+        Instant createdAt,
+        Instant updatedAt,
+        String slug,
+        String title,
+        String description,
+        String body,
+        String tagList,
+        long authorId,
+        int favoritesCount,
+        boolean favorited,
+        String authorUsername,
+        String authorBio,
+        String authorImage,
+        boolean authorFollowing
+) {
 }

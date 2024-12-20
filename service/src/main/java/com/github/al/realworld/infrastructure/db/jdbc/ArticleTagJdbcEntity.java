@@ -21,17 +21,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.github.al.realworld.infrastructure.db.jpa;
+package com.github.al.realworld.infrastructure.db.jdbc;
 
-import com.github.al.realworld.domain.model.User;
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.relational.core.mapping.Table;
 
-import java.util.Optional;
-
-public interface DataUserRepository extends CrudRepository<User, String> {
-
-    Optional<User> findByEmail(String email);
-
-    Optional<User> findByUsername(String username);
-
+@Table("t_article_tags")
+public record ArticleTagJdbcEntity(
+        long tagId
+) {
 }
