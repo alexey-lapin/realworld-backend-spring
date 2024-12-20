@@ -35,9 +35,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Optional;
-import java.util.UUID;
-
 import static com.github.al.realworld.application.exception.BadRequestException.badRequest;
 
 @RequiredArgsConstructor
@@ -51,24 +48,22 @@ public class RegisterUserHandler implements CommandHandler<RegisterUserResult, R
     @Transactional
     @Override
     public RegisterUserResult handle(RegisterUser command) {
-        Optional<User> userByEmailOptional = userRepository.findByEmail(command.getEmail());
-        if (userByEmailOptional.isPresent()) {
+        if (userRepository.existsByEmail(command.getEmail())) {
             throw badRequest("user [email=%s] already exists", command.getEmail());
         }
-        Optional<User> userByUsernameOptional = userRepository.findByUsername(command.getUsername());
-        if (userByUsernameOptional.isPresent()) {
+        if (userRepository.existsByUsername(command.getUsername())) {
             throw badRequest("user [name=%s] already exists", command.getUsername());
         }
 
         User user = User.builder()
-                .id(UUID.randomUUID())
                 .username(command.getUsername())
                 .email(command.getEmail())
                 .password(passwordEncoder.encode(command.getPassword()))
                 .build();
-        userRepository.save(user);
 
-        return new RegisterUserResult(UserAssembler.assemble(user, jwtService));
+        User savedUser = userRepository.save(user);
+
+        return new RegisterUserResult(UserAssembler.assemble(savedUser, jwtService));
     }
 
 }

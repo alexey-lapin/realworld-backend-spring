@@ -49,8 +49,11 @@ public class GetArticlesHandler implements QueryHandler<GetArticlesResult, GetAr
     @Transactional(readOnly = true)
     @Override
     public GetArticlesResult handle(GetArticles query) {
-        List<Article> articles = articleRepository
-                .findByFilters(query.getTag(), query.getAuthor(), query.getFavorited(), query.getLimit(), query.getOffset());
+        List<Article> articles = articleRepository.findByFilters(query.getTag(),
+                query.getAuthor(),
+                query.getFavorited(),
+                query.getLimit(),
+                query.getOffset());
 
         User currentUser = userRepository.findByUsername(query.getCurrentUsername())
                 .orElse(null);

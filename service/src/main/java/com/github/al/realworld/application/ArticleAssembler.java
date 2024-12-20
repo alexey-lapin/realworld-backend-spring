@@ -30,6 +30,7 @@ import com.github.al.realworld.domain.model.User;
 
 import java.util.stream.Collectors;
 
+@Deprecated
 public class ArticleAssembler {
 
     public static ArticleDto assemble(Article article, User currentUser) {
@@ -38,12 +39,12 @@ public class ArticleAssembler {
                 .title(article.getTitle())
                 .description(article.getDescription())
                 .body(article.getBody())
-                .tagList(article.getTags().stream().map(Tag::getName).sorted().collect(Collectors.toList()))
+//                .tagList(article.getTags().stream().map(Tag::getName).sorted().collect(Collectors.toList()))
                 .createdAt(article.getCreatedAt())
                 .updatedAt(article.getUpdatedAt())
-                .favorited(currentUser != null && article.getFavoredUsers().contains(currentUser))
-                .favoritesCount(article.getFavoredUsers().size())
-                .author(ProfileAssembler.assemble(article.getAuthor(), currentUser))
+//                .favorited(currentUser != null && article.getFavoredUsers().contains(currentUser))
+//                .favoritesCount(article.getFavoredUsers().size())
+//                .author(ProfileAssembler.assemble(article.getAuthor(), currentUser))
                 .build();
     }
 

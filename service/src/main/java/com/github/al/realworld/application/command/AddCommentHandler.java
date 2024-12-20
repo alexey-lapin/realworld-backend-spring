@@ -27,16 +27,17 @@ import com.github.al.realworld.api.command.AddComment;
 import com.github.al.realworld.api.command.AddCommentResult;
 import com.github.al.realworld.application.CommentAssembler;
 import com.github.al.realworld.bus.CommandHandler;
-import com.github.al.realworld.domain.model.Article;
 import com.github.al.realworld.domain.model.Comment;
 import com.github.al.realworld.domain.model.User;
 import com.github.al.realworld.domain.repository.ArticleRepository;
+import com.github.al.realworld.domain.repository.CommentRepository;
 import com.github.al.realworld.domain.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.ZonedDateTime;
+import java.util.UUID;
 
 import static com.github.al.realworld.application.exception.BadRequestException.badRequest;
 import static com.github.al.realworld.application.exception.NotFoundException.notFound;
@@ -46,12 +47,13 @@ import static com.github.al.realworld.application.exception.NotFoundException.no
 public class AddCommentHandler implements CommandHandler<AddCommentResult, AddComment> {
 
     private final ArticleRepository articleRepository;
+    private final CommentRepository commentRepository;
     private final UserRepository userRepository;
 
     @Transactional
     @Override
     public AddCommentResult handle(AddComment command) {
-        Article article = articleRepository.findBySlug(command.getSlug())
+        UUID articleId = articleRepository.findIdBySlug(command.getSlug())
                 .orElseThrow(() -> notFound("article [slug=%s] does not exist", command.getSlug()));
 
         User currentUser = userRepository.findByUsername(command.getCurrentUsername())
@@ -60,22 +62,14 @@ public class AddCommentHandler implements CommandHandler<AddCommentResult, AddCo
         ZonedDateTime now = ZonedDateTime.now();
 
         Comment comment = Comment.builder()
+                .articleId(articleId)
                 .body(command.getBody())
                 .createdAt(now)
                 .updatedAt(now)
-                .author(currentUser)
+                .authorId(currentUser.getId())
                 .build();
 
-        Article alteredArticle = article.toBuilder().comment(comment).build();
-
-        Article savedArticle = articleRepository.save(alteredArticle);
-
-        Comment savedComment = savedArticle.getComments().stream()
-                .filter(c -> c.getCreatedAt().equals(comment.getCreatedAt()))
-                .filter(c -> c.getAuthor().equals(comment.getAuthor()))
-                .findFirst()
-                // should never happen
-                .orElseThrow(() -> new RuntimeException("saved comment not found"));
+        Comment savedComment = commentRepository.save(comment);
 
         return new AddCommentResult(CommentAssembler.assemble(savedComment, currentUser));
     }

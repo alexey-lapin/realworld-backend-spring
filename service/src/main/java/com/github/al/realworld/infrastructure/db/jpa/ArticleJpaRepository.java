@@ -24,35 +24,40 @@
 package com.github.al.realworld.infrastructure.db.jpa;
 
 import com.github.al.realworld.domain.model.Article;
+import com.github.al.realworld.infrastructure.db.jdbc.ArticleJdbcEntity;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
-import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface DataArticleRepository extends CrudRepository<Article, UUID> {
+public interface ArticleJpaRepository extends CrudRepository<Article, UUID> {
 
     Optional<Article> findBySlug(String slug);
 
     Optional<Article> findByTitle(String title);
 
     @Query("SELECT DISTINCT article_ FROM Article article_ " +
-            "LEFT JOIN article_.tags t " +
-            "LEFT JOIN article_.author p " +
-            "LEFT JOIN article_.favoredUsers f " +
+//            "LEFT JOIN article_.tags t " +
+            "LEFT JOIN article_.authorId p " +
+//            "LEFT JOIN article_.favoredUsers f " +
             "WHERE " +
-            "(:tag IS NULL OR t.name = :tag) AND " +
-            "(:author IS NULL OR p.username = :author) AND " +
-            "(:favorited IS NULL OR f.username = :favorited)")
-    List<Article> findByFilters(@Param("tag") String tag,
-                                @Param("author") String author,
-                                @Param("favorited") String favorited,
+            "1 = 1"
+//            "(:tag IS NULL OR t.name = :tag) AND " +
+//            "(:author IS NULL OR p.username = :author) AND " +
+//            "(:favorited IS NULL OR f.username = :favorited)"
+    )
+    List<Article> findByFilters(
+//            @Param("tag") String tag,
+//                                @Param("author") String author,
+//                                @Param("favorited") String favorited,
                                 Pageable pageable);
 
-    @Query("SELECT article_ FROM Article article_ JOIN article_.author au WHERE au.id IN :followees")
+    @Query("SELECT article_ FROM Article article_ JOIN article_.authorId au "
+//            + "WHERE au.id IN :followees"
+    )
     List<Article> findByFollowees(List<UUID> followees, Pageable pageable);
 
 }

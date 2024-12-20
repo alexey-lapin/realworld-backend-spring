@@ -33,14 +33,19 @@ import java.util.List;
 import java.util.UUID;
 
 @RequiredArgsConstructor
-@Repository
+//@Repository
 public class JpaFollowRelationRepositoryAdapter implements FollowRelationRepository {
 
     private final DataFollowRelationRepository repository;
 
     @Override
-    public FollowRelation save(FollowRelation entity) {
-        return repository.save(entity);
+    public boolean existsByFollowerIdAndFolloweeId(UUID followerId, UUID followeeId) {
+        return false;
+    }
+
+    @Override
+    public FollowRelation save(FollowRelation followRelation) {
+        return repository.save(followRelation);
     }
 
     @Override
@@ -54,7 +59,7 @@ public class JpaFollowRelationRepositoryAdapter implements FollowRelationReposit
     }
 
     @Override
-    public void deleteByFollowerAndFollowee(User follower, User followee) {
+    public void deleteByFollowerIdAndFolloweeId(User follower, User followee) {
         repository.deleteByFollowerAndFollowee(follower, followee);
     }
 }

@@ -24,7 +24,6 @@
 package com.github.al.realworld.infrastructure.db.jpa;
 
 import com.github.al.realworld.domain.model.FollowRelation;
-import com.github.al.realworld.domain.model.FollowRelationId;
 import com.github.al.realworld.domain.model.User;
 import org.springframework.data.repository.CrudRepository;
 

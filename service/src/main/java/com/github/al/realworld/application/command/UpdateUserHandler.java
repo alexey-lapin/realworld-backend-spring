@@ -55,13 +55,13 @@ public class UpdateUserHandler implements CommandHandler<UpdateUserResult, Updat
 
         if (command.getUsername() != null
                 && !command.getUsername().equals(user.getUsername())
-                && userRepository.findByUsername(command.getUsername()).isPresent()) {
+                && userRepository.existsByUsername(command.getUsername())) {
             throw badRequest("user [name=%s] already exists", command.getUsername());
         }
 
         if (command.getEmail() != null
                 && !command.getEmail().equals(user.getEmail())
-                && userRepository.findByEmail(command.getEmail()).isPresent()) {
+                && userRepository.existsByEmail(command.getEmail())) {
             throw badRequest("user [email=%s] already exists", command.getEmail());
         }
 

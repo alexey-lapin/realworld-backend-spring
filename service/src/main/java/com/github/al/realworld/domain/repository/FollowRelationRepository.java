@@ -31,12 +31,14 @@ import java.util.UUID;
 
 public interface FollowRelationRepository {
 
-    FollowRelation save(FollowRelation entity);
+    boolean existsByFollowerIdAndFolloweeId(UUID followerId, UUID followeeId);
 
     List<FollowRelation> findByFollowerId(UUID followerId);
 
     List<FollowRelation> findByFolloweeId(UUID followeeId);
 
-    void deleteByFollowerAndFollowee(User follower, User followee);
+    FollowRelation save(FollowRelation followRelation);
+
+    void deleteByFollowerIdAndFolloweeId(UUID followerId, UUID followeeId);
 
 }

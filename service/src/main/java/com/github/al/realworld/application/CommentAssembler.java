@@ -27,6 +27,7 @@ import com.github.al.realworld.api.dto.CommentDto;
 import com.github.al.realworld.domain.model.Comment;
 import com.github.al.realworld.domain.model.User;
 
+@Deprecated
 public class CommentAssembler {
 
     public static CommentDto assemble(Comment comment, User currentUser) {
@@ -35,7 +36,7 @@ public class CommentAssembler {
                 .createdAt(comment.getCreatedAt())
                 .updatedAt(comment.getUpdatedAt())
                 .body(comment.getBody())
-                .author(ProfileAssembler.assemble(comment.getAuthor(), currentUser))
+//                .author(ProfileAssembler.assemble(comment.getAuthor(), currentUser))
                 .build();
     }
 

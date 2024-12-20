@@ -25,14 +25,20 @@ package com.github.al.realworld.application.command;
 
 import com.github.al.realworld.api.command.UpdateArticle;
 import com.github.al.realworld.api.command.UpdateArticleResult;
+import com.github.al.realworld.api.dto.ArticleDto;
 import com.github.al.realworld.application.ArticleAssembler;
 import com.github.al.realworld.application.service.SlugService;
 import com.github.al.realworld.bus.CommandHandler;
 import com.github.al.realworld.domain.model.Article;
+import com.github.al.realworld.domain.model.ArticleAssembly;
+import com.github.al.realworld.domain.model.ProfileAssembly;
 import com.github.al.realworld.domain.model.User;
+import com.github.al.realworld.domain.repository.ArticleFavoriteRepository;
 import com.github.al.realworld.domain.repository.ArticleRepository;
+import com.github.al.realworld.domain.repository.FollowRelationRepository;
 import com.github.al.realworld.domain.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -48,8 +54,10 @@ import static com.github.al.realworld.application.exception.NotFoundException.no
 public class UpdateArticleHandler implements CommandHandler<UpdateArticleResult, UpdateArticle> {
 
     private final ArticleRepository articleRepository;
+    private final ArticleFavoriteRepository articleFavoriteRepository;
     private final UserRepository userRepository;
     private final SlugService slugService;
+    private final ConversionService conversionService;
 
     @Transactional
     @Override
@@ -57,12 +65,13 @@ public class UpdateArticleHandler implements CommandHandler<UpdateArticleResult,
         Article article = articleRepository.findBySlug(command.getSlug())
                 .orElseThrow(() -> notFound("article [slug=%s] does not exist", command.getSlug()));
 
-        if (!Objects.equals(article.getAuthor().getUsername(), command.getCurrentUsername())) {
-            throw forbidden("article [slug=%s] is not owned by %s", command.getSlug(), command.getCurrentUsername());
-        }
-
         User currentUser = userRepository.findByUsername(command.getCurrentUsername())
                 .orElseThrow(() -> badRequest("user [name=%s] does not exist", command.getCurrentUsername()));
+
+        if (!Objects.equals(article.getAuthorId(), currentUser.getId())) {
+            throw forbidden("article [slug=%s] is not owned by %s",
+                    command.getSlug(), command.getCurrentUsername());
+        }
 
         Article alteredArticle = article.toBuilder()
                 .slug(command.getTitle() != null ? slugService.makeSlug(command.getTitle()) : article.getSlug())
@@ -72,9 +81,16 @@ public class UpdateArticleHandler implements CommandHandler<UpdateArticleResult,
                 .updatedAt(ZonedDateTime.now())
                 .build();
 
-        articleRepository.save(alteredArticle);
+        Article savedArticle = articleRepository.save(alteredArticle);
 
-        return new UpdateArticleResult(ArticleAssembler.assemble(alteredArticle, currentUser));
+        boolean favorited = articleFavoriteRepository.existsByArticleIdAndUserId(article.getId(), currentUser.getId());
+        int favoriteCount = articleFavoriteRepository.countByArticleId(article.getId());
+
+        ProfileAssembly profileAssembly = new ProfileAssembly(currentUser, false);
+        ArticleAssembly articleAssembly = new ArticleAssembly(savedArticle, favorited, favoriteCount, profileAssembly);
+        ArticleDto data = conversionService.convert(articleAssembly, ArticleDto.class);
+
+        return new UpdateArticleResult(data);
     }
 
 }

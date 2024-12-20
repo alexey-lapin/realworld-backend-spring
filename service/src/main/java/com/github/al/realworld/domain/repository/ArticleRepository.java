@@ -31,15 +31,18 @@ import java.util.UUID;
 
 public interface ArticleRepository {
 
+    Optional<UUID> findIdBySlug(String slug);
+
     Optional<Article> findBySlug(String slug);
 
     Optional<Article> findByTitle(String title);
 
     List<Article> findByFilters(String tag, String author, String favorited, Integer limit, Integer offset);
 
-    List<Article> findByFollowees(List<UUID> followees, Integer limit, Integer offset);
+    List<Article> findByFolloweeIds(List<UUID> followeeIds, Integer limit, Integer offset);
 
     void delete(Article article);
 
     Article save(Article article);
+
 }

@@ -29,12 +29,28 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
+import java.util.UUID;
 
 @RequiredArgsConstructor
-@Repository
+//@Repository
 public class JpaUserRepositoryAdapter implements UserRepository {
 
     private final DataUserRepository repository;
+
+    @Override
+    public boolean existsByEmail(String email) {
+        return false;
+    }
+
+    @Override
+    public boolean existsByUsername(String username) {
+        return false;
+    }
+
+    @Override
+    public Optional<User> findById(UUID id) {
+        return Optional.empty();
+    }
 
     @Override
     public Optional<User> findByEmail(String email) {

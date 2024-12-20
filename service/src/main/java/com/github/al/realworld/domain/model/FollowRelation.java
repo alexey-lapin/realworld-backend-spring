@@ -23,37 +23,16 @@
  */
 package com.github.al.realworld.domain.model;
 
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 
-import jakarta.persistence.EmbeddedId;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.MapsId;
-import jakarta.persistence.Table;
+import java.util.UUID;
 
-@NoArgsConstructor
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Getter
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@Entity
-@Table(name = "tbl_follow_relation")
 public class FollowRelation {
 
-    @EmbeddedId
-    private FollowRelationId id;
-
-    @EqualsAndHashCode.Include
-    @ManyToOne(fetch = FetchType.LAZY)
-    @MapsId("followerId")
-    private User follower;
-
-    @EqualsAndHashCode.Include
-    @ManyToOne(fetch = FetchType.LAZY)
-    @MapsId("followeeId")
-    private User followee;
+    private final UUID followerId;
+    private final UUID followeeId;
 
 }

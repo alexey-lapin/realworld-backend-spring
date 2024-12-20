@@ -28,17 +28,21 @@ import com.github.al.realworld.domain.repository.ArticleRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 @RequiredArgsConstructor
-@Repository
+//@Repository
 public class JpaArticleRepositoryAdapter implements ArticleRepository {
 
-    private final DataArticleRepository repository;
+    private final ArticleJpaRepository repository;
+
+    @Override
+    public Optional<UUID> findIdBySlug(String slug) {
+        return Optional.empty();
+    }
 
     @Override
     public Optional<Article> findBySlug(String slug) {
@@ -53,13 +57,13 @@ public class JpaArticleRepositoryAdapter implements ArticleRepository {
     @Override
     public List<Article> findByFilters(String tag, String author, String favorited, Integer limit, Integer offset) {
         Pageable pageable = new OffsetBasedPageRequest(limit, offset, Sort.by(Sort.Order.desc("createdAt")));
-        return repository.findByFilters(tag, author, favorited, pageable);
+        return repository.findByFilters(/*tag,*/ /*author, favorited,*/ pageable);
     }
 
     @Override
-    public List<Article> findByFollowees(List<UUID> followees, Integer limit, Integer offset) {
+    public List<Article> findByFolloweeIds(List<UUID> followeeIds, Integer limit, Integer offset) {
         Pageable pageable = new OffsetBasedPageRequest(limit, offset, Sort.by(Sort.Order.desc("createdAt")));
-        return repository.findByFollowees(followees, pageable);
+        return repository.findByFollowees(followeeIds, pageable);
     }
 
     @Override

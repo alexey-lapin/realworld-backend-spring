@@ -31,12 +31,15 @@ import com.github.al.realworld.bus.QueryHandler;
 import com.github.al.realworld.domain.model.Article;
 import com.github.al.realworld.domain.model.User;
 import com.github.al.realworld.domain.repository.ArticleRepository;
+import com.github.al.realworld.domain.repository.CommentRepository;
 import com.github.al.realworld.domain.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 import static com.github.al.realworld.application.exception.NotFoundException.notFound;
 
@@ -45,20 +48,21 @@ import static com.github.al.realworld.application.exception.NotFoundException.no
 public class GetCommentsHandler implements QueryHandler<GetCommentsResult, GetComments> {
 
     private final ArticleRepository articleRepository;
+    private final CommentRepository commentRepository;
     private final UserRepository userRepository;
 
     @Transactional(readOnly = true)
     @Override
     public GetCommentsResult handle(GetComments query) {
-        Article article = articleRepository.findBySlug(query.getSlug())
+        UUID articleId = articleRepository.findIdBySlug(query.getSlug())
                 .orElseThrow(() -> notFound("article [slug=%s] does not exists", query.getSlug()));
 
         User currentUser = userRepository.findByUsername(query.getCurrentUsername())
                 .orElse(null);
 
-        ArrayList<CommentDto> result = new ArrayList<>();
-
-        article.getComments().forEach(comment -> result.add(CommentAssembler.assemble(comment, currentUser)));
+        List<CommentDto> result = commentRepository.findAllByArticleId(articleId).stream()
+                .map(comment -> CommentAssembler.assemble(comment, currentUser))
+                .toList();
 
         return new GetCommentsResult(result);
     }

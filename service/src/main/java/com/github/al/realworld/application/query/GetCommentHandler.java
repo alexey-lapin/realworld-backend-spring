@@ -31,10 +31,13 @@ import com.github.al.realworld.domain.model.Article;
 import com.github.al.realworld.domain.model.Comment;
 import com.github.al.realworld.domain.model.User;
 import com.github.al.realworld.domain.repository.ArticleRepository;
+import com.github.al.realworld.domain.repository.CommentRepository;
 import com.github.al.realworld.domain.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.UUID;
 
 import static com.github.al.realworld.application.exception.NotFoundException.notFound;
 
@@ -43,20 +46,19 @@ import static com.github.al.realworld.application.exception.NotFoundException.no
 public class GetCommentHandler implements QueryHandler<GetCommentResult, GetComment> {
 
     private final ArticleRepository articleRepository;
+    private final CommentRepository commentRepository;
     private final UserRepository userRepository;
 
     @Transactional(readOnly = true)
     @Override
     public GetCommentResult handle(GetComment query) {
-        Article article = articleRepository.findBySlug(query.getSlug())
+        UUID articleId = articleRepository.findIdBySlug(query.getSlug())
                 .orElseThrow(() -> notFound("article [slug=%s] does not exists", query.getSlug()));
 
         User currentUser = userRepository.findByUsername(query.getCurrentUsername())
                 .orElse(null);
 
-        Comment comment = article.getComments().stream()
-                .filter(c -> c.getId().equals(query.getId()))
-                .findFirst()
+        Comment comment = commentRepository.findByIdAndArticleId(query.getId(), articleId)
                 .orElseThrow(() -> notFound("comment [id=%s] does not exists", query.getId()));
 
         return new GetCommentResult(CommentAssembler.assemble(comment, currentUser));

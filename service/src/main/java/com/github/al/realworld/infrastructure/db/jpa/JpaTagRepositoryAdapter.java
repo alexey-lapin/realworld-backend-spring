@@ -28,10 +28,12 @@ import com.github.al.realworld.domain.repository.TagRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 @RequiredArgsConstructor
-@Repository
+//@Repository
 public class JpaTagRepositoryAdapter implements TagRepository {
 
     private final DataTagRepository repository;
@@ -42,8 +44,17 @@ public class JpaTagRepositoryAdapter implements TagRepository {
     }
 
     @Override
+    public List<Tag> findAllByNameIn(Collection<String> names) {
+        return List.of();
+    }
+
+    @Override
     public Iterable<Tag> findAll() {
         return repository.findAll();
     }
 
+    @Override
+    public Tag save(Tag tag) {
+        return null;
+    }
 }

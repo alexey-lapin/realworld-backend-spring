@@ -25,13 +25,18 @@ package com.github.al.realworld.application.command;
 
 import com.github.al.realworld.api.command.UnfavoriteArticle;
 import com.github.al.realworld.api.command.UnfavoriteArticleResult;
+import com.github.al.realworld.api.dto.ArticleDto;
 import com.github.al.realworld.application.ArticleAssembler;
 import com.github.al.realworld.bus.CommandHandler;
 import com.github.al.realworld.domain.model.Article;
+import com.github.al.realworld.domain.model.ArticleAssembly;
+import com.github.al.realworld.domain.model.ProfileAssembly;
 import com.github.al.realworld.domain.model.User;
+import com.github.al.realworld.domain.repository.ArticleFavoriteRepository;
 import com.github.al.realworld.domain.repository.ArticleRepository;
 import com.github.al.realworld.domain.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -47,7 +52,9 @@ import static com.github.al.realworld.application.exception.NotFoundException.no
 public class UnfavoriteArticleHandler implements CommandHandler<UnfavoriteArticleResult, UnfavoriteArticle> {
 
     private final ArticleRepository articleRepository;
+    private final ArticleFavoriteRepository articleFavoriteRepository;
     private final UserRepository userRepository;
+    private final ConversionService conversionService;
 
     @Transactional
     @Override
@@ -58,17 +65,14 @@ public class UnfavoriteArticleHandler implements CommandHandler<UnfavoriteArticl
         User currentUser = userRepository.findByUsername(command.getCurrentUsername())
                 .orElseThrow(() -> badRequest("user [name=%s] does not exist", command.getCurrentUsername()));
 
-        Set<User> alteredFavoritedProfiles = article.getFavoredUsers().stream()
-                .filter(favoritedUser -> !Objects.equals(favoritedUser, currentUser))
-                .collect(Collectors.toSet());
+        articleFavoriteRepository.deleteByArticleIdAndUserId(article.getId(), currentUser.getId());
+        int favoriteCount = articleFavoriteRepository.countByArticleId(article.getId());
 
-        Article alteredArticle = article.toBuilder()
-                .clearFavoredUsers()
-                .favoredUsers(alteredFavoritedProfiles)
-                .build();
+        ProfileAssembly profileAssembly = new ProfileAssembly(currentUser, false);
+        ArticleAssembly articleAssembly = new ArticleAssembly(article, false, favoriteCount, profileAssembly);
+        ArticleDto data = conversionService.convert(articleAssembly, ArticleDto.class);
 
-        Article savedArticle = articleRepository.save(alteredArticle);
-
-        return new UnfavoriteArticleResult(ArticleAssembler.assemble(savedArticle, currentUser));
+        return new UnfavoriteArticleResult(data);
     }
+
 }

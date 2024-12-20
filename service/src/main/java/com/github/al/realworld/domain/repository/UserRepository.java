@@ -26,12 +26,20 @@ package com.github.al.realworld.domain.repository;
 import com.github.al.realworld.domain.model.User;
 
 import java.util.Optional;
+import java.util.UUID;
 
 public interface UserRepository {
+
+    boolean existsByEmail(String email);
+
+    boolean existsByUsername(String username);
+
+    Optional<User> findById(UUID id);
 
     Optional<User> findByEmail(String email);
 
     Optional<User> findByUsername(String username);
 
     User save(User user);
+
 }

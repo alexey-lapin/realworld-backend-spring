@@ -21,25 +21,18 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.github.al.realworld.domain.model;
+package com.github.al.realworld.infrastructure.db.jdbc;
 
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import org.springframework.data.repository.ListCrudRepository;
 
-import jakarta.persistence.Embeddable;
-import java.io.Serializable;
-import java.util.UUID;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
 
-@NoArgsConstructor
-@AllArgsConstructor
-@Getter
-@EqualsAndHashCode
-@Embeddable
-public class FollowRelationId implements Serializable {
+public interface TagJdbcRepository extends ListCrudRepository<TagJdbcEntity, Long> {
 
-    private UUID followerId;
-    private UUID followeeId;
+    Optional<TagJdbcEntity> findByName(String name);
+
+    List<TagJdbcEntity> findAllByNameIn(Collection<String> longs);
 
 }

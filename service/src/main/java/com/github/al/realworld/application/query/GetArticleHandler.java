@@ -23,15 +23,20 @@
  */
 package com.github.al.realworld.application.query;
 
+import com.github.al.realworld.api.dto.ArticleDto;
 import com.github.al.realworld.api.query.GetArticle;
 import com.github.al.realworld.api.query.GetArticleResult;
-import com.github.al.realworld.application.ArticleAssembler;
 import com.github.al.realworld.bus.QueryHandler;
 import com.github.al.realworld.domain.model.Article;
+import com.github.al.realworld.domain.model.ArticleAssembly;
+import com.github.al.realworld.domain.model.ProfileAssembly;
 import com.github.al.realworld.domain.model.User;
+import com.github.al.realworld.domain.repository.ArticleFavoriteRepository;
 import com.github.al.realworld.domain.repository.ArticleRepository;
+import com.github.al.realworld.domain.repository.FollowRelationRepository;
 import com.github.al.realworld.domain.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,7 +47,10 @@ import static com.github.al.realworld.application.exception.NotFoundException.no
 public class GetArticleHandler implements QueryHandler<GetArticleResult, GetArticle> {
 
     private final ArticleRepository articleRepository;
+    private final ArticleFavoriteRepository articleFavoriteRepository;
+    private final FollowRelationRepository followRelationRepository;
     private final UserRepository userRepository;
+    private final ConversionService conversionService;
 
     @Transactional(readOnly = true)
     @Override
@@ -50,10 +58,26 @@ public class GetArticleHandler implements QueryHandler<GetArticleResult, GetArti
         Article article = articleRepository.findBySlug(query.getSlug())
                 .orElseThrow(() -> notFound("article [slug=%s] does not exists", query.getSlug()));
 
-        User currentUser = userRepository.findByUsername(query.getCurrentUsername())
-                .orElse(null);
+        User currentUser = userRepository.findByUsername(query.getCurrentUsername()).orElse(null);
+        User author = userRepository.findById(article.getAuthorId()).orElse(null);
 
-        return new GetArticleResult(ArticleAssembler.assemble(article, currentUser));
+        boolean following = false;
+        if (currentUser != null && author != null) {
+            following = followRelationRepository.existsByFollowerIdAndFolloweeId(currentUser.getId(), author.getId());
+        }
+
+        boolean favorited = false;
+        if (currentUser != null) {
+            favorited = articleFavoriteRepository.existsByArticleIdAndUserId(article.getId(), currentUser.getId());
+        }
+
+        int favoriteCount = articleFavoriteRepository.countByArticleId(article.getId());
+
+        ProfileAssembly profileAssembly = new ProfileAssembly(author, following);
+        ArticleAssembly articleAssembly = new ArticleAssembly(article, favorited, favoriteCount, profileAssembly);
+        ArticleDto data = conversionService.convert(articleAssembly, ArticleDto.class);
+
+        return new GetArticleResult(data);
     }
 
 }

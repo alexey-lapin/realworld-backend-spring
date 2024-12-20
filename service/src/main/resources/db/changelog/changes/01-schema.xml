@@ -126,7 +126,7 @@
                         incrementBy="1"
                         ordered="true"
                         sequenceName="hibernate_sequence"
-                        startValue="0"/>
+                        startValue="1"/>
     </changeSet>
 
 </databaseChangeLog>

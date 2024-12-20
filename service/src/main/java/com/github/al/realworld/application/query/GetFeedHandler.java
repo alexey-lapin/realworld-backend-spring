@@ -26,22 +26,24 @@ package com.github.al.realworld.application.query;
 import com.github.al.realworld.api.dto.ArticleDto;
 import com.github.al.realworld.api.query.GetFeed;
 import com.github.al.realworld.api.query.GetFeedResult;
-import com.github.al.realworld.application.ArticleAssembler;
 import com.github.al.realworld.bus.QueryHandler;
 import com.github.al.realworld.domain.model.Article;
+import com.github.al.realworld.domain.model.ArticleAssembly;
 import com.github.al.realworld.domain.model.FollowRelation;
 import com.github.al.realworld.domain.model.User;
+import com.github.al.realworld.domain.repository.ArticleFavoriteRepository;
 import com.github.al.realworld.domain.repository.ArticleRepository;
 import com.github.al.realworld.domain.repository.FollowRelationRepository;
 import com.github.al.realworld.domain.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import static com.github.al.realworld.application.exception.BadRequestException.badRequest;
 
@@ -50,8 +52,10 @@ import static com.github.al.realworld.application.exception.BadRequestException.
 public class GetFeedHandler implements QueryHandler<GetFeedResult, GetFeed> {
 
     private final ArticleRepository articleRepository;
-    private final UserRepository userRepository;
     private final FollowRelationRepository followRelationRepository;
+    private final ArticleFavoriteRepository articleFavoriteRepository;
+    private final UserRepository userRepository;
+    private final ConversionService conversionService;
 
     @Transactional(readOnly = true)
     @Override
@@ -61,16 +65,23 @@ public class GetFeedHandler implements QueryHandler<GetFeedResult, GetFeed> {
 
         List<FollowRelation> relations = followRelationRepository.findByFollowerId(currentUser.getId());
 
-        List<UUID> followeesUsernames = relations.stream()
-                .map(followRelation -> followRelation.getFollowee().getId())
-                .collect(Collectors.toList());
+        List<UUID> followeeIds = relations.stream()
+                .map(FollowRelation::getFolloweeId)
+                .toList();
 
-        List<Article> articles = articleRepository
-                .findByFollowees(followeesUsernames, query.getLimit(), query.getOffset());
+        List<Article> articles = articleRepository.findByFolloweeIds(followeeIds, query.getLimit(), query.getOffset());
 
-        ArrayList<ArticleDto> results = new ArrayList<>();
 
-        articles.forEach(article -> results.add(ArticleAssembler.assemble(article, currentUser)));
+        Map<UUID, Boolean> favorites = new HashMap<>();
+        for (Article article : articles) {
+
+        }
+
+        articleFavoriteRepository.
+
+        List<ArticleDto> results = articles.stream()
+                .map(article -> conversionService.convert(new ArticleAssembly(article, false, 0, null), ArticleDto.class))
+                .toList();
 
         return new GetFeedResult(results, results.size());
     }

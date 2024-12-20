@@ -27,6 +27,7 @@ import com.github.al.realworld.api.dto.UserDto;
 import com.github.al.realworld.application.service.JwtService;
 import com.github.al.realworld.domain.model.User;
 
+@Deprecated
 public class UserAssembler {
 
     public static UserDto assemble(User user, JwtService jwtService) {

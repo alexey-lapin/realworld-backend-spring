@@ -23,67 +23,35 @@
  */
 package com.github.al.realworld.domain.model;
 
-import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
+import jakarta.persistence.Lob;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Singular;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.Lob;
-import jakarta.persistence.ManyToMany;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
 import java.time.ZonedDateTime;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
-@NoArgsConstructor
-@AllArgsConstructor
 @Builder(toBuilder = true)
 @Getter
-@Entity
-@Table(name = "tbl_article")
 public class Article {
 
-    @Id
     private UUID id;
     private String slug;
     private String title;
     private String description;
     private ZonedDateTime createdAt;
     private ZonedDateTime updatedAt;
-
-    @Lob
     private String body;
+    private UUID authorId;
 
-    @OneToOne
-    private User author;
-
-    @Singular
-    @OneToMany(cascade = CascadeType.ALL)
-    @JoinColumn(name = "article_id")
-    private Set<Comment> comments;
+//    @Singular
+//    @OneToMany(cascade = CascadeType.ALL)
+//    @JoinColumn(name = "article_id")
+//    private Set<Comment> comments;
 
     @Singular
-    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    @JoinTable(name = "tbl_article_tags",
-            joinColumns = @JoinColumn(name = "article_id"),
-            inverseJoinColumns = @JoinColumn(name = "tag_id")
-    )
-    private Set<Tag> tags;
-
-    @Singular
-    @ManyToMany
-    @JoinTable(name = "tbl_article_favorites",
-            joinColumns = @JoinColumn(name = "article_id"),
-            inverseJoinColumns = @JoinColumn(name = "user_id")
-    )
-    private Set<User> favoredUsers;
+    private Set<Long> tagIds;
 
 }
