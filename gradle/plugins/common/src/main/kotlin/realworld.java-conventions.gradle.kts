@@ -73,7 +73,6 @@ tasks.jacocoTestReport {
 
 // Share sources folder with other projects for aggregated JaCoCo reports
 configurations.create("transitiveSourcesElements") {
-    isVisible = false
     isCanBeResolved = false
     isCanBeConsumed = true
     extendsFrom(configurations.implementation.get())
@@ -89,7 +88,6 @@ configurations.create("transitiveSourcesElements") {
 
 // Share sources folder with other projects for aggregated JaCoCo reports
 configurations.create("transitiveCompiledElements") {
-    isVisible = false
     isCanBeResolved = false
     isCanBeConsumed = true
     extendsFrom(configurations.implementation.get())
@@ -105,7 +103,6 @@ configurations.create("transitiveCompiledElements") {
 
 // Share the coverage data to be aggregated for the whole product
 configurations.create("coverageDataElements") {
-    isVisible = false
     isCanBeResolved = false
     isCanBeConsumed = true
     extendsFrom(configurations.implementation.get())
