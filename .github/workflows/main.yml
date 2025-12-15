@@ -29,7 +29,7 @@ jobs:
         uses: actions/setup-java@v5
         with:
           distribution: temurin
-          java-version: 21
+          java-version: 25
 
       - name: Setup NodeJS
         uses: actions/setup-node@v6
@@ -75,9 +75,9 @@ jobs:
           - name: windows
             os: windows-latest
             artifact: app-native-windows
-          - name: macos
-            os: macos-latest
-            artifact: app-native-macos
+#          - name: macos
+#            os: macos-latest
+#            artifact: app-native-macos
     runs-on: ${{ matrix.os }}
     name: build-native-${{ matrix.name }}
     steps:
@@ -89,7 +89,7 @@ jobs:
       - name: Setup GraalVM
         uses: graalvm/setup-graalvm@v1
         with:
-          java-version: '21'
+          java-version: '25'
           distribution: 'liberica'
           github-token: ${{ secrets.GITHUB_TOKEN }}
           native-image-job-reports: 'true'
@@ -140,7 +140,7 @@ jobs:
         uses: actions/setup-java@v5
         with:
           distribution: temurin
-          java-version: 21
+          java-version: 25
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v5
@@ -175,11 +175,11 @@ jobs:
           chmod +x realworld-backend-spring
           tar -czf $(cat gradle-artifact.txt).tar.gz realworld-backend-spring
 
-      - name: Prepare macOS Artifacts
-        run: |
-          cd app-native-macos
-          chmod +x realworld-backend-spring
-          tar -czf $(cat gradle-artifact.txt).tar.gz realworld-backend-spring
+#      - name: Prepare macOS Artifacts
+#        run: |
+#          cd app-native-macos
+#          chmod +x realworld-backend-spring
+#          tar -czf $(cat gradle-artifact.txt).tar.gz realworld-backend-spring
 
       - name: Prepare Windows Artifacts
         run: |
@@ -199,10 +199,10 @@ jobs:
         with:
           body_path: changelog.txt
           draft: true
+#            app-native-macos/*.tar.gz
           files: |
             app-jar/*.jar
             app-native-linux/*.tar.gz
-            app-native-macos/*.tar.gz
             app-native-windows/*.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -218,7 +218,7 @@ jobs:
         uses: actions/setup-java@v5
         with:
           distribution: temurin
-          java-version: 21
+          java-version: 25
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v5
