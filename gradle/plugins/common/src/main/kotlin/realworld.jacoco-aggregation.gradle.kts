@@ -6,7 +6,6 @@ plugins {
 
 // A resolvable configuration to collect source code
 val sourcesPath: Configuration by configurations.creating {
-    isVisible = false
     isCanBeResolved = true
     isCanBeConsumed = false
     extendsFrom(configurations.implementation.get())
@@ -19,7 +18,6 @@ val sourcesPath: Configuration by configurations.creating {
 
 // A resolvable configuration to collect source code
 val classesPath: Configuration by configurations.creating {
-    isVisible = false
     isCanBeResolved = true
     isCanBeConsumed = false
     extendsFrom(configurations.implementation.get())
@@ -32,7 +30,6 @@ val classesPath: Configuration by configurations.creating {
 
 // A resolvable configuration to collect JaCoCo coverage data
 val coverageDataPath: Configuration by configurations.creating {
-    isVisible = false
     isCanBeResolved = true
     isCanBeConsumed = false
     extendsFrom(configurations.implementation.get())

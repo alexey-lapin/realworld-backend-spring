@@ -1,3 +1,5 @@
+import com.github.benmanes.gradle.versions.updates.resolutionstrategy.ComponentSelectionWithCurrent
+
 plugins {
     alias(libs.plugins.versions)
     id("realworld.jacoco-aggregation")
@@ -14,12 +16,12 @@ tasks {
         checkConstraints = true
         resolutionStrategy {
             componentSelection {
-                all {
+                all { selection: ComponentSelectionWithCurrent ->
                     val rejected = listOf("alpha", "beta", "rc", "cr", "m", "preview", "b", "ea")
-                            .map { qualifier -> Regex("(?i).*[.-]$qualifier[.\\d-+]*") }
-                            .any { it.matches(candidate.version) }
+                        .map { qualifier -> Regex("(?i).*[.-]$qualifier[.\\d-+]*") }
+                        .any { it.matches(selection.candidate.version) }
                     if (rejected) {
-                        reject("Release candidate")
+                        selection.reject("Release candidate")
                     }
                 }
             }
