@@ -21,22 +21,33 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.github.al.realworld.infrastructure.db.jpa;
+package com.github.al.realworld.infrastructure.db.jdbc;
 
-import com.github.al.realworld.domain.model.FollowRelation;
-import com.github.al.realworld.domain.model.FollowRelationId;
-import com.github.al.realworld.domain.model.User;
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.relational.core.mapping.MappedCollection;
+import org.springframework.data.relational.core.mapping.Table;
 
+import java.time.Instant;
 import java.util.List;
-import java.util.UUID;
 
-public interface DataFollowRelationRepository extends CrudRepository<FollowRelation, FollowRelationId> {
-
-    List<FollowRelation> findByFollowerId(UUID followerId);
-
-    List<FollowRelation> findByFolloweeId(UUID followeeId);
-
-    void deleteByFollowerAndFollowee(User follower, User followee);
-
+@Table("t_articles")
+public record ArticleJdbcEntity(
+        @Id
+        long id,
+        @CreatedDate
+        Instant createdAt,
+        @LastModifiedDate
+        Instant updatedAt,
+        long authorId,
+        String slug,
+        String title,
+        String description,
+        String body,
+        String tagList,
+        int favoritesCount,
+        @MappedCollection(idColumn = "article_id", keyColumn = "order")
+        List<ArticleTagJdbcEntity> tagIds
+) {
 }

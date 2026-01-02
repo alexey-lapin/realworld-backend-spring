@@ -26,14 +26,17 @@ package com.github.al.realworld.application.command;
 import com.github.al.realworld.api.command.DeleteArticle;
 import com.github.al.realworld.api.command.DeleteArticleResult;
 import com.github.al.realworld.bus.CommandHandler;
-import com.github.al.realworld.domain.model.Article;
+import com.github.al.realworld.domain.repository.ArticleFavoriteRepository;
 import com.github.al.realworld.domain.repository.ArticleRepository;
+import com.github.al.realworld.domain.repository.CommentRepository;
+import com.github.al.realworld.domain.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Objects;
 
+import static com.github.al.realworld.application.exception.BadRequestException.badRequest;
 import static com.github.al.realworld.application.exception.ForbiddenException.forbidden;
 import static com.github.al.realworld.application.exception.NotFoundException.notFound;
 
@@ -42,18 +45,26 @@ import static com.github.al.realworld.application.exception.NotFoundException.no
 public class DeleteArticleHandler implements CommandHandler<DeleteArticleResult, DeleteArticle> {
 
     private final ArticleRepository articleRepository;
+    private final ArticleFavoriteRepository articleFavoriteRepository;
+    private final CommentRepository commentRepository;
+    private final UserRepository userRepository;
 
     @Transactional
     @Override
     public DeleteArticleResult handle(DeleteArticle command) {
-        Article article = articleRepository.findBySlug(command.getSlug())
+        var article = articleRepository.findAssemblyBySlug(null, command.getSlug())
                 .orElseThrow(() -> notFound("article [slug=%s] does not exist", command.getSlug()));
 
-        if (!Objects.equals(article.getAuthor().getUsername(), command.getCurrentUsername())) {
+        var currentUser = userRepository.findByUsername(command.getCurrentUsername())
+                .orElseThrow(() -> badRequest("user [name=%s] does not exist", command.getCurrentUsername()));
+
+        if (!Objects.equals(article.authorId(), currentUser.id())) {
             throw forbidden("article [slug=%s] is not owned by %s", command.getSlug(), command.getCurrentUsername());
         }
 
-        articleRepository.delete(article);
+        commentRepository.deleteAllByArticleId(article.id());
+        articleFavoriteRepository.deleteAllByArticleId(article.id());
+        articleRepository.deleteById(article.id());
 
         return new DeleteArticleResult();
     }

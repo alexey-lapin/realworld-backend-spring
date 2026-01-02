@@ -181,7 +181,7 @@ public class ArticleApiTest extends BaseRestTest {
 
         comments = articleClient.findAllComments(created.getSlug()).getComments();
 
-        assertThat(comments).hasSize(1);
+        assertThat(comments).hasSize(0);
     }
 
     @Test

@@ -24,22 +24,48 @@
 package com.github.al.realworld.domain.repository;
 
 import com.github.al.realworld.domain.model.Article;
+import com.github.al.realworld.domain.model.ArticleAssembly;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 public interface ArticleRepository {
 
+    boolean existsByTitle(String title);
+
+    Optional<Long> findIdBySlug(String slug);
+
     Optional<Article> findBySlug(String slug);
 
-    Optional<Article> findByTitle(String title);
-
-    List<Article> findByFilters(String tag, String author, String favorited, Integer limit, Integer offset);
-
-    List<Article> findByFollowees(List<UUID> followees, Integer limit, Integer offset);
-
-    void delete(Article article);
-
     Article save(Article article);
+
+    void incrementFavoriteCount(long id);
+
+    void decrementFavoriteCount(long id);
+
+    void deleteById(long id);
+
+    // read model
+
+    Optional<ArticleAssembly> findAssemblyById(Long userId,
+                                               long id);
+
+    Optional<ArticleAssembly> findAssemblyBySlug(Long userId,
+                                                 String slug);
+
+    List<ArticleAssembly> findAllAssemblyByFilters(Long userId,
+                                                   Long tagId,
+                                                   Long authorId,
+                                                   Long favoritedById,
+                                                   int limit,
+                                                   int offset);
+
+    List<ArticleAssembly> findAllAssemblyByFollowerId(long userId,
+                                                      Integer limit,
+                                                      Integer offset);
+
+    long countByFilters(Long tagId, Long authorId, Long favoritedById);
+
+    long countFeed(long userId);
+
 }

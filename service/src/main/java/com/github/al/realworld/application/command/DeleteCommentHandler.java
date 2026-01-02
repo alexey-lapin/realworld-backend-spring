@@ -26,16 +26,11 @@ package com.github.al.realworld.application.command;
 import com.github.al.realworld.api.command.DeleteComment;
 import com.github.al.realworld.api.command.DeleteCommentResult;
 import com.github.al.realworld.bus.CommandHandler;
-import com.github.al.realworld.domain.model.Article;
-import com.github.al.realworld.domain.model.Comment;
-import com.github.al.realworld.domain.repository.ArticleRepository;
+import com.github.al.realworld.domain.repository.CommentRepository;
+import com.github.al.realworld.domain.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import static com.github.al.realworld.application.exception.ForbiddenException.forbidden;
 import static com.github.al.realworld.application.exception.NotFoundException.notFound;
@@ -44,29 +39,23 @@ import static com.github.al.realworld.application.exception.NotFoundException.no
 @Service
 public class DeleteCommentHandler implements CommandHandler<DeleteCommentResult, DeleteComment> {
 
-    private final ArticleRepository articleRepository;
+    private final CommentRepository commentRepository;
+    private final UserRepository userRepository;
 
     @Transactional
     @Override
     public DeleteCommentResult handle(DeleteComment command) {
-        Article article = articleRepository.findBySlug(command.getSlug())
-                .orElseThrow(() -> notFound("article [slug=%s] does not exist", command.getSlug()));
-
-        Comment comment = article.getComments().stream()
-                .filter(c -> c.getId().equals(command.getId()))
-                .findFirst()
+        var comment = commentRepository.findById(command.getId())
                 .orElseThrow(() -> notFound("comment [id=%s] does not exist", command.getId()));
 
-        if (!comment.getAuthor().getUsername().equals(command.getCurrentUsername())) {
-            throw forbidden("comment [id=%s] is not owned by %s", comment.getId(), command.getCurrentUsername());
+        var currentUser = userRepository.findByUsername(command.getCurrentUsername())
+                .orElseThrow(() -> notFound("user [name=%s] does not exist", command.getCurrentUsername()));
+
+        if (comment.authorId() != currentUser.id()) {
+            throw forbidden("comment [id=%s] is not owned by %s", comment.id(), command.getCurrentUsername());
         }
 
-        Set<Comment> alteredComments = article.getComments().stream()
-                .filter(comment1 -> Objects.equals(comment1, comment))
-                .collect(Collectors.toSet());
-
-        Article alteredArticle = article.toBuilder().comments(alteredComments).build();
-        articleRepository.save(alteredArticle);
+        commentRepository.deleteById(comment.id());
 
         return new DeleteCommentResult();
     }

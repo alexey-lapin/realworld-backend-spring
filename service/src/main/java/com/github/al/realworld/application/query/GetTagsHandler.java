@@ -32,9 +32,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.stream.StreamSupport;
-
 @RequiredArgsConstructor
 @Service
 public class GetTagsHandler implements QueryHandler<GetTagsResult, GetTags> {
@@ -44,14 +41,12 @@ public class GetTagsHandler implements QueryHandler<GetTagsResult, GetTags> {
     @Transactional(readOnly = true)
     @Override
     public GetTagsResult handle(GetTags query) {
-        GetTagsResult result = new GetTagsResult(new ArrayList<>());
-
-        StreamSupport.stream(tagRepository.findAll().spliterator(), false)
-                .map(Tag::getName)
+        var tags = tagRepository.findAll().stream()
+                .map(Tag::name)
                 .sorted()
-                .forEach(t -> result.getTags().add(t));
+                .toList();
 
-        return result;
+        return new GetTagsResult(tags);
     }
 
 }

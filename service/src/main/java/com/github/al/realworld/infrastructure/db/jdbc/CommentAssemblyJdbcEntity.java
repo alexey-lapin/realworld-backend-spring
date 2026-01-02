@@ -21,40 +21,25 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.github.al.realworld.infrastructure.db.jpa;
+package com.github.al.realworld.infrastructure.db.jdbc;
 
-import com.github.al.realworld.domain.model.FollowRelation;
-import com.github.al.realworld.domain.model.User;
-import com.github.al.realworld.domain.repository.FollowRelationRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Repository;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Table;
 
-import java.util.List;
-import java.util.UUID;
+import java.time.Instant;
 
-@RequiredArgsConstructor
-@Repository
-public class JpaFollowRelationRepositoryAdapter implements FollowRelationRepository {
-
-    private final DataFollowRelationRepository repository;
-
-    @Override
-    public FollowRelation save(FollowRelation entity) {
-        return repository.save(entity);
-    }
-
-    @Override
-    public List<FollowRelation> findByFollowerId(UUID followerId) {
-        return repository.findByFollowerId(followerId);
-    }
-
-    @Override
-    public List<FollowRelation> findByFolloweeId(UUID followeeId) {
-        return repository.findByFolloweeId(followeeId);
-    }
-
-    @Override
-    public void deleteByFollowerAndFollowee(User follower, User followee) {
-        repository.deleteByFollowerAndFollowee(follower, followee);
-    }
+@Table("v_comments_read")
+public record CommentAssemblyJdbcEntity(
+        @Id
+        long id,
+        Instant createdAt,
+        Instant updatedAt,
+        long articleId,
+        long authorId,
+        String body,
+        String authorUsername,
+        String authorBio,
+        String authorImage,
+        boolean authorFollowing
+) {
 }

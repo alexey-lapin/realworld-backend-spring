@@ -21,22 +21,16 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.github.al.realworld.application;
+package com.github.al.realworld.infrastructure.db.jdbc;
 
-import com.github.al.realworld.api.dto.UserDto;
-import com.github.al.realworld.application.service.JwtService;
-import com.github.al.realworld.domain.model.User;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Table;
 
-public class UserAssembler {
-
-    public static UserDto assemble(User user, JwtService jwtService) {
-        return UserDto.builder()
-                .email(user.getEmail())
-                .username(user.getUsername())
-                .token(jwtService.getToken(user))
-                .bio(user.getBio())
-                .image(user.getImage())
-                .build();
-    }
-
+@Table("t_follows")
+public record FollowRelationJdbcEntity(
+        @Id
+        long id,
+        long followerId,
+        long followeeId
+) {
 }

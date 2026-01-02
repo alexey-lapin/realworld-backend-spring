@@ -23,29 +23,20 @@
  */
 package com.github.al.realworld.domain.model;
 
-import jakarta.persistence.Table;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.NonNull;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-
-@NoArgsConstructor
-@Getter
-@Entity
-@Table(name = "tbl_tag")
-public class Tag {
-
-    @Id
-    @GeneratedValue
-    private Long id;
-
-    @Column(unique = true)
-    private String name;
+public record Tag(
+        long id,
+        @NonNull String name
+) implements Comparable<Tag> {
 
     public Tag(String name) {
-        this.name = name;
+        this(0, name);
     }
+
+    @Override
+    public int compareTo(Tag that) {
+        return this.name.compareTo(that.name);
+    }
+
 }

@@ -23,13 +23,15 @@
  */
 package com.github.al.realworld.application.query;
 
+import com.github.al.realworld.api.dto.ProfileDto;
 import com.github.al.realworld.api.query.GetProfile;
 import com.github.al.realworld.api.query.GetProfileResult;
-import com.github.al.realworld.application.ProfileAssembler;
 import com.github.al.realworld.bus.QueryHandler;
 import com.github.al.realworld.domain.model.User;
+import com.github.al.realworld.domain.repository.ProfileRepository;
 import com.github.al.realworld.domain.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,17 +42,22 @@ import static com.github.al.realworld.application.exception.NotFoundException.no
 public class GetProfileHandler implements QueryHandler<GetProfileResult, GetProfile> {
 
     private final UserRepository userRepository;
+    private final ProfileRepository profileRepository;
+    private final ConversionService conversionService;
 
     @Transactional(readOnly = true)
     @Override
     public GetProfileResult handle(GetProfile query) {
-        User currentUser = userRepository.findByUsername(query.getCurrentUsername())
+        var currentUserId = userRepository.findByUsername(query.getCurrentUsername())
+                .map(User::id)
                 .orElse(null);
 
-        User user = userRepository.findByUsername(query.getUsername())
+        var profileAssembly = profileRepository.findByUsername(query.getUsername(), currentUserId)
                 .orElseThrow(() -> notFound("user [name=%s] does not exist", query.getUsername()));
 
-        return new GetProfileResult(ProfileAssembler.assemble(user, currentUser));
+        var data = conversionService.convert(profileAssembly, ProfileDto.class);
+
+        return new GetProfileResult(data);
     }
 
 }

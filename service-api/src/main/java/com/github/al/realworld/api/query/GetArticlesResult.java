@@ -34,6 +34,6 @@ import java.util.List;
 public class GetArticlesResult {
 
     private List<ArticleDto> articles;
-    private Integer articlesCount;
+    private Long articlesCount;
 
 }

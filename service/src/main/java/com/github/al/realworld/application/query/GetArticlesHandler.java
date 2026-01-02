@@ -26,17 +26,17 @@ package com.github.al.realworld.application.query;
 import com.github.al.realworld.api.dto.ArticleDto;
 import com.github.al.realworld.api.query.GetArticles;
 import com.github.al.realworld.api.query.GetArticlesResult;
-import com.github.al.realworld.application.ArticleAssembler;
 import com.github.al.realworld.bus.QueryHandler;
-import com.github.al.realworld.domain.model.Article;
+import com.github.al.realworld.domain.model.Tag;
 import com.github.al.realworld.domain.model.User;
 import com.github.al.realworld.domain.repository.ArticleRepository;
+import com.github.al.realworld.domain.repository.TagRepository;
 import com.github.al.realworld.domain.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -45,21 +45,66 @@ public class GetArticlesHandler implements QueryHandler<GetArticlesResult, GetAr
 
     private final ArticleRepository articleRepository;
     private final UserRepository userRepository;
+    private final TagRepository tagRepository;
+    private final ConversionService conversionService;
 
     @Transactional(readOnly = true)
     @Override
     public GetArticlesResult handle(GetArticles query) {
-        List<Article> articles = articleRepository
-                .findByFilters(query.getTag(), query.getAuthor(), query.getFavorited(), query.getLimit(), query.getOffset());
-
-        User currentUser = userRepository.findByUsername(query.getCurrentUsername())
+        var currentUserId = userRepository.findByUsername(query.getCurrentUsername())
+                .map(User::id)
                 .orElse(null);
 
-        List<ArticleDto> results = new ArrayList<>();
+        Long tagId;
+        if (query.getTag() == null) {
+            tagId = null;
+        } else {
+            tagId = tagRepository.findByName(query.getTag())
+                    .map(Tag::id)
+                    .orElse(null);
+            if (tagId == null) {
+                return new GetArticlesResult(List.of(), 0L);
+            }
+        }
 
-        articles.forEach(article -> results.add(ArticleAssembler.assemble(article, currentUser)));
+        Long authorId;
+        if (query.getAuthor() == null) {
+            authorId = null;
+        } else {
+            authorId = userRepository.findByUsername(query.getAuthor())
+                    .map(User::id)
+                    .orElse(null);
+            if (authorId == null) {
+                return new GetArticlesResult(List.of(), 0L);
+            }
+        }
 
-        return new GetArticlesResult(results, results.size());
+        Long favoritedById;
+        if (query.getFavorited() == null) {
+            favoritedById = null;
+        } else {
+            favoritedById = userRepository.findByUsername(query.getFavorited())
+                    .map(User::id)
+                    .orElse(null);
+            if (favoritedById == null) {
+                return new GetArticlesResult(List.of(), 0L);
+            }
+        }
+
+        var articles = articleRepository.findAllAssemblyByFilters(currentUserId,
+                tagId,
+                authorId,
+                favoritedById,
+                query.getLimit(),
+                query.getOffset());
+
+        var results = articles.stream()
+                .map(a -> conversionService.convert(a, ArticleDto.class))
+                .toList();
+
+        var count = articleRepository.countByFilters(tagId, authorId, favoritedById);
+
+        return new GetArticlesResult(results, count);
     }
 
 }

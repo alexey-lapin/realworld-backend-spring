@@ -25,13 +25,14 @@ package com.github.al.realworld.application.command;
 
 import com.github.al.realworld.api.command.FollowProfile;
 import com.github.al.realworld.api.command.FollowProfileResult;
-import com.github.al.realworld.application.ProfileAssembler;
+import com.github.al.realworld.api.dto.ProfileDto;
 import com.github.al.realworld.bus.CommandHandler;
 import com.github.al.realworld.domain.model.FollowRelation;
-import com.github.al.realworld.domain.model.FollowRelationId;
-import com.github.al.realworld.domain.model.User;
+import com.github.al.realworld.domain.model.Profile;
+import com.github.al.realworld.domain.repository.FollowRelationRepository;
 import com.github.al.realworld.domain.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -46,26 +47,28 @@ import static com.github.al.realworld.application.exception.NotFoundException.no
 @Service
 public class FollowProfileHandler implements CommandHandler<FollowProfileResult, FollowProfile> {
 
+    private final FollowRelationRepository followRelationRepository;
     private final UserRepository userRepository;
+    private final ConversionService conversionService;
 
     @Transactional
     @Override
     public FollowProfileResult handle(FollowProfile command) {
-        User currentUser = userRepository.findByUsername(command.getFollower())
+        var currentUser = userRepository.findByUsername(command.getFollower())
                 .orElseThrow(() -> badRequest("user [name=%s] does not exist", command.getFollower()));
 
-        User followee = userRepository.findByUsername(command.getFollowee())
+        var followee = userRepository.findByUsername(command.getFollowee())
                 .orElseThrow(() -> notFound("user [name=%s] does not exist", command.getFollowee()));
 
-        FollowRelation follow = new FollowRelation(
-                new FollowRelationId(currentUser.getId(), followee.getId()),
-                currentUser,
-                followee);
+        var followRelation = new FollowRelation(currentUser.id(), followee.id());
+        if (!followRelationRepository.exists(followRelation)) {
+            followRelationRepository.save(followRelation);
+        }
 
-        User alteredFollowee = followee.toBuilder().follower(follow).build();
-        userRepository.save(alteredFollowee);
+        var profileAssembly = new Profile(followee.username(), followee.bio(), followee.image(), true);
+        var data = conversionService.convert(profileAssembly, ProfileDto.class);
 
-        return new FollowProfileResult(ProfileAssembler.assemble(alteredFollowee, currentUser));
+        return new FollowProfileResult(data);
     }
 
 }

@@ -25,18 +25,16 @@ package com.github.al.realworld.application.command;
 
 import com.github.al.realworld.api.command.AddComment;
 import com.github.al.realworld.api.command.AddCommentResult;
-import com.github.al.realworld.application.CommentAssembler;
+import com.github.al.realworld.api.dto.CommentDto;
 import com.github.al.realworld.bus.CommandHandler;
-import com.github.al.realworld.domain.model.Article;
 import com.github.al.realworld.domain.model.Comment;
-import com.github.al.realworld.domain.model.User;
 import com.github.al.realworld.domain.repository.ArticleRepository;
+import com.github.al.realworld.domain.repository.CommentRepository;
 import com.github.al.realworld.domain.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.ZonedDateTime;
 
 import static com.github.al.realworld.application.exception.BadRequestException.badRequest;
 import static com.github.al.realworld.application.exception.NotFoundException.notFound;
@@ -46,38 +44,31 @@ import static com.github.al.realworld.application.exception.NotFoundException.no
 public class AddCommentHandler implements CommandHandler<AddCommentResult, AddComment> {
 
     private final ArticleRepository articleRepository;
+    private final CommentRepository commentRepository;
     private final UserRepository userRepository;
+    private final ConversionService conversionService;
 
     @Transactional
     @Override
     public AddCommentResult handle(AddComment command) {
-        Article article = articleRepository.findBySlug(command.getSlug())
+        var articleId = articleRepository.findIdBySlug(command.getSlug())
                 .orElseThrow(() -> notFound("article [slug=%s] does not exist", command.getSlug()));
 
-        User currentUser = userRepository.findByUsername(command.getCurrentUsername())
+        var currentUser = userRepository.findByUsername(command.getCurrentUsername())
                 .orElseThrow(() -> badRequest("user [name=%s] does not exist", command.getCurrentUsername()));
 
-        ZonedDateTime now = ZonedDateTime.now();
-
-        Comment comment = Comment.builder()
+        var comment = Comment.builder()
+                .articleId(articleId)
+                .authorId(currentUser.id())
                 .body(command.getBody())
-                .createdAt(now)
-                .updatedAt(now)
-                .author(currentUser)
                 .build();
 
-        Article alteredArticle = article.toBuilder().comment(comment).build();
+        var savedComment = commentRepository.save(comment);
 
-        Article savedArticle = articleRepository.save(alteredArticle);
+        var commentAssembly = commentRepository.findAssemblyById(currentUser.id(), savedComment.id()).orElseThrow();
+        var data = conversionService.convert(commentAssembly, CommentDto.class);
 
-        Comment savedComment = savedArticle.getComments().stream()
-                .filter(c -> c.getCreatedAt().equals(comment.getCreatedAt()))
-                .filter(c -> c.getAuthor().equals(comment.getAuthor()))
-                .findFirst()
-                // should never happen
-                .orElseThrow(() -> new RuntimeException("saved comment not found"));
-
-        return new AddCommentResult(CommentAssembler.assemble(savedComment, currentUser));
+        return new AddCommentResult(data);
     }
 
 }

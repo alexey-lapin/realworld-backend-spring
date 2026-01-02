@@ -47,4 +47,5 @@ public class ArticleDto {
     private Boolean favorited;
     private Integer favoritesCount;
     private ProfileDto author;
+
 }

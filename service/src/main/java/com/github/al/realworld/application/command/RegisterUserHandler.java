@@ -25,18 +25,17 @@ package com.github.al.realworld.application.command;
 
 import com.github.al.realworld.api.command.RegisterUser;
 import com.github.al.realworld.api.command.RegisterUserResult;
-import com.github.al.realworld.application.UserAssembler;
+import com.github.al.realworld.api.dto.UserDto;
 import com.github.al.realworld.application.service.JwtService;
 import com.github.al.realworld.bus.CommandHandler;
 import com.github.al.realworld.domain.model.User;
+import com.github.al.realworld.domain.model.UserWithToken;
 import com.github.al.realworld.domain.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Optional;
-import java.util.UUID;
 
 import static com.github.al.realworld.application.exception.BadRequestException.badRequest;
 
@@ -47,28 +46,30 @@ public class RegisterUserHandler implements CommandHandler<RegisterUserResult, R
     private final UserRepository userRepository;
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
+    private final ConversionService conversionService;
 
     @Transactional
     @Override
     public RegisterUserResult handle(RegisterUser command) {
-        Optional<User> userByEmailOptional = userRepository.findByEmail(command.getEmail());
-        if (userByEmailOptional.isPresent()) {
+        if (userRepository.existsByEmail(command.getEmail())) {
             throw badRequest("user [email=%s] already exists", command.getEmail());
         }
-        Optional<User> userByUsernameOptional = userRepository.findByUsername(command.getUsername());
-        if (userByUsernameOptional.isPresent()) {
+        if (userRepository.existsByUsername(command.getUsername())) {
             throw badRequest("user [name=%s] already exists", command.getUsername());
         }
 
-        User user = User.builder()
-                .id(UUID.randomUUID())
+        var user = User.builder()
                 .username(command.getUsername())
                 .email(command.getEmail())
                 .password(passwordEncoder.encode(command.getPassword()))
                 .build();
-        userRepository.save(user);
 
-        return new RegisterUserResult(UserAssembler.assemble(user, jwtService));
+        var savedUser = userRepository.save(user);
+
+        var token = jwtService.getToken(savedUser);
+        var data = conversionService.convert(new UserWithToken(savedUser, token), UserDto.class);
+
+        return new RegisterUserResult(data);
     }
 
 }

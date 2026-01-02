@@ -26,17 +26,15 @@ package com.github.al.realworld.application.query;
 import com.github.al.realworld.api.dto.CommentDto;
 import com.github.al.realworld.api.query.GetComments;
 import com.github.al.realworld.api.query.GetCommentsResult;
-import com.github.al.realworld.application.CommentAssembler;
 import com.github.al.realworld.bus.QueryHandler;
-import com.github.al.realworld.domain.model.Article;
 import com.github.al.realworld.domain.model.User;
 import com.github.al.realworld.domain.repository.ArticleRepository;
+import com.github.al.realworld.domain.repository.CommentRepository;
 import com.github.al.realworld.domain.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.ArrayList;
 
 import static com.github.al.realworld.application.exception.NotFoundException.notFound;
 
@@ -45,20 +43,23 @@ import static com.github.al.realworld.application.exception.NotFoundException.no
 public class GetCommentsHandler implements QueryHandler<GetCommentsResult, GetComments> {
 
     private final ArticleRepository articleRepository;
+    private final CommentRepository commentRepository;
     private final UserRepository userRepository;
+    private final ConversionService conversionService;
 
     @Transactional(readOnly = true)
     @Override
     public GetCommentsResult handle(GetComments query) {
-        Article article = articleRepository.findBySlug(query.getSlug())
+        var articleId = articleRepository.findIdBySlug(query.getSlug())
                 .orElseThrow(() -> notFound("article [slug=%s] does not exists", query.getSlug()));
 
-        User currentUser = userRepository.findByUsername(query.getCurrentUsername())
+        var currentUserId = userRepository.findByUsername(query.getCurrentUsername())
+                .map(User::id)
                 .orElse(null);
 
-        ArrayList<CommentDto> result = new ArrayList<>();
-
-        article.getComments().forEach(comment -> result.add(CommentAssembler.assemble(comment, currentUser)));
+        var result = commentRepository.findAllAssemblyByArticleId(currentUserId, articleId).stream()
+                .map(comment -> conversionService.convert(comment, CommentDto.class))
+                .toList();
 
         return new GetCommentsResult(result);
     }

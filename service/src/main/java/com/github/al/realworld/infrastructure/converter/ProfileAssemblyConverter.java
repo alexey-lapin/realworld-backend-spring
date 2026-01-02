@@ -21,22 +21,18 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.github.al.realworld.application;
+package com.github.al.realworld.infrastructure.converter;
 
-import com.github.al.realworld.api.dto.CommentDto;
-import com.github.al.realworld.domain.model.Comment;
-import com.github.al.realworld.domain.model.User;
+import com.github.al.realworld.api.dto.ProfileDto;
+import com.github.al.realworld.domain.model.Profile;
+import com.github.al.realworld.infrastructure.config.MappingConfig;
+import org.mapstruct.Mapper;
+import org.springframework.core.convert.converter.Converter;
 
-public class CommentAssembler {
+@Mapper(config = MappingConfig.class)
+public abstract class ProfileAssemblyConverter implements Converter<Profile, ProfileDto> {
 
-    public static CommentDto assemble(Comment comment, User currentUser) {
-        return CommentDto.builder()
-                .id(comment.getId())
-                .createdAt(comment.getCreatedAt())
-                .updatedAt(comment.getUpdatedAt())
-                .body(comment.getBody())
-                .author(ProfileAssembler.assemble(comment.getAuthor(), currentUser))
-                .build();
-    }
+    @Override
+    public abstract ProfileDto convert(Profile source);
 
 }

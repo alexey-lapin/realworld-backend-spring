@@ -43,7 +43,7 @@ public class DefaultJwtService implements JwtService {
         JwsHeader header = JwsHeader.with(MacAlgorithm.HS256).build();
 
         JwtClaimsSet claims = JwtClaimsSet.builder()
-                .subject(user.getUsername())
+                .subject(user.username())
                 .build();
 
         return jwtEncoder.encode(JwtEncoderParameters.from(header, claims)).getTokenValue();

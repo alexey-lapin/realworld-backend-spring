@@ -21,55 +21,49 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.github.al.realworld.infrastructure.db.jpa;
+package com.github.al.realworld.infrastructure.db.jdbc;
 
-import com.github.al.realworld.domain.model.Article;
-import com.github.al.realworld.domain.repository.ArticleRepository;
+import com.github.al.realworld.domain.model.FollowRelation;
+import com.github.al.realworld.domain.repository.FollowRelationRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
 
 @RequiredArgsConstructor
 @Repository
-public class JpaArticleRepositoryAdapter implements ArticleRepository {
+public class FollowRelationJdbcRepositoryAdapter implements FollowRelationRepository {
 
-    private final DataArticleRepository repository;
+    private final FollowRelationJdbcRepository repository;
 
     @Override
-    public Optional<Article> findBySlug(String slug) {
-        return repository.findBySlug(slug);
+    public boolean exists(FollowRelation followRelation) {
+        return repository.existsByFollowerIdAndFolloweeId(followRelation.followerId(), followRelation.followeeId());
     }
 
     @Override
-    public Optional<Article> findByTitle(String title) {
-        return repository.findByTitle(title);
+    public FollowRelation save(FollowRelation followRelation) {
+        repository.save(new FollowRelationJdbcEntity(0L, followRelation.followerId(), followRelation.followeeId()));
+        return followRelation;
     }
 
     @Override
-    public List<Article> findByFilters(String tag, String author, String favorited, Integer limit, Integer offset) {
-        Pageable pageable = new OffsetBasedPageRequest(limit, offset, Sort.by(Sort.Order.desc("createdAt")));
-        return repository.findByFilters(tag, author, favorited, pageable);
+    public List<FollowRelation> findByFollowerId(long followerId) {
+        return repository.findByFollowerId(followerId).stream()
+                .map(e -> new FollowRelation(e.followerId(), e.followeeId()))
+                .toList();
     }
 
     @Override
-    public List<Article> findByFollowees(List<UUID> followees, Integer limit, Integer offset) {
-        Pageable pageable = new OffsetBasedPageRequest(limit, offset, Sort.by(Sort.Order.desc("createdAt")));
-        return repository.findByFollowees(followees, pageable);
+    public List<FollowRelation> findByFolloweeId(long followeeId) {
+        return repository.findByFolloweeId(followeeId).stream()
+                .map(e -> new FollowRelation(e.followerId(), e.followeeId()))
+                .toList();
     }
 
     @Override
-    public void delete(Article article) {
-        repository.delete(article);
-    }
-
-    @Override
-    public Article save(Article article) {
-        return repository.save(article);
+    public void delete(FollowRelation followRelation) {
+        repository.deleteByFollowerIdAndFolloweeId(followRelation.followerId(), followRelation.followeeId());
     }
 
 }

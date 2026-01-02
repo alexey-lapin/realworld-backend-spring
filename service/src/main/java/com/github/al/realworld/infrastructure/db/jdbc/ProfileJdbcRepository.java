@@ -21,15 +21,30 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.github.al.realworld.infrastructure.db.jpa;
+package com.github.al.realworld.infrastructure.db.jdbc;
 
-import com.github.al.realworld.domain.model.Tag;
-import org.springframework.data.repository.CrudRepository;
+import com.github.al.realworld.domain.model.Profile;
+import org.springframework.data.jdbc.repository.query.Query;
+import org.springframework.data.repository.Repository;
+import org.springframework.data.repository.query.Param;
 
 import java.util.Optional;
 
-public interface DataTagRepository extends CrudRepository<Tag, Long> {
+public interface ProfileJdbcRepository extends Repository<Profile, Long> {
 
-    Optional<Tag> findByName(String name);
+    @Query("""
+            select u."username", u."bio", u."image",
+            case \
+                       when :currentUserId is null then false \
+                       else exists (select 1 \
+                                    from "t_follows" fl \
+                                    where fl."followee_id" = u."id" \
+                                      and fl."follower_id" = :currentUserId) \
+                       end as "following" \
+            from "t_users" u
+            where u."username" = :username
+            """)
+    Optional<Profile> findByUsername(@Param("username") String username,
+                                     @Param("currentUserId") Long currentUserId);
 
 }

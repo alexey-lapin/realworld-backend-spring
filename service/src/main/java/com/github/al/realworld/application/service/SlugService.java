@@ -40,8 +40,8 @@ public class SlugService {
         String normalized = Normalizer.normalize(noseparators, Normalizer.Form.NFD);
         String slug = NONLATIN.matcher(normalized).replaceAll("");
         return slug.toLowerCase(Locale.ENGLISH)
-                .replaceAll("-{2,}","-")
-                .replaceAll("^-|-$","");
+                .replaceAll("-{2,}", "-")
+                .replaceAll("^-|-$", "");
     }
 
 }

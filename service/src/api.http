@@ -1,0 +1,125 @@
+### Register user1
+POST http://localhost:8080/api/users
+Content-Type: application/json
+
+{
+  "user": {
+    "email": "user1@example.com",
+    "username": "user1",
+    "password": "user1"
+  }
+}
+
+### Register user2
+POST http://localhost:8080/api/users
+Content-Type: application/json
+
+{
+  "user": {
+    "email": "user2@example.com",
+    "username": "user2",
+    "password": "user2"
+  }
+}
+
+### Login
+POST http://localhost:8080/api/users/login
+Content-Type: application/json
+
+{
+  "user": {}
+}
+
+### Current user
+GET http://localhost:8080/api/user
+Authorization: Token eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyMSJ9.KhfrLRupqnjbXsLggm4dnw-bx_reBEbl1MOGo2HYisY
+
+### Update User
+PUT http://localhost:8080/api/user
+Content-Type: application/json
+
+{
+  "user": {}
+}
+
+###
+GET http://localhost:8080/api/profiles/user1
+Authorization1: Token eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyMSJ9.KhfrLRupqnjbXsLggm4dnw-bx_reBEbl1MOGo2HYisY
+Authorization: Token eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyMiJ9.1Z7Ub2ffEvIMvyRZAWSxPABXkyN70FDpwyQRNKt9ReI
+
+###
+POST http://localhost:8080/api/profiles/user1/follow
+Authorization: Token eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyMiJ9.1Z7Ub2ffEvIMvyRZAWSxPABXkyN70FDpwyQRNKt9ReI
+
+###
+DELETE http://localhost:8080/api/profiles/{{username}}/follow
+
+###
+GET http://localhost:8080/api/articles/feed?
+    offset=0&
+    limit=100
+Authorization: Token eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyMiJ9.1Z7Ub2ffEvIMvyRZAWSxPABXkyN70FDpwyQRNKt9ReI
+
+###
+GET http://localhost:8080/api/articles?
+    tag={{$placeholder}}&
+    author={{$placeholder}}&
+    favorited={{$placeholder}}&
+    offset={{$placeholder}}&
+    limit={{$placeholder}}
+
+### Create article
+POST http://localhost:8080/api/articles
+Authorization: Token eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyMSJ9.KhfrLRupqnjbXsLggm4dnw-bx_reBEbl1MOGo2HYisY
+Content-Type: application/json
+
+{
+  "article": {
+    "title": "art2",
+    "description": "art1",
+    "body": "art1"
+  }
+}
+
+###
+GET http://localhost:8080/api/articles/art2
+
+###
+PUT http://localhost:8080/api/articles/{{slug}}
+Content-Type: application/json
+
+{
+  "article": {}
+}
+
+###
+DELETE http://localhost:8080/api/articles/art2
+Authorization: Token eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyMSJ9.KhfrLRupqnjbXsLggm4dnw-bx_reBEbl1MOGo2HYisY
+
+###
+GET http://localhost:8080/api/articles/{{slug}}/comments
+
+### Add comment
+POST http://localhost:8080/api/articles/art2/comments
+Authorization: Token eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyMSJ9.KhfrLRupqnjbXsLggm4dnw-bx_reBEbl1MOGo2HYisY
+Content-Type: application/json
+
+{
+  "comment": {
+    "body": "qwer"
+  }
+}
+
+###
+DELETE http://localhost:8080/api/articles/{{slug}}/comments/{{id}}
+
+###
+POST http://localhost:8080/api/articles/art2/favorite
+Authorization: Token eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyMSJ9.KhfrLRupqnjbXsLggm4dnw-bx_reBEbl1MOGo2HYisY
+Authorization1: Token eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyMiJ9.1Z7Ub2ffEvIMvyRZAWSxPABXkyN70FDpwyQRNKt9ReI
+
+###
+DELETE http://localhost:8080/api/articles/{{slug}}/favorite
+
+###
+GET http://localhost:8080/api/tags

@@ -21,30 +21,33 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.github.al.realworld.application;
+package com.github.al.realworld.infrastructure.db.jdbc;
 
-import com.github.al.realworld.api.dto.ArticleDto;
-import com.github.al.realworld.domain.model.Article;
-import com.github.al.realworld.domain.model.Tag;
-import com.github.al.realworld.domain.model.User;
+import org.springframework.data.jdbc.repository.query.Modifying;
+import org.springframework.data.jdbc.repository.query.Query;
+import org.springframework.data.repository.ListCrudRepository;
+import org.springframework.data.repository.query.Param;
 
-import java.util.stream.Collectors;
+import java.util.Optional;
 
-public class ArticleAssembler {
+public interface ArticleJdbcRepository extends ListCrudRepository<ArticleJdbcEntity, Long> {
 
-    public static ArticleDto assemble(Article article, User currentUser) {
-        return ArticleDto.builder()
-                .slug(article.getSlug())
-                .title(article.getTitle())
-                .description(article.getDescription())
-                .body(article.getBody())
-                .tagList(article.getTags().stream().map(Tag::getName).sorted().collect(Collectors.toList()))
-                .createdAt(article.getCreatedAt())
-                .updatedAt(article.getUpdatedAt())
-                .favorited(currentUser != null && article.getFavoredUsers().contains(currentUser))
-                .favoritesCount(article.getFavoredUsers().size())
-                .author(ProfileAssembler.assemble(article.getAuthor(), currentUser))
-                .build();
-    }
+    boolean existsByTitle(String title);
+
+    @Query("""
+            select a."id" from "t_articles" a where a."slug" = :slug""")
+    Optional<Long> findIdBySlug(@Param("slug") String slug);
+
+    Optional<ArticleJdbcEntity> findBySlug(String slug);
+
+    @Modifying
+    @Query("""
+            update "t_articles" a set a."favorites_count" = a."favorites_count" + 1 where a."id" = :id""")
+    void incrementFavoriteCount(@Param("id") long id);
+
+    @Modifying
+    @Query("""
+            update "t_articles" a set a."favorites_count" = a."favorites_count" - 1 where a."id" = :id""")
+    void decrementFavoriteCount(@Param("id") long id);
 
 }
