@@ -5,42 +5,41 @@ import org.springframework.boot.gradle.tasks.bundling.BootJar
 
 plugins {
     alias(libs.plugins.spring.boot)
-    alias(libs.plugins.spring.dependency.management)
     alias(libs.plugins.graalvm)
     id("realworld.java-conventions")
 }
 
 dependencies {
-    annotationProcessor("org.projectlombok:lombok")
+    annotationProcessor(libs.projectlombok.lombok)
     annotationProcessor(libs.mapstruct.springAnnotations)
     annotationProcessor(libs.mapstruct.springExtensions)
     annotationProcessor(libs.mapstruct.processor)
-    compileOnly("org.projectlombok:lombok")
+    compileOnly(libs.projectlombok.lombok)
 
     implementation(project(":service-bus"))
     implementation(project(":service-api"))
 
-    implementation("org.springframework.boot:spring-boot-starter-actuator")
-    implementation("org.springframework.boot:spring-boot-starter-data-jdbc")
-
-    implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
-    implementation("org.springframework.boot:spring-boot-starter-security")
-    implementation("org.springframework.boot:spring-boot-starter-validation")
-    implementation("org.springframework.boot:spring-boot-starter-web")
     implementation(libs.mapstruct.core)
     implementation(libs.mapstruct.springAnnotations)
     implementation(libs.mapstruct.springExtensions)
-    implementation(libs.springdoc.starter.webmvc.ui)
+    implementation(libs.spring.springBootStarterActuator)
+    implementation(libs.spring.springBootStarterDataJdbc)
+    implementation(libs.spring.springBootStarterLiquibase)
+    implementation(libs.spring.springBootStarterOauth2ResourceServer)
+    implementation(libs.spring.springBootStarterSecurity)
+    implementation(libs.spring.springBootStarterValidation)
+    implementation(libs.spring.springBootStarterWebmvc)
+    implementation(libs.springdoc.openapiStarterWebmvcUi)
 
-    runtimeOnly("com.h2database:h2")
-    runtimeOnly("org.liquibase:liquibase-core")
+    runtimeOnly(libs.h2.h2)
 
-    testAnnotationProcessor("org.projectlombok:lombok")
-    testCompileOnly("org.projectlombok:lombok")
-    testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testAnnotationProcessor(libs.projectlombok.lombok)
+    testCompileOnly(libs.projectlombok.lombok)
+    testImplementation(libs.spring.springBootStarterTest)
 
-    intTestAnnotationProcessor("org.projectlombok:lombok")
-    intTestCompileOnly("org.projectlombok:lombok")
+    intTestAnnotationProcessor(libs.projectlombok.lombok)
+    intTestCompileOnly(libs.projectlombok.lombok)
+    intTestImplementation(libs.spring.springBootStarterRestclientTest)
 }
 
 graalvmNative {

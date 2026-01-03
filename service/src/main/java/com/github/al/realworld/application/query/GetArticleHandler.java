@@ -48,9 +48,15 @@ public class GetArticleHandler implements QueryHandler<GetArticleResult, GetArti
     @Transactional(readOnly = true)
     @Override
     public GetArticleResult handle(GetArticle query) {
-        var currentUserId = userRepository.findByUsername(query.getCurrentUsername())
-                .map(User::id)
-                .orElse(null);
+        var currentUsername = query.getCurrentUsername();
+        Long currentUserId;
+        if (currentUsername == null) {
+            currentUserId = null;
+        } else {
+            currentUserId = userRepository.findByUsername(currentUsername)
+                    .map(User::id)
+                    .orElse(null);
+        }
 
         var article = articleRepository.findAssemblyBySlug(currentUserId, query.getSlug())
                 .orElseThrow(() -> notFound("article [slug=%s] does not exists", query.getSlug()));

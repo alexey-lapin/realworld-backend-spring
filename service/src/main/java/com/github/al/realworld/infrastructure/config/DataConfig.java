@@ -27,11 +27,11 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.convert.ReadingConverter;
+import org.springframework.data.jdbc.core.dialect.JdbcDialect;
 import org.springframework.data.jdbc.core.dialect.JdbcH2Dialect;
 import org.springframework.data.jdbc.repository.config.AbstractJdbcConfiguration;
 import org.springframework.data.jdbc.repository.config.EnableJdbcAuditing;
 import org.springframework.data.jdbc.repository.config.EnableJdbcRepositories;
-import org.springframework.data.relational.core.dialect.Dialect;
 import org.springframework.data.relational.core.sql.IdentifierProcessing;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
 
@@ -51,7 +51,7 @@ public class DataConfig extends AbstractJdbcConfiguration {
 
     @Override
     @Bean
-    public Dialect jdbcDialect(NamedParameterJdbcOperations operations) {
+    public JdbcDialect jdbcDialect(NamedParameterJdbcOperations operations) {
         return new JdbcH2Dialect() {
             @Override
             public IdentifierProcessing getIdentifierProcessing() {

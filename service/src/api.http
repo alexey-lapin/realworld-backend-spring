@@ -68,6 +68,9 @@ GET http://localhost:8080/api/articles?
     offset={{$placeholder}}&
     limit={{$placeholder}}
 
+###
+GET http://localhost:8080/api/articles
+
 ### Create article
 POST http://localhost:8080/api/articles
 Authorization: Token eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyMSJ9.KhfrLRupqnjbXsLggm4dnw-bx_reBEbl1MOGo2HYisY
