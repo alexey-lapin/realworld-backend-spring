@@ -1,0 +1,16 @@
+FROM --platform=$BUILDPLATFORM cgr.dev/chainguard/wolfi-base:latest AS builder
+
+ARG TARGETARCH
+ARG APP_NAME
+
+COPY app-native-linux-${TARGETARCH}/${APP_NAME} /app
+
+RUN chmod +x /app
+
+FROM cgr.dev/chainguard/wolfi-base:latest
+
+COPY --from=builder /app /app
+
+EXPOSE 8080
+
+ENTRYPOINT ["/app"]

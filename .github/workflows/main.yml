@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+      - main
     tags:
       - 'v*.*.*'
   pull_request:
@@ -11,6 +12,7 @@ on:
       - '*'
 
 env:
+  APP_NAME: ${{ github.event.repository.name }}
   CR_REGISTRY: ghcr.io
   CR_NAMESPACE: ${{ github.repository_owner }}
   CR_USERNAME: ${{ github.actor }}
@@ -69,15 +71,18 @@ jobs:
     strategy:
       matrix:
         include:
-          - name: linux
+          - name: linux-amd
             os: ubuntu-22.04
-            artifact: app-native-linux
+            artifact: app-native-linux-amd64
+          - name: linux-arm
+            os: ubuntu-22.04-arm
+            artifact: app-native-linux-arm64
           - name: windows
             os: windows-latest
-            artifact: app-native-windows
-#          - name: macos
-#            os: macos-latest
-#            artifact: app-native-macos
+            artifact: app-native-windows-amd64
+          - name: macos
+            os: macos-latest
+            artifact: app-native-macos-arm64
     runs-on: ${{ matrix.os }}
     name: build-native-${{ matrix.name }}
     steps:
@@ -89,8 +94,8 @@ jobs:
       - name: Setup GraalVM
         uses: graalvm/setup-graalvm@v1
         with:
-          java-version: '25'
-          distribution: 'liberica'
+          java-version: 25
+          distribution: liberica
           github-token: ${{ secrets.GITHUB_TOKEN }}
           native-image-job-reports: 'true'
 
@@ -104,16 +109,24 @@ jobs:
 
       - name: Gradle nativeCompile
         env:
+          # Needed for Windows; to resolve issue with temp folder during native image build, due to relativization
+          # problem when different drives are used, such as in GHA runners.
+          # https://github.com/graalvm/native-build-tools/issues/754
           GRADLE_OPTS: -Djava.io.tmpdir=${{ runner.temp }}
         run: ./gradlew :service:nativeCompile -x check
 
+      - name: Prepare Artifacts
+        run: |
+          mkdir /tmp/${{ matrix.artifact }}
+          cp **/build/native/nativeCompile/${{ env.APP_NAME }}* /tmp/${{ matrix.artifact }}
+          cp **/build/native/nativeCompile/gradle-artifact.txt /tmp/${{ matrix.artifact }}
+
       - name: Upload app-native
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v5
         with:
           name: ${{ matrix.artifact }}
           path: |
-            service/build/native/nativeCompile/realworld-backend-spring*
-            service/build/native/nativeCompile/gradle-artifact.txt
+            /tmp/${{ matrix.artifact }}/*
 
       - name: Run app for testing
         run: |
@@ -156,7 +169,7 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
 
-  release-notes:
+  release:
     runs-on: ubuntu-latest
     needs: [build-jvm, build-native]
     if: startsWith(github.ref, 'refs/tags/')
@@ -171,41 +184,40 @@ jobs:
 
       - name: Prepare Linux Artifacts
         run: |
-          cd app-native-linux
-          chmod +x realworld-backend-spring
-          tar -czf $(cat gradle-artifact.txt).tar.gz realworld-backend-spring
+          cd app-native-linux-amd64
+          chmod +x ${{ env.APP_NAME }}
+          tar -czf $(cat gradle-artifact.txt).tar.gz ${{ env.APP_NAME }}
 
-#      - name: Prepare macOS Artifacts
-#        run: |
-#          cd app-native-macos
-#          chmod +x realworld-backend-spring
-#          tar -czf $(cat gradle-artifact.txt).tar.gz realworld-backend-spring
+      - name: Prepare Linux Artifacts
+        run: |
+          cd app-native-linux-arm64
+          chmod +x ${{ env.APP_NAME }}
+          tar -czf $(cat gradle-artifact.txt).tar.gz ${{ env.APP_NAME }}
+
+      - name: Prepare macOS Artifacts
+        run: |
+          cd app-native-macos-arm64
+          chmod +x ${{ env.APP_NAME }}
+          tar -czf $(cat gradle-artifact.txt).tar.gz ${{ env.APP_NAME }}
 
       - name: Prepare Windows Artifacts
         run: |
-          cd app-native-windows
-          zip $(cat gradle-artifact.txt).zip realworld-backend-spring.exe
-
-      - name: Build Changelog
-        uses: mikepenz/release-changelog-builder-action@v5
-        with:
-          outputFile: changelog.txt
-          configuration: ".github/release-changelog-builder.json"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          cd app-native-windows-amd64
+          zip $(cat gradle-artifact.txt).zip ${{ env.APP_NAME }}.exe 
 
       - name: Create Release
-        uses: softprops/action-gh-release@v2
-        with:
-          body_path: changelog.txt
-          draft: true
-#            app-native-macos/*.tar.gz
-          files: |
-            app-jar/*.jar
-            app-native-linux/*.tar.gz
-            app-native-windows/*.zip
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: >
+          gh release create ${{ github.ref_name }}
+          app-jar/*.jar
+          app-native-linux-amd64/*.tar.gz
+          app-native-linux-arm64/*.tar.gz
+          app-native-macos-arm64/*.tar.gz
+          app-native-windows-amd64/*.zip
+          --title ${{ github.ref_name }}
+          --generate-notes
+          --fail-on-no-commits
 
   build-docker:
     runs-on: ubuntu-latest
@@ -214,14 +226,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
-      - name: Setup JDK
-        uses: actions/setup-java@v5
-        with:
-          distribution: temurin
-          java-version: 25
+      - name: Download Artifacts
+        uses: actions/download-artifact@v6
 
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v5
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
       - name: Login to Container Registry
         uses: docker/login-action@v3
@@ -230,8 +239,30 @@ jobs:
           username: ${{ env.CR_USERNAME }}
           password: ${{ env.CR_PASSWORD }}
 
-      - name: Gradle bootBuildImage
-        run: ./gradlew :service:bootBuildImage
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push multi-arch image
+        uses: docker/build-push-action@v6
+        with:
+          file: Dockerfile.native
+          context: .
+          build-args: |
+            APP_NAME=${{ env.APP_NAME }}
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
       - name: Deploy on Render
         run: |
