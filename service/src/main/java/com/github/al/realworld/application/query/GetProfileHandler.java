@@ -48,9 +48,15 @@ public class GetProfileHandler implements QueryHandler<GetProfileResult, GetProf
     @Transactional(readOnly = true)
     @Override
     public GetProfileResult handle(GetProfile query) {
-        var currentUserId = userRepository.findByUsername(query.getCurrentUsername())
-                .map(User::id)
-                .orElse(null);
+        var currentUsername = query.getCurrentUsername();
+        Long currentUserId;
+        if (currentUsername == null) {
+            currentUserId = null;
+        } else {
+            currentUserId = userRepository.findByUsername(currentUsername)
+                    .map(User::id)
+                    .orElse(null);
+        }
 
         var profileAssembly = profileRepository.findByUsername(query.getUsername(), currentUserId)
                 .orElseThrow(() -> notFound("user [name=%s] does not exist", query.getUsername()));

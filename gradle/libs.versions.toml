@@ -1,6 +1,7 @@
 [versions]
 mapstruct = "1.6.3"
 mapstruct-spring = "2.0.0"
+springBoot = "4.0.1"
 
 [libraries]
 gradle-plugin-release = { group = "pl.allegro.tech.build", name = "axion-release-plugin", version = "1.21.1" }
@@ -9,10 +10,10 @@ mapstruct-core = { group = "org.mapstruct", name = "mapstruct", version.ref = "m
 mapstruct-processor = { group = "org.mapstruct", name = "mapstruct-processor", version.ref = "mapstruct" }
 mapstruct-springAnnotations = { group = "org.mapstruct.extensions.spring", name = "mapstruct-spring-annotations", version.ref = "mapstruct-spring" }
 mapstruct-springExtensions = { group = "org.mapstruct.extensions.spring", name = "mapstruct-spring-extensions", version.ref = "mapstruct-spring" }
-springdoc-starter-webmvc-ui = { group = "org.springdoc", name = "springdoc-openapi-starter-webmvc-ui", version = "2.8.14" }
+springBootDependencies = { group = "org.springframework.boot", name = "spring-boot-dependencies", version.ref = "springBoot" }
+springdoc-openapiStarterWebmvcUi = { group = "org.springdoc", name = "springdoc-openapi-starter-webmvc-ui", version = "3.0.1" }
 
 [plugins]
 graalvm = { id = "org.graalvm.buildtools.native", version = "0.11.3" }
-spring-boot = { id = "org.springframework.boot", version = "3.5.8" }
-spring-dependency-management = { id = "io.spring.dependency-management", version = "1.1.7" }
+spring-boot = { id = "org.springframework.boot", version.ref = "springBoot" }
 versions = { id = "com.github.ben-manes.versions", version = "0.53.0" }

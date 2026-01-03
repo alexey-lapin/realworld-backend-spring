@@ -1,3 +1,5 @@
+import dev.aga.gradle.versioncatalogs.Generator.generate
+
 pluginManagement {
     includeBuild("gradle/plugins")
     repositories {
@@ -5,9 +7,18 @@ pluginManagement {
     }
 }
 
+plugins {
+    id("dev.aga.gradle.version-catalog-generator") version("4.0.0")
+}
+
 dependencyResolutionManagement {
     repositories {
         mavenCentral()
+    }
+    versionCatalogs {
+        generate("libs") {
+            fromToml("springBootDependencies")
+        }
     }
 }
 

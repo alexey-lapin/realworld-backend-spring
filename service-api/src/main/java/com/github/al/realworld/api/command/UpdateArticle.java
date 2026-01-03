@@ -28,7 +28,9 @@ import com.github.al.realworld.bus.Command;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
+@NoArgsConstructor
 @AllArgsConstructor
 @Builder(toBuilder = true)
 @Getter

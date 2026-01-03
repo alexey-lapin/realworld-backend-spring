@@ -48,9 +48,15 @@ public class GetCommentHandler implements QueryHandler<GetCommentResult, GetComm
     @Transactional(readOnly = true)
     @Override
     public GetCommentResult handle(GetComment query) {
-        var currentUserId = userRepository.findByUsername(query.getCurrentUsername())
-                .map(User::id)
-                .orElse(null);
+        var currentUsername = query.getCurrentUsername();
+        Long currentUserId;
+        if (currentUsername == null) {
+            currentUserId = null;
+        } else {
+            currentUserId = userRepository.findByUsername(currentUsername)
+                    .map(User::id)
+                    .orElse(null);
+        }
 
         var commentAssembly = commentRepository.findAssemblyById(currentUserId, query.getId())
                 .orElseThrow(() -> notFound("comment [id=%s] does not exists", query.getId()));

@@ -23,25 +23,24 @@
  */
 package com.github.al.realworld.rest.support;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.github.al.realworld.api.operation.ArticleClient;
 import com.github.al.realworld.api.operation.ProfileClient;
 import com.github.al.realworld.api.operation.TagClient;
 import com.github.al.realworld.api.operation.UserClient;
 import com.github.al.realworld.rest.auth.AuthSupport;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.client.LocalHostUriTemplateHandler;
-import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.boot.test.http.server.LocalTestWebServer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.env.Environment;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.web.client.support.RestTemplateAdapter;
+import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter;
+import org.springframework.web.client.RestClient;
+import org.springframework.web.client.support.RestClientAdapter;
+import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.service.invoker.HttpServiceProxyFactory;
+import tools.jackson.databind.SerializationFeature;
+import tools.jackson.databind.json.JsonMapper;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class BaseRestTest {
@@ -50,22 +49,18 @@ public class BaseRestTest {
     public static class RestConfig {
 
         @Bean
-        public RestTemplate restTemplate(RestTemplateBuilder builder, Environment environment) {
-            LocalHostUriTemplateHandler uriTemplateHandler =
-                    new LocalHostUriTemplateHandler(environment) {
-                        @Override
-                        public String getRootUri() {
-                            return super.getRootUri() + environment.getRequiredProperty("api.version");
-                        }
-                    };
-
-            ObjectMapper mapper = new ObjectMapper()
-                    .enable(SerializationFeature.WRAP_ROOT_VALUE)
-                    .registerModule(new JavaTimeModule());
-
-            return builder.uriTemplateHandler(uriTemplateHandler)
-                    .messageConverters(new MappingJackson2HttpMessageConverter(mapper))
-                    .interceptors((request, body, execution) -> {
+        public RestClient testRestClient(RestClient.Builder restClientBuilder,
+                                         WebApplicationContext applicationContext,
+                                         @Value("${api.version}") String path) {
+            var localTestWebServer = LocalTestWebServer.get(applicationContext).withPath(path);
+            return restClientBuilder.uriBuilderFactory(localTestWebServer.uriBuilderFactory())
+                    .configureMessageConverters(clientBuilder -> {
+                        var mapper = JsonMapper.builder()
+                                .enable(SerializationFeature.WRAP_ROOT_VALUE)
+                                .build();
+                        clientBuilder.withJsonConverter(new JacksonJsonHttpMessageConverter(mapper));
+                    })
+                    .requestInterceptor((request, body, execution) -> {
                         String token = AuthSupport.TokenHolder.token;
                         if (token != null) {
                             request.getHeaders().add(HttpHeaders.AUTHORIZATION, "Token " + token);
@@ -76,8 +71,8 @@ public class BaseRestTest {
         }
 
         @Bean
-        public HttpServiceProxyFactory httpServiceProxyFactory(RestTemplate restTemplate) {
-            RestTemplateAdapter adapter = RestTemplateAdapter.create(restTemplate);
+        public HttpServiceProxyFactory httpServiceProxyFactory(RestClient testRestClient) {
+            var adapter = RestClientAdapter.create(testRestClient);
             return HttpServiceProxyFactory.builderFor(adapter).build();
         }
 
