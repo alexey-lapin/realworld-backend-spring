@@ -26,6 +26,7 @@ package com.github.al.realworld.application.command;
 import com.github.al.realworld.api.command.UpdateUser;
 import com.github.al.realworld.api.command.UpdateUserResult;
 import com.github.al.realworld.api.dto.UserDto;
+import com.github.al.realworld.application.service.AuthenticationService;
 import com.github.al.realworld.application.service.JwtService;
 import com.github.al.realworld.bus.CommandHandler;
 import com.github.al.realworld.domain.model.UserWithToken;
@@ -43,6 +44,7 @@ import static com.github.al.realworld.application.exception.NotFoundException.no
 @Service
 public class UpdateUserHandler implements CommandHandler<UpdateUserResult, UpdateUser> {
 
+    private final AuthenticationService authenticationService;
     private final UserRepository userRepository;
     private final JwtService jwtService;
     private final PasswordEncoder encoder;
@@ -51,8 +53,11 @@ public class UpdateUserHandler implements CommandHandler<UpdateUserResult, Updat
     @Transactional
     @Override
     public UpdateUserResult handle(UpdateUser command) {
-        var user = userRepository.findByUsername(command.getCurrentUsername())
-                .orElseThrow(() -> notFound("user [name=%s] does not exist", command.getCurrentUsername()));
+        var currentUserId = authenticationService.getRequiredCurrentUserId();
+
+        var user = userRepository.findById(currentUserId)
+                .orElseThrow(() -> notFound("user [name=%s] does not exist",
+                        authenticationService.getCurrentUserName()));
 
         if (command.getUsername() != null
             && !command.getUsername().equals(user.username())

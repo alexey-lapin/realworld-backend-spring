@@ -29,6 +29,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.With;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -37,8 +38,8 @@ import lombok.NoArgsConstructor;
 @JsonRootName("comment")
 public class AddComment implements Command<AddCommentResult> {
 
+    @With
     private String slug;
     private String body;
-    private String currentUsername;
 
 }

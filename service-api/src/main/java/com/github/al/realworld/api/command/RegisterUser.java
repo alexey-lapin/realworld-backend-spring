@@ -41,9 +41,12 @@ import jakarta.validation.constraints.NotBlank;
 public class RegisterUser implements Command<RegisterUserResult> {
 
     @Email
+    @NotBlank
     private String email;
+
     @NotBlank
     private String username;
+
     @NotBlank
     private String password;
 

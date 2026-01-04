@@ -26,18 +26,15 @@ package com.github.al.realworld.application.command;
 import com.github.al.realworld.api.command.UpdateArticle;
 import com.github.al.realworld.api.command.UpdateArticleResult;
 import com.github.al.realworld.api.dto.ArticleDto;
+import com.github.al.realworld.application.service.AuthenticationService;
 import com.github.al.realworld.application.service.SlugService;
 import com.github.al.realworld.bus.CommandHandler;
 import com.github.al.realworld.domain.repository.ArticleRepository;
-import com.github.al.realworld.domain.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Objects;
-
-import static com.github.al.realworld.application.exception.BadRequestException.badRequest;
 import static com.github.al.realworld.application.exception.ForbiddenException.forbidden;
 import static com.github.al.realworld.application.exception.NotFoundException.notFound;
 
@@ -45,23 +42,22 @@ import static com.github.al.realworld.application.exception.NotFoundException.no
 @Service
 public class UpdateArticleHandler implements CommandHandler<UpdateArticleResult, UpdateArticle> {
 
+    private final AuthenticationService authenticationService;
     private final ArticleRepository articleRepository;
-    private final UserRepository userRepository;
     private final SlugService slugService;
     private final ConversionService conversionService;
 
     @Transactional
     @Override
     public UpdateArticleResult handle(UpdateArticle command) {
+        var currentUserId = authenticationService.getRequiredCurrentUserId();
+
         var article = articleRepository.findBySlug(command.getSlug())
                 .orElseThrow(() -> notFound("article [slug=%s] does not exist", command.getSlug()));
 
-        var currentUser = userRepository.findByUsername(command.getCurrentUsername())
-                .orElseThrow(() -> badRequest("user [name=%s] does not exist", command.getCurrentUsername()));
-
-        if (!Objects.equals(article.authorId(), currentUser.id())) {
+        if (article.authorId() != currentUserId) {
             throw forbidden("article [slug=%s] is not owned by %s",
-                    command.getSlug(), command.getCurrentUsername());
+                    command.getSlug(), authenticationService.getCurrentUserName());
         }
 
         var alteredArticle = article.toBuilder()
@@ -73,7 +69,7 @@ public class UpdateArticleHandler implements CommandHandler<UpdateArticleResult,
 
         articleRepository.save(alteredArticle);
 
-        var articleAssembly = articleRepository.findAssemblyById(currentUser.id(), article.id()).orElseThrow();
+        var articleAssembly = articleRepository.findAssemblyById(currentUserId, article.id()).orElseThrow();
         var data = conversionService.convert(articleAssembly, ArticleDto.class);
 
         return new UpdateArticleResult(data);

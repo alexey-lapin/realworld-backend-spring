@@ -26,37 +26,34 @@ package com.github.al.realworld.application.query;
 import com.github.al.realworld.api.dto.ArticleDto;
 import com.github.al.realworld.api.query.GetFeed;
 import com.github.al.realworld.api.query.GetFeedResult;
+import com.github.al.realworld.application.service.AuthenticationService;
 import com.github.al.realworld.bus.QueryHandler;
 import com.github.al.realworld.domain.repository.ArticleRepository;
-import com.github.al.realworld.domain.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import static com.github.al.realworld.application.exception.BadRequestException.badRequest;
-
 @RequiredArgsConstructor
 @Service
 public class GetFeedHandler implements QueryHandler<GetFeedResult, GetFeed> {
 
+    private final AuthenticationService authenticationService;
     private final ArticleRepository articleRepository;
-    private final UserRepository userRepository;
     private final ConversionService conversionService;
 
     @Transactional(readOnly = true)
     @Override
     public GetFeedResult handle(GetFeed query) {
-        var currentUser = userRepository.findByUsername(query.getCurrentUsername())
-                .orElseThrow(() -> badRequest("user [name=%s] does not exist", query.getCurrentUsername()));
+        var currentUserId = authenticationService.getRequiredCurrentUserId();
 
-        var articles = articleRepository.findAllAssemblyByFollowerId(currentUser.id(), query.getLimit(), query.getOffset());
+        var articles = articleRepository.findAllAssemblyByFollowerId(currentUserId, query.getLimit(), query.getOffset());
 
         var results = articles.stream()
                 .map(article -> conversionService.convert(article, ArticleDto.class))
                 .toList();
 
-        var count = articleRepository.countFeed(currentUser.id());
+        var count = articleRepository.countFeed(currentUserId);
 
         return new GetFeedResult(results, count);
     }

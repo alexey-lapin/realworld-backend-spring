@@ -32,7 +32,6 @@ import com.github.al.realworld.api.command.UpdateUserResult;
 import com.github.al.realworld.api.operation.UserOperations;
 import com.github.al.realworld.api.query.GetCurrentUser;
 import com.github.al.realworld.api.query.GetCurrentUserResult;
-import com.github.al.realworld.application.service.AuthenticationService;
 import com.github.al.realworld.bus.Bus;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -45,26 +44,25 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserController implements UserOperations {
 
     private final Bus bus;
-    private final AuthenticationService auth;
 
     @Override
-    public LoginUserResult login(@Valid LoginUser cmd) {
-        return bus.executeCommand(cmd);
+    public LoginUserResult login(@Valid LoginUser command) {
+        return bus.executeCommand(command);
     }
 
     @Override
-    public RegisterUserResult register(@Valid RegisterUser cmd) {
-        return bus.executeCommand(cmd);
+    public RegisterUserResult register(@Valid RegisterUser command) {
+        return bus.executeCommand(command);
     }
 
     @Override
     public GetCurrentUserResult current() {
-        return bus.executeQuery(new GetCurrentUser(auth.currentUsername()));
+        return bus.executeQuery(new GetCurrentUser());
     }
 
     @Override
-    public UpdateUserResult update(@Valid UpdateUser cmd) {
-        return bus.executeCommand(cmd.withCurrentUsername(auth.currentUsername()));
+    public UpdateUserResult update(@Valid UpdateUser command) {
+        return bus.executeCommand(command);
     }
 
 }

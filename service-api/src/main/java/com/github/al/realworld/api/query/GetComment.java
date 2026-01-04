@@ -31,7 +31,6 @@ import lombok.Getter;
 @Getter
 public class GetComment implements Query<GetCommentResult> {
 
-    private String currentUsername;
     private String slug;
     private Long id;
 

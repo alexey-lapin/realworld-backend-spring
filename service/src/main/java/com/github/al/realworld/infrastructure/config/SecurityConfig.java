@@ -23,14 +23,10 @@
  */
 package com.github.al.realworld.infrastructure.config;
 
-import com.nimbusds.jose.jwk.JWKSet;
-import com.nimbusds.jose.jwk.OctetSequenceKey;
-import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
-import com.nimbusds.jose.jwk.source.JWKSource;
-import com.nimbusds.jose.proc.SecurityContext;
+import com.nimbusds.jose.jwk.RSAKey;
+import com.nimbusds.jose.jwk.gen.RSAKeyGenerator;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.actuate.info.InfoEndpoint;
 import org.springframework.boot.actuate.startup.StartupEndpoint;
 import org.springframework.boot.health.actuate.endpoint.HealthEndpoint;
@@ -60,8 +56,6 @@ import org.springframework.security.oauth2.server.resource.web.BearerTokenResolv
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 
-import javax.crypto.spec.SecretKeySpec;
-import java.util.Base64;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -109,19 +103,18 @@ public class SecurityConfig {
     }
 
     @Bean
-    public JwtDecoder jwtDecoder(@Value("${security.jwt.secret}") String secret) {
-        byte[] bytes = Base64.getDecoder().decode(secret);
-        SecretKeySpec secretKeySpec = new SecretKeySpec(bytes, "HmacSHA256");
-        return NimbusJwtDecoder.withSecretKey(secretKeySpec).build();
+    public RSAKey rsaKey() throws Exception {
+        return new RSAKeyGenerator(2048).generate();
     }
 
     @Bean
-    public JwtEncoder jwtEncoder(@Value("${security.jwt.secret}") String secret) {
-        byte[] bytes = Base64.getDecoder().decode(secret);
-        SecretKeySpec secretKeySpec = new SecretKeySpec(bytes, "HmacSHA256");
-        OctetSequenceKey jwk = new OctetSequenceKey.Builder(secretKeySpec).build();
-        JWKSource<SecurityContext> jwkSource = new ImmutableJWKSet<>(new JWKSet(jwk));
-        return new NimbusJwtEncoder(jwkSource);
+    public JwtDecoder jwtDecoder(RSAKey rsaKey) throws Exception {
+        return NimbusJwtDecoder.withPublicKey(rsaKey.toRSAPublicKey()).build();
+    }
+
+    @Bean
+    public JwtEncoder jwtEncoder(RSAKey rsaKey) throws Exception {
+        return NimbusJwtEncoder.withKeyPair(rsaKey.toRSAPublicKey(), rsaKey.toRSAPrivateKey()).build();
     }
 
     /**

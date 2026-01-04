@@ -31,7 +31,6 @@ import lombok.Getter;
 @Getter
 public class UnfavoriteArticle implements Command<UnfavoriteArticleResult> {
 
-    private String currentUsername;
     private String slug;
 
 }

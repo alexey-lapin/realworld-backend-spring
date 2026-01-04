@@ -31,7 +31,6 @@ import lombok.Getter;
 @Getter
 public class GetFeed implements Query<GetFeedResult> {
 
-    private String currentUsername;
     private Integer limit;
     private Integer offset;
 

@@ -48,6 +48,5 @@ public class CreateArticle implements Command<CreateArticleResult> {
     @NotBlank
     private String body;
     private List<String> tagList;
-    private String currentUsername;
 
 }

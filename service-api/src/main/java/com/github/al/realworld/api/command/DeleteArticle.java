@@ -31,7 +31,6 @@ import lombok.Getter;
 @Getter
 public class DeleteArticle implements Command<DeleteArticleResult> {
 
-    private String currentUsername;
     private String slug;
 
 }

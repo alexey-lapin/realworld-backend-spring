@@ -23,8 +23,29 @@
  */
 package com.github.al.realworld.application.service;
 
+import com.github.al.realworld.application.exception.UnauthorizedException;
+import org.jspecify.annotations.Nullable;
+
 public interface AuthenticationService {
 
-    String currentUsername();
+    @Nullable Long getCurrentUserId();
+
+    default long getRequiredCurrentUserId() {
+        var currentUserId = getCurrentUserId();
+        if (currentUserId == null) {
+            throw new UnauthorizedException();
+        }
+        return currentUserId;
+    }
+
+    @Nullable String getCurrentUserName();
+
+    default String getRequiredCurrentUserName() {
+        var currentUsername = getCurrentUserName();
+        if (currentUsername == null) {
+            throw new UnauthorizedException();
+        }
+        return currentUsername;
+    }
 
 }

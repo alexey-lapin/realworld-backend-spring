@@ -39,7 +39,9 @@ import lombok.NoArgsConstructor;
 public class LoginUser implements Command<LoginUserResult> {
 
     @Email
+    @NotBlank
     private String email;
+
     @NotBlank
     private String password;
 

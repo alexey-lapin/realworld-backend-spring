@@ -31,7 +31,6 @@ import lombok.Getter;
 @Getter
 public class UnfollowProfile implements Command<UnfollowProfileResult> {
 
-    private String follower;
     private String followee;
 
 }

@@ -29,18 +29,19 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.With;
 
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder(toBuilder = true)
+@Builder
 @Getter
 @JsonRootName("article")
 public class UpdateArticle implements Command<UpdateArticleResult> {
 
+    @With
     private String slug;
     private String title;
     private String description;
     private String body;
-    private String currentUsername;
 
 }

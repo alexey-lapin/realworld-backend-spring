@@ -23,6 +23,7 @@
  */
 package com.github.al.realworld.application.service;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
@@ -31,14 +32,33 @@ import org.springframework.stereotype.Service;
 public class DefaultAuthenticationService implements AuthenticationService {
 
     @Override
-    public String currentUsername() {
-        Object principal = SecurityContextHolder.getContext()
-                .getAuthentication()
-                .getPrincipal();
+    public @Nullable Long getCurrentUserId() {
+        var principal = getPrincipal();
+        if (principal instanceof Jwt jwt) {
+            var uid = jwt.getClaimAsString(JwtService.CLAIM_UID);
+            if (uid == null) {
+                return null;
+            }
+            return Long.valueOf(uid);
+        }
+        return null;
+    }
+
+    @Override
+    public @Nullable String getCurrentUserName() {
+        var principal = getPrincipal();
         if (principal instanceof Jwt jwt) {
             return jwt.getSubject();
         }
         return null;
+    }
+
+    private static @Nullable Object getPrincipal() {
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null) {
+            return null;
+        }
+        return authentication.getPrincipal();
     }
 
 }

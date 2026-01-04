@@ -31,7 +31,6 @@ import lombok.Getter;
 @Getter
 public class FollowProfile implements Command<FollowProfileResult> {
 
-    private String follower;
     private String followee;
 
 }

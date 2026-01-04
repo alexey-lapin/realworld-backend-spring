@@ -26,6 +26,7 @@ package com.github.al.realworld.application.query;
 import com.github.al.realworld.api.dto.ArticleDto;
 import com.github.al.realworld.api.query.GetArticles;
 import com.github.al.realworld.api.query.GetArticlesResult;
+import com.github.al.realworld.application.service.AuthenticationService;
 import com.github.al.realworld.bus.QueryHandler;
 import com.github.al.realworld.domain.model.Tag;
 import com.github.al.realworld.domain.model.User;
@@ -43,6 +44,7 @@ import java.util.List;
 @Service
 public class GetArticlesHandler implements QueryHandler<GetArticlesResult, GetArticles> {
 
+    private final AuthenticationService authenticationService;
     private final ArticleRepository articleRepository;
     private final UserRepository userRepository;
     private final TagRepository tagRepository;
@@ -51,15 +53,7 @@ public class GetArticlesHandler implements QueryHandler<GetArticlesResult, GetAr
     @Transactional(readOnly = true)
     @Override
     public GetArticlesResult handle(GetArticles query) {
-        var currentUsername = query.getCurrentUsername();
-        Long currentUserId;
-        if (currentUsername == null) {
-            currentUserId = null;
-        } else {
-            currentUserId = userRepository.findByUsername(currentUsername)
-                    .map(User::id)
-                    .orElse(null);
-        }
+        var currentUserId = authenticationService.getCurrentUserId();
 
         Long tagId;
         if (query.getTag() == null) {
