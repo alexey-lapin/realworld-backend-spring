@@ -44,7 +44,6 @@ import com.github.al.realworld.api.query.GetComments;
 import com.github.al.realworld.api.query.GetCommentsResult;
 import com.github.al.realworld.api.query.GetFeed;
 import com.github.al.realworld.api.query.GetFeedResult;
-import com.github.al.realworld.application.service.AuthenticationService;
 import com.github.al.realworld.bus.Bus;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -57,7 +56,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class ArticleController implements ArticleOperations {
 
     private final Bus bus;
-    private final AuthenticationService auth;
 
     @Override
     public GetArticlesResult findByFilters(String tag,
@@ -66,7 +64,6 @@ public class ArticleController implements ArticleOperations {
                                            Integer limit,
                                            Integer offset) {
         return bus.executeQuery(GetArticles.builder()
-                .currentUsername(auth.currentUsername())
                 .tag(tag)
                 .author(author)
                 .favorited(favorited)
@@ -77,52 +74,52 @@ public class ArticleController implements ArticleOperations {
 
     @Override
     public CreateArticleResult create(@Valid CreateArticle command) {
-        return bus.executeCommand(command.toBuilder().currentUsername(auth.currentUsername()).build());
+        return bus.executeCommand(command);
     }
 
     @Override
     public GetFeedResult feed(Integer limit, Integer offset) {
-        return bus.executeQuery(new GetFeed(auth.currentUsername(), limit, offset));
+        return bus.executeQuery(new GetFeed(limit, offset));
     }
 
     @Override
     public GetArticleResult findBySlug(String slug) {
-        return bus.executeQuery(new GetArticle(auth.currentUsername(), slug));
+        return bus.executeQuery(new GetArticle(slug));
     }
 
     @Override
     public UpdateArticleResult updateBySlug(String slug, @Valid UpdateArticle command) {
-        return bus.executeCommand(command.toBuilder().slug(slug).currentUsername(auth.currentUsername()).build());
+        return bus.executeCommand(command.withSlug(slug));
     }
 
     @Override
     public void deleteBySlug(String slug) {
-        bus.executeCommand(new DeleteArticle(auth.currentUsername(), slug));
+        bus.executeCommand(new DeleteArticle(slug));
     }
 
     @Override
     public FavoriteArticleResult favorite(String slug) {
-        return bus.executeCommand(new FavoriteArticle(auth.currentUsername(), slug));
+        return bus.executeCommand(new FavoriteArticle(slug));
     }
 
     @Override
     public UnfavoriteArticleResult unfavorite(String slug) {
-        return bus.executeCommand(new UnfavoriteArticle(auth.currentUsername(), slug));
+        return bus.executeCommand(new UnfavoriteArticle(slug));
     }
 
     @Override
     public GetCommentsResult findAllComments(String slug) {
-        return bus.executeQuery(new GetComments(auth.currentUsername(), slug));
+        return bus.executeQuery(new GetComments(slug));
     }
 
     @Override
     public AddCommentResult addComment(String slug, @Valid AddComment command) {
-        return bus.executeCommand(command.toBuilder().slug(slug).currentUsername(auth.currentUsername()).build());
+        return bus.executeCommand(command.withSlug(slug));
     }
 
     @Override
     public void deleteComment(String slug, Long id) {
-        bus.executeCommand(new DeleteComment(auth.currentUsername(), slug, id));
+        bus.executeCommand(new DeleteComment(slug, id));
     }
 
 }

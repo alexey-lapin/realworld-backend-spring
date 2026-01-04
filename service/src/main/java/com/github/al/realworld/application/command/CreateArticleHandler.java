@@ -26,13 +26,13 @@ package com.github.al.realworld.application.command;
 import com.github.al.realworld.api.command.CreateArticle;
 import com.github.al.realworld.api.command.CreateArticleResult;
 import com.github.al.realworld.api.dto.ArticleDto;
+import com.github.al.realworld.application.service.AuthenticationService;
 import com.github.al.realworld.application.service.SlugService;
 import com.github.al.realworld.bus.CommandHandler;
 import com.github.al.realworld.domain.model.Article;
 import com.github.al.realworld.domain.model.Tag;
 import com.github.al.realworld.domain.repository.ArticleRepository;
 import com.github.al.realworld.domain.repository.TagRepository;
-import com.github.al.realworld.domain.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.dao.DuplicateKeyException;
@@ -51,22 +51,21 @@ import static com.github.al.realworld.application.exception.BadRequestException.
 @Service
 public class CreateArticleHandler implements CommandHandler<CreateArticleResult, CreateArticle> {
 
+    private final AuthenticationService authenticationService;
     private final ArticleRepository articleRepository;
     private final TagRepository tagRepository;
-    private final UserRepository userRepository;
     private final SlugService slugService;
     private final ConversionService conversionService;
 
     @Transactional
     @Override
     public CreateArticleResult handle(CreateArticle command) {
+        var currentUserId = authenticationService.getRequiredCurrentUserId();
+
         var existsByTitle = articleRepository.existsByTitle(command.getTitle());
         if (existsByTitle) {
             throw badRequest("article [title=%s] already exists", command.getTitle());
         }
-
-        var currentUser = userRepository.findByUsername(command.getCurrentUsername())
-                .orElseThrow(() -> badRequest("user [name=%s] does not exist", command.getCurrentUsername()));
 
         var tags = handleTags(command);
 
@@ -75,13 +74,13 @@ public class CreateArticleHandler implements CommandHandler<CreateArticleResult,
                 .title(command.getTitle())
                 .description(command.getDescription())
                 .body(command.getBody())
-                .authorId(currentUser.id())
+                .authorId(currentUserId)
                 .tags(tags)
                 .build();
 
         var savedArticle = articleRepository.save(article);
 
-        var articleAssembly = articleRepository.findAssemblyById(currentUser.id(), savedArticle.id()).orElseThrow();
+        var articleAssembly = articleRepository.findAssemblyById(currentUserId, savedArticle.id()).orElseThrow();
         var data = conversionService.convert(articleAssembly, ArticleDto.class);
 
         return new CreateArticleResult(data);

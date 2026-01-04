@@ -35,7 +35,6 @@ import lombok.NoArgsConstructor;
 @Getter
 public class GetArticles implements Query<GetArticlesResult> {
 
-    private String currentUsername;
     private String tag;
     private String author;
     private String favorited;

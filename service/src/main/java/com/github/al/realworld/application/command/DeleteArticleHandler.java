@@ -25,18 +25,15 @@ package com.github.al.realworld.application.command;
 
 import com.github.al.realworld.api.command.DeleteArticle;
 import com.github.al.realworld.api.command.DeleteArticleResult;
+import com.github.al.realworld.application.service.AuthenticationService;
 import com.github.al.realworld.bus.CommandHandler;
 import com.github.al.realworld.domain.repository.ArticleFavoriteRepository;
 import com.github.al.realworld.domain.repository.ArticleRepository;
 import com.github.al.realworld.domain.repository.CommentRepository;
-import com.github.al.realworld.domain.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Objects;
-
-import static com.github.al.realworld.application.exception.BadRequestException.badRequest;
 import static com.github.al.realworld.application.exception.ForbiddenException.forbidden;
 import static com.github.al.realworld.application.exception.NotFoundException.notFound;
 
@@ -44,22 +41,22 @@ import static com.github.al.realworld.application.exception.NotFoundException.no
 @Service
 public class DeleteArticleHandler implements CommandHandler<DeleteArticleResult, DeleteArticle> {
 
+    private final AuthenticationService authenticationService;
     private final ArticleRepository articleRepository;
     private final ArticleFavoriteRepository articleFavoriteRepository;
     private final CommentRepository commentRepository;
-    private final UserRepository userRepository;
 
     @Transactional
     @Override
     public DeleteArticleResult handle(DeleteArticle command) {
+        var currentUserId = authenticationService.getRequiredCurrentUserId();
+
         var article = articleRepository.findAssemblyBySlug(null, command.getSlug())
                 .orElseThrow(() -> notFound("article [slug=%s] does not exist", command.getSlug()));
 
-        var currentUser = userRepository.findByUsername(command.getCurrentUsername())
-                .orElseThrow(() -> badRequest("user [name=%s] does not exist", command.getCurrentUsername()));
-
-        if (!Objects.equals(article.authorId(), currentUser.id())) {
-            throw forbidden("article [slug=%s] is not owned by %s", command.getSlug(), command.getCurrentUsername());
+        if (article.authorId() != currentUserId) {
+            throw forbidden("article [slug=%s] is not owned by %s", command.getSlug(),
+                    authenticationService.getCurrentUserName());
         }
 
         commentRepository.deleteAllByArticleId(article.id());

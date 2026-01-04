@@ -31,7 +31,6 @@ import lombok.Getter;
 @Getter
 public class GetProfile implements Query<GetProfileResult> {
 
-    private String currentUsername;
     private String username;
 
 }

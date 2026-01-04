@@ -26,6 +26,7 @@ package com.github.al.realworld.application.query;
 import com.github.al.realworld.api.dto.UserDto;
 import com.github.al.realworld.api.query.GetCurrentUser;
 import com.github.al.realworld.api.query.GetCurrentUserResult;
+import com.github.al.realworld.application.service.AuthenticationService;
 import com.github.al.realworld.application.service.JwtService;
 import com.github.al.realworld.bus.QueryHandler;
 import com.github.al.realworld.domain.model.UserWithToken;
@@ -41,6 +42,7 @@ import static com.github.al.realworld.application.exception.BadRequestException.
 @Component
 public class GetCurrentUserHandler implements QueryHandler<GetCurrentUserResult, GetCurrentUser> {
 
+    private final AuthenticationService authenticationService;
     private final UserRepository userRepository;
     private final JwtService jwtService;
     private final ConversionService conversionService;
@@ -48,8 +50,11 @@ public class GetCurrentUserHandler implements QueryHandler<GetCurrentUserResult,
     @Transactional(readOnly = true)
     @Override
     public GetCurrentUserResult handle(GetCurrentUser query) {
-        var user = userRepository.findByUsername(query.getUsername())
-                .orElseThrow(() -> badRequest("user [name=%s] does not exist", query.getUsername()));
+        var currentUserId = authenticationService.getRequiredCurrentUserId();
+
+        var user = userRepository.findById(currentUserId)
+                .orElseThrow(() -> badRequest("user [name=%s] does not exist",
+                        authenticationService.getCurrentUserName()));
 
         var token = jwtService.getToken(user);
         var data = conversionService.convert(new UserWithToken(user, token), UserDto.class);

@@ -26,10 +26,9 @@ package com.github.al.realworld.application.query;
 import com.github.al.realworld.api.dto.ArticleDto;
 import com.github.al.realworld.api.query.GetArticle;
 import com.github.al.realworld.api.query.GetArticleResult;
+import com.github.al.realworld.application.service.AuthenticationService;
 import com.github.al.realworld.bus.QueryHandler;
-import com.github.al.realworld.domain.model.User;
 import com.github.al.realworld.domain.repository.ArticleRepository;
-import com.github.al.realworld.domain.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Service;
@@ -41,27 +40,18 @@ import static com.github.al.realworld.application.exception.NotFoundException.no
 @Service
 public class GetArticleHandler implements QueryHandler<GetArticleResult, GetArticle> {
 
+    private final AuthenticationService authenticationService;
     private final ArticleRepository articleRepository;
-    private final UserRepository userRepository;
     private final ConversionService conversionService;
 
     @Transactional(readOnly = true)
     @Override
     public GetArticleResult handle(GetArticle query) {
-        var currentUsername = query.getCurrentUsername();
-        Long currentUserId;
-        if (currentUsername == null) {
-            currentUserId = null;
-        } else {
-            currentUserId = userRepository.findByUsername(currentUsername)
-                    .map(User::id)
-                    .orElse(null);
-        }
+        var currentUserId = authenticationService.getCurrentUserId();
 
-        var article = articleRepository.findAssemblyBySlug(currentUserId, query.getSlug())
+        var articleAssembly = articleRepository.findAssemblyBySlug(currentUserId, query.getSlug())
                 .orElseThrow(() -> notFound("article [slug=%s] does not exists", query.getSlug()));
-
-        var data = conversionService.convert(article, ArticleDto.class);
+        var data = conversionService.convert(articleAssembly, ArticleDto.class);
 
         return new GetArticleResult(data);
     }

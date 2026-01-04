@@ -25,7 +25,7 @@ package com.github.al.realworld.application.service;
 
 import com.github.al.realworld.domain.model.User;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
+import org.springframework.security.oauth2.jose.jws.SignatureAlgorithm;
 import org.springframework.security.oauth2.jwt.JwsHeader;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
@@ -40,10 +40,11 @@ public class DefaultJwtService implements JwtService {
 
     @Override
     public String getToken(User user) {
-        JwsHeader header = JwsHeader.with(MacAlgorithm.HS256).build();
+        JwsHeader header = JwsHeader.with(SignatureAlgorithm.RS256).build();
 
         JwtClaimsSet claims = JwtClaimsSet.builder()
                 .subject(user.username())
+                .claim(JwtService.CLAIM_UID, user.id())
                 .build();
 
         return jwtEncoder.encode(JwtEncoderParameters.from(header, claims)).getTokenValue();

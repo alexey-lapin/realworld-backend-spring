@@ -30,7 +30,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 public class UnauthorizedException extends RuntimeException {
 
     public UnauthorizedException() {
-        super();
     }
 
     public UnauthorizedException(String message) {

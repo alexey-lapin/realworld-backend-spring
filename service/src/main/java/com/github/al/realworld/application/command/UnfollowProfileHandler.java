@@ -26,6 +26,7 @@ package com.github.al.realworld.application.command;
 import com.github.al.realworld.api.command.UnfollowProfile;
 import com.github.al.realworld.api.command.UnfollowProfileResult;
 import com.github.al.realworld.api.dto.ProfileDto;
+import com.github.al.realworld.application.service.AuthenticationService;
 import com.github.al.realworld.bus.CommandHandler;
 import com.github.al.realworld.domain.model.FollowRelation;
 import com.github.al.realworld.domain.model.Profile;
@@ -36,7 +37,6 @@ import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import static com.github.al.realworld.application.exception.BadRequestException.badRequest;
 import static com.github.al.realworld.application.exception.NotFoundException.notFound;
 
 /**
@@ -47,6 +47,7 @@ import static com.github.al.realworld.application.exception.NotFoundException.no
 @Service
 public class UnfollowProfileHandler implements CommandHandler<UnfollowProfileResult, UnfollowProfile> {
 
+    private final AuthenticationService authenticationService;
     private final UserRepository userRepository;
     private final FollowRelationRepository followRelationRepository;
     private final ConversionService conversionService;
@@ -54,13 +55,12 @@ public class UnfollowProfileHandler implements CommandHandler<UnfollowProfileRes
     @Transactional
     @Override
     public UnfollowProfileResult handle(UnfollowProfile command) {
-        var currentUser = userRepository.findByUsername(command.getFollower())
-                .orElseThrow(() -> badRequest("user [name=%s] does not exist", command.getFollower()));
+        var currentUserId = authenticationService.getRequiredCurrentUserId();
 
         var followee = userRepository.findByUsername(command.getFollowee())
                 .orElseThrow(() -> notFound("user [name=%s] does not exist", command.getFollowee()));
 
-        var followRelation = new FollowRelation(currentUser.id(), followee.id());
+        var followRelation = new FollowRelation(currentUserId, followee.id());
         if (followRelationRepository.exists(followRelation)) {
             followRelationRepository.delete(followRelation);
         }

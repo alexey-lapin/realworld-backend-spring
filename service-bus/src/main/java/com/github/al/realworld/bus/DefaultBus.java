@@ -45,4 +45,5 @@ public class DefaultBus implements Bus {
         QueryHandler<R, Q> queryHandler = (QueryHandler<R, Q>) registry.getQueryHandler(query.getClass());
         return queryHandler.handle(query);
     }
+
 }

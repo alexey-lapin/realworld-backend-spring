@@ -26,44 +26,42 @@ package com.github.al.realworld.application.command;
 import com.github.al.realworld.api.command.UnfavoriteArticle;
 import com.github.al.realworld.api.command.UnfavoriteArticleResult;
 import com.github.al.realworld.api.dto.ArticleDto;
+import com.github.al.realworld.application.service.AuthenticationService;
 import com.github.al.realworld.bus.CommandHandler;
 import com.github.al.realworld.domain.model.ArticleFavorite;
 import com.github.al.realworld.domain.repository.ArticleFavoriteRepository;
 import com.github.al.realworld.domain.repository.ArticleRepository;
-import com.github.al.realworld.domain.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import static com.github.al.realworld.application.exception.BadRequestException.badRequest;
 import static com.github.al.realworld.application.exception.NotFoundException.notFound;
 
 @RequiredArgsConstructor
 @Service
 public class UnfavoriteArticleHandler implements CommandHandler<UnfavoriteArticleResult, UnfavoriteArticle> {
 
+    private final AuthenticationService authenticationService;
     private final ArticleRepository articleRepository;
     private final ArticleFavoriteRepository articleFavoriteRepository;
-    private final UserRepository userRepository;
     private final ConversionService conversionService;
 
     @Transactional
     @Override
     public UnfavoriteArticleResult handle(UnfavoriteArticle command) {
-        var id = articleRepository.findIdBySlug(command.getSlug())
+        var currentUserId = authenticationService.getRequiredCurrentUserId();
+
+        var articleId = articleRepository.findIdBySlug(command.getSlug())
                 .orElseThrow(() -> notFound("article [slug=%s] does not exist", command.getSlug()));
 
-        var currentUser = userRepository.findByUsername(command.getCurrentUsername())
-                .orElseThrow(() -> badRequest("user [name=%s] does not exist", command.getCurrentUsername()));
-
-        var articleFavorite = new ArticleFavorite(id, currentUser.id());
+        var articleFavorite = new ArticleFavorite(articleId, currentUserId);
         if (articleFavoriteRepository.exists(articleFavorite)) {
             articleFavoriteRepository.delete(articleFavorite);
-            articleRepository.decrementFavoriteCount(id);
+            articleRepository.decrementFavoriteCount(articleId);
         }
 
-        var articleAssembly = articleRepository.findAssemblyById(currentUser.id(), id).orElseThrow();
+        var articleAssembly = articleRepository.findAssemblyById(currentUserId, articleId).orElseThrow();
         var data = conversionService.convert(articleAssembly, ArticleDto.class);
 
         return new UnfavoriteArticleResult(data);

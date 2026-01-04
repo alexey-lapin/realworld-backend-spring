@@ -26,10 +26,9 @@ package com.github.al.realworld.application.query;
 import com.github.al.realworld.api.dto.CommentDto;
 import com.github.al.realworld.api.query.GetComment;
 import com.github.al.realworld.api.query.GetCommentResult;
+import com.github.al.realworld.application.service.AuthenticationService;
 import com.github.al.realworld.bus.QueryHandler;
-import com.github.al.realworld.domain.model.User;
 import com.github.al.realworld.domain.repository.CommentRepository;
-import com.github.al.realworld.domain.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Service;
@@ -41,22 +40,14 @@ import static com.github.al.realworld.application.exception.NotFoundException.no
 @Service
 public class GetCommentHandler implements QueryHandler<GetCommentResult, GetComment> {
 
+    private final AuthenticationService authenticationService;
     private final CommentRepository commentRepository;
-    private final UserRepository userRepository;
     private final ConversionService conversionService;
 
     @Transactional(readOnly = true)
     @Override
     public GetCommentResult handle(GetComment query) {
-        var currentUsername = query.getCurrentUsername();
-        Long currentUserId;
-        if (currentUsername == null) {
-            currentUserId = null;
-        } else {
-            currentUserId = userRepository.findByUsername(currentUsername)
-                    .map(User::id)
-                    .orElse(null);
-        }
+        var currentUserId = authenticationService.getCurrentUserId();
 
         var commentAssembly = commentRepository.findAssemblyById(currentUserId, query.getId())
                 .orElseThrow(() -> notFound("comment [id=%s] does not exists", query.getId()));

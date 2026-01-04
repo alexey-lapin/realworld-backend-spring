@@ -30,7 +30,6 @@ import com.github.al.realworld.api.command.UnfollowProfileResult;
 import com.github.al.realworld.api.operation.ProfileOperations;
 import com.github.al.realworld.api.query.GetProfile;
 import com.github.al.realworld.api.query.GetProfileResult;
-import com.github.al.realworld.application.service.AuthenticationService;
 import com.github.al.realworld.bus.Bus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -42,21 +41,20 @@ import org.springframework.web.bind.annotation.RestController;
 public class ProfileController implements ProfileOperations {
 
     private final Bus bus;
-    private final AuthenticationService auth;
 
     @Override
     public GetProfileResult findByUsername(String username) {
-        return bus.executeQuery(new GetProfile(auth.currentUsername(), username));
+        return bus.executeQuery(new GetProfile(username));
     }
 
     @Override
     public FollowProfileResult follow(String username) {
-        return bus.executeCommand(new FollowProfile(auth.currentUsername(), username));
+        return bus.executeCommand(new FollowProfile(username));
     }
 
     @Override
     public UnfollowProfileResult unfollow(String username) {
-        return bus.executeCommand(new UnfollowProfile(auth.currentUsername(), username));
+        return bus.executeCommand(new UnfollowProfile(username));
     }
 
 }

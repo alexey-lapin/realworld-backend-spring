@@ -26,11 +26,10 @@ package com.github.al.realworld.application.query;
 import com.github.al.realworld.api.dto.CommentDto;
 import com.github.al.realworld.api.query.GetComments;
 import com.github.al.realworld.api.query.GetCommentsResult;
+import com.github.al.realworld.application.service.AuthenticationService;
 import com.github.al.realworld.bus.QueryHandler;
-import com.github.al.realworld.domain.model.User;
 import com.github.al.realworld.domain.repository.ArticleRepository;
 import com.github.al.realworld.domain.repository.CommentRepository;
-import com.github.al.realworld.domain.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Service;
@@ -42,26 +41,18 @@ import static com.github.al.realworld.application.exception.NotFoundException.no
 @Service
 public class GetCommentsHandler implements QueryHandler<GetCommentsResult, GetComments> {
 
+    private final AuthenticationService authenticationService;
     private final ArticleRepository articleRepository;
     private final CommentRepository commentRepository;
-    private final UserRepository userRepository;
     private final ConversionService conversionService;
 
     @Transactional(readOnly = true)
     @Override
     public GetCommentsResult handle(GetComments query) {
+        var currentUserId = authenticationService.getCurrentUserId();
+
         var articleId = articleRepository.findIdBySlug(query.getSlug())
                 .orElseThrow(() -> notFound("article [slug=%s] does not exists", query.getSlug()));
-
-        var currentUsername = query.getCurrentUsername();
-        Long currentUserId;
-        if (currentUsername == null) {
-            currentUserId = null;
-        } else {
-            currentUserId = userRepository.findByUsername(currentUsername)
-                    .map(User::id)
-                    .orElse(null);
-        }
 
         var result = commentRepository.findAllAssemblyByArticleId(currentUserId, articleId).stream()
                 .map(comment -> conversionService.convert(comment, CommentDto.class))

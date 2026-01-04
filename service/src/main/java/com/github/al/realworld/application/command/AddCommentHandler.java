@@ -26,46 +26,44 @@ package com.github.al.realworld.application.command;
 import com.github.al.realworld.api.command.AddComment;
 import com.github.al.realworld.api.command.AddCommentResult;
 import com.github.al.realworld.api.dto.CommentDto;
+import com.github.al.realworld.application.service.AuthenticationService;
 import com.github.al.realworld.bus.CommandHandler;
 import com.github.al.realworld.domain.model.Comment;
 import com.github.al.realworld.domain.repository.ArticleRepository;
 import com.github.al.realworld.domain.repository.CommentRepository;
-import com.github.al.realworld.domain.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import static com.github.al.realworld.application.exception.BadRequestException.badRequest;
 import static com.github.al.realworld.application.exception.NotFoundException.notFound;
 
 @RequiredArgsConstructor
 @Service
 public class AddCommentHandler implements CommandHandler<AddCommentResult, AddComment> {
 
+    private final AuthenticationService authenticationService;
     private final ArticleRepository articleRepository;
     private final CommentRepository commentRepository;
-    private final UserRepository userRepository;
     private final ConversionService conversionService;
 
     @Transactional
     @Override
     public AddCommentResult handle(AddComment command) {
+        var currentUserId = authenticationService.getRequiredCurrentUserId();
+
         var articleId = articleRepository.findIdBySlug(command.getSlug())
                 .orElseThrow(() -> notFound("article [slug=%s] does not exist", command.getSlug()));
 
-        var currentUser = userRepository.findByUsername(command.getCurrentUsername())
-                .orElseThrow(() -> badRequest("user [name=%s] does not exist", command.getCurrentUsername()));
-
         var comment = Comment.builder()
                 .articleId(articleId)
-                .authorId(currentUser.id())
+                .authorId(currentUserId)
                 .body(command.getBody())
                 .build();
 
         var savedComment = commentRepository.save(comment);
 
-        var commentAssembly = commentRepository.findAssemblyById(currentUser.id(), savedComment.id()).orElseThrow();
+        var commentAssembly = commentRepository.findAssemblyById(currentUserId, savedComment.id()).orElseThrow();
         var data = conversionService.convert(commentAssembly, CommentDto.class);
 
         return new AddCommentResult(data);
