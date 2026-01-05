@@ -21,14 +21,20 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.github.al.realworld.api.query;
+package com.github.al.realworld.api.dto;
 
-import com.github.al.realworld.api.dto.ArticleItemDto;
-
+import java.time.ZonedDateTime;
 import java.util.List;
 
-public record GetFeedResult(
-        List<ArticleItemDto> articles,
-        long articlesCount
+public record ArticleItemDto(
+        String slug,
+        String title,
+        String description,
+        List<String> tagList,
+        ZonedDateTime createdAt,
+        ZonedDateTime updatedAt,
+        Boolean favorited,
+        Integer favoritesCount,
+        ProfileDto author
 ) {
 }

@@ -23,7 +23,7 @@
  */
 package com.github.al.realworld.application.query;
 
-import com.github.al.realworld.api.dto.ArticleDto;
+import com.github.al.realworld.api.dto.ArticleItemDto;
 import com.github.al.realworld.api.query.GetArticles;
 import com.github.al.realworld.api.query.GetArticlesResult;
 import com.github.al.realworld.application.service.AuthenticationService;
@@ -91,7 +91,7 @@ public class GetArticlesHandler implements QueryHandler<GetArticlesResult, GetAr
             }
         }
 
-        var articles = articleRepository.findAllAssemblyByFilters(currentUserId,
+        var articles = articleRepository.findAllItemsByFilters(currentUserId,
                 tagId,
                 authorId,
                 favoritedById,
@@ -99,7 +99,7 @@ public class GetArticlesHandler implements QueryHandler<GetArticlesResult, GetAr
                 query.offset());
 
         var results = articles.stream()
-                .map(a -> conversionService.convert(a, ArticleDto.class))
+                .map(a -> conversionService.convert(a, ArticleItemDto.class))
                 .toList();
 
         var count = articleRepository.countByFilters(tagId, authorId, favoritedById);

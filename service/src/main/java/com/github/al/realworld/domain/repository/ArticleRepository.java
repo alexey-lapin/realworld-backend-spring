@@ -25,6 +25,7 @@ package com.github.al.realworld.domain.repository;
 
 import com.github.al.realworld.domain.model.Article;
 import com.github.al.realworld.domain.model.ArticleAssembly;
+import com.github.al.realworld.domain.model.ArticleItem;
 
 import java.util.List;
 import java.util.Optional;
@@ -53,16 +54,16 @@ public interface ArticleRepository {
     Optional<ArticleAssembly> findAssemblyBySlug(Long userId,
                                                  String slug);
 
-    List<ArticleAssembly> findAllAssemblyByFilters(Long userId,
-                                                   Long tagId,
-                                                   Long authorId,
-                                                   Long favoritedById,
-                                                   int limit,
-                                                   long offset);
+    List<ArticleItem> findAllItemsByFilters(Long userId,
+                                            Long tagId,
+                                            Long authorId,
+                                            Long favoritedById,
+                                            int limit,
+                                            long offset);
 
-    List<ArticleAssembly> findAllAssemblyByFollowerId(long userId,
-                                                      int limit,
-                                                      long offset);
+    List<ArticleItem> findAllItemsByFollowerId(long userId,
+                                               int limit,
+                                               long offset);
 
     long countByFilters(Long tagId, Long authorId, Long favoritedById);
 

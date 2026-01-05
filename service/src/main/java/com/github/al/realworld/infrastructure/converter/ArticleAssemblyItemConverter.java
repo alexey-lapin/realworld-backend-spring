@@ -21,14 +21,26 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.github.al.realworld.api.query;
+package com.github.al.realworld.infrastructure.converter;
 
 import com.github.al.realworld.api.dto.ArticleItemDto;
+import com.github.al.realworld.domain.model.ArticleItem;
+import com.github.al.realworld.infrastructure.config.MappingConfig;
+import org.mapstruct.Mapper;
+import org.springframework.core.convert.converter.Converter;
 
-import java.util.List;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 
-public record GetFeedResult(
-        List<ArticleItemDto> articles,
-        long articlesCount
-) {
+@Mapper(config = MappingConfig.class)
+public abstract class ArticleAssemblyItemConverter implements Converter<ArticleItem, ArticleItemDto> {
+
+    @Override
+    public abstract ArticleItemDto convert(ArticleItem source);
+
+    protected ZonedDateTime convert(Instant instant) {
+        return instant.atZone(ZoneId.systemDefault());
+    }
+
 }

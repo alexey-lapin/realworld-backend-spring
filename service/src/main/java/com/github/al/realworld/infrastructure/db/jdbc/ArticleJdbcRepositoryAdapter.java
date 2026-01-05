@@ -25,6 +25,7 @@ package com.github.al.realworld.infrastructure.db.jdbc;
 
 import com.github.al.realworld.domain.model.Article;
 import com.github.al.realworld.domain.model.ArticleAssembly;
+import com.github.al.realworld.domain.model.ArticleItem;
 import com.github.al.realworld.domain.model.Profile;
 import com.github.al.realworld.domain.model.Tag;
 import com.github.al.realworld.domain.repository.ArticleRepository;
@@ -99,21 +100,21 @@ public class ArticleJdbcRepositoryAdapter implements ArticleRepository {
     }
 
     @Override
-    public List<ArticleAssembly> findAllAssemblyByFilters(Long userId,
-                                                          Long tagId,
-                                                          Long authorId,
-                                                          Long favoritedById,
-                                                          int limit,
-                                                          long offset) {
+    public List<ArticleItem> findAllItemsByFilters(Long userId,
+                                                   Long tagId,
+                                                   Long authorId,
+                                                   Long favoritedById,
+                                                   int limit,
+                                                   long offset) {
         return assemblyRepository.findFiltered(tagId, authorId, favoritedById, userId, limit, offset).stream()
-                .map(articleMapper::toDomain)
+                .map(articleMapper::toItem)
                 .toList();
     }
 
     @Override
-    public List<ArticleAssembly> findAllAssemblyByFollowerId(long userId, int limit, long offset) {
+    public List<ArticleItem> findAllItemsByFollowerId(long userId, int limit, long offset) {
         return assemblyRepository.findFeed(userId, limit, offset).stream()
-                .map(articleMapper::toDomain)
+                .map(articleMapper::toItem)
                 .toList();
     }
 
@@ -140,6 +141,9 @@ public class ArticleJdbcRepositoryAdapter implements ArticleRepository {
 
         @Mapping(target = "author", source = "source")
         ArticleAssembly toDomain(ArticleAssemblyJdbcEntity source);
+
+        @Mapping(target = "author", source = "source")
+        ArticleItem toItem(ArticleAssemblyJdbcEntity source);
 
         default Profile profile(ArticleAssemblyJdbcEntity source) {
             return new Profile(source.authorUsername(),

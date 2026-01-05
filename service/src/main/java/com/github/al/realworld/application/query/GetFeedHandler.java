@@ -23,7 +23,7 @@
  */
 package com.github.al.realworld.application.query;
 
-import com.github.al.realworld.api.dto.ArticleDto;
+import com.github.al.realworld.api.dto.ArticleItemDto;
 import com.github.al.realworld.api.query.GetFeed;
 import com.github.al.realworld.api.query.GetFeedResult;
 import com.github.al.realworld.application.service.AuthenticationService;
@@ -47,10 +47,10 @@ public class GetFeedHandler implements QueryHandler<GetFeedResult, GetFeed> {
     public GetFeedResult handle(GetFeed query) {
         var currentUserId = authenticationService.getRequiredCurrentUserId();
 
-        var articles = articleRepository.findAllAssemblyByFollowerId(currentUserId, query.limit(), query.offset());
+        var articles = articleRepository.findAllItemsByFollowerId(currentUserId, query.limit(), query.offset());
 
         var results = articles.stream()
-                .map(article -> conversionService.convert(article, ArticleDto.class))
+                .map(article -> conversionService.convert(article, ArticleItemDto.class))
                 .toList();
 
         var count = articleRepository.countFeed(currentUserId);

@@ -23,12 +23,12 @@
  */
 package com.github.al.realworld.api.query;
 
-import com.github.al.realworld.api.dto.ArticleDto;
+import com.github.al.realworld.api.dto.ArticleItemDto;
 
 import java.util.List;
 
 public record GetArticlesResult(
-        List<ArticleDto> articles,
+        List<ArticleItemDto> articles,
         long articlesCount
 ) {
 }
