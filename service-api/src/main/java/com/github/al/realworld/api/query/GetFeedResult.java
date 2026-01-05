@@ -24,16 +24,11 @@
 package com.github.al.realworld.api.query;
 
 import com.github.al.realworld.api.dto.ArticleDto;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
 
 import java.util.List;
 
-@AllArgsConstructor
-@Getter
-public class GetFeedResult {
-
-    private List<ArticleDto> articles;
-    private Long articlesCount;
-
+public record GetFeedResult(
+        List<ArticleDto> articles,
+        long articlesCount
+) {
 }

@@ -51,11 +51,13 @@ public class LoginUserHandler implements CommandHandler<LoginUserResult, LoginUs
     @Transactional
     @Override
     public LoginUserResult handle(LoginUser command) {
-        var user = userRepository.findByEmail(command.getEmail())
-                .orElseThrow(() -> badRequest("user [email=%s] does not exist", command.getEmail()));
+        var userData = command.user();
 
-        if (!passwordEncoder.matches(command.getPassword(), user.password())) {
-            throw unauthorized("user [email=%s] password is incorrect", command.getEmail());
+        var user = userRepository.findByEmail(userData.email())
+                .orElseThrow(() -> badRequest("user [email=%s] does not exist", userData.email()));
+
+        if (!passwordEncoder.matches(userData.password(), user.password())) {
+            throw unauthorized("user [email=%s] password is incorrect", userData.email());
         }
 
         var token = jwtService.getToken(user);

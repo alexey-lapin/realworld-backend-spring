@@ -58,11 +58,11 @@ public class UserApiTest extends BaseRestTest {
     void should_returnCorrectData_whenRegisterUser() {
         RegisterUser command = registerCommand();
 
-        UserDto user = userClient.register(command).getUser();
+        UserDto user = userClient.register(command).user();
 
-        assertThat(user.getUsername()).isEqualTo(command.getUsername());
-        assertThat(user.getEmail()).isEqualTo(command.getEmail());
-        assertThat(user.getToken()).isNotBlank();
+        assertThat(user.username()).isEqualTo(command.user().username());
+        assertThat(user.email()).isEqualTo(command.user().email());
+        assertThat(user.token()).isNotBlank();
     }
 
     @Test
@@ -71,9 +71,9 @@ public class UserApiTest extends BaseRestTest {
 
         userClient.register(command);
 
-        UserDto user = userClient.login(new LoginUser(command.getEmail(), command.getPassword())).getUser();
+        UserDto user = userClient.login(new LoginUser(new LoginUser.Data(command.user().email(), command.user().password()))).user();
 
-        assertThat(user.getToken()).isNotBlank();
+        assertThat(user.token()).isNotBlank();
     }
 
     @Test
@@ -83,7 +83,7 @@ public class UserApiTest extends BaseRestTest {
         userClient.register(command);
 
         RestClientResponseException exception = catchThrowableOfType(
-                () -> userClient.login(new LoginUser(command.getEmail(), UUID.randomUUID().toString())),
+                () -> userClient.login(new LoginUser(new LoginUser.Data(command.user().email(), UUID.randomUUID().toString()))),
                 RestClientResponseException.class
         );
 
@@ -94,7 +94,7 @@ public class UserApiTest extends BaseRestTest {
     void should_return400_whenLoginUser() {
         String s = UUID.randomUUID().toString();
         RestClientResponseException exception = catchThrowableOfType(
-                () -> userClient.login(new LoginUser(s + "@ex.com", s)),
+                () -> userClient.login(new LoginUser(new LoginUser.Data(s + "@ex.com", s))),
                 RestClientResponseException.class
         );
 
@@ -105,20 +105,20 @@ public class UserApiTest extends BaseRestTest {
     void should_returnCorrectData_whenUpdateUser() {
         auth.register().login();
 
-        UpdateUser updateUser = UpdateUser.builder()
-                .email(ALTERED_EMAIL)
-                .username(ALTERED_USERNAME)
-                .password(ALTERED_PASSWORD)
-                .bio(ALTERED_BIO)
-                .image(ALTERED_IMAGE)
-                .build();
+        UpdateUser updateUser = new UpdateUser(new UpdateUser.Data(
+                ALTERED_EMAIL,
+                ALTERED_USERNAME,
+                ALTERED_PASSWORD,
+                ALTERED_IMAGE,
+                ALTERED_BIO
+        ));
 
-        UserDto user = userClient.update(updateUser).getUser();
+        UserDto user = userClient.update(updateUser).user();
 
-        assertThat(user.getEmail()).isEqualTo(ALTERED_EMAIL);
-        assertThat(user.getUsername()).isEqualTo(ALTERED_USERNAME);
-        assertThat(user.getBio()).isEqualTo(ALTERED_BIO);
-        assertThat(user.getImage()).isEqualTo(ALTERED_IMAGE);
+        assertThat(user.email()).isEqualTo(ALTERED_EMAIL);
+        assertThat(user.username()).isEqualTo(ALTERED_USERNAME);
+        assertThat(user.bio()).isEqualTo(ALTERED_BIO);
+        assertThat(user.image()).isEqualTo(ALTERED_IMAGE);
     }
 
     @Test
@@ -127,9 +127,13 @@ public class UserApiTest extends BaseRestTest {
 
         auth.register().login();
 
-        UpdateUser updateUser = UpdateUser.builder()
-                .email(registeredUser.getEmail())
-                .build();
+        UpdateUser updateUser = new UpdateUser(new UpdateUser.Data(
+                registeredUser.getEmail(),
+                null,
+                null,
+                null,
+                null
+        ));
 
         RestClientResponseException exception = catchThrowableOfType(
                 () -> userClient.update(updateUser),
@@ -145,9 +149,13 @@ public class UserApiTest extends BaseRestTest {
 
         auth.register().login();
 
-        UpdateUser updateUser = UpdateUser.builder()
-                .username(registeredUser.getUsername())
-                .build();
+        UpdateUser updateUser = new UpdateUser(new UpdateUser.Data(
+                null,
+                registeredUser.getUsername(),
+                null,
+                null,
+                null
+        ));
 
         RestClientResponseException exception = catchThrowableOfType(
                 () -> userClient.update(updateUser),
@@ -158,11 +166,11 @@ public class UserApiTest extends BaseRestTest {
     }
 
     private static RegisterUser registerCommand() {
-        return RegisterUser.builder()
-                .username(UUID.randomUUID().toString())
-                .email(UUID.randomUUID().toString() + "@ex.com")
-                .password(UUID.randomUUID().toString())
-                .build();
+        return new RegisterUser(new RegisterUser.Data(
+                UUID.randomUUID().toString() + "@ex.com",
+                UUID.randomUUID().toString(),
+                UUID.randomUUID().toString()
+        ));
     }
 
 }

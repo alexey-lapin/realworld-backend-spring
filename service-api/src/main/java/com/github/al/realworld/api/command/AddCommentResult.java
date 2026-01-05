@@ -24,15 +24,8 @@
 package com.github.al.realworld.api.command;
 
 import com.github.al.realworld.api.dto.CommentDto;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
 
-@NoArgsConstructor
-@AllArgsConstructor
-@Getter
-public class AddCommentResult {
-
-    private CommentDto comment;
-
+public record AddCommentResult(
+        CommentDto comment
+) {
 }

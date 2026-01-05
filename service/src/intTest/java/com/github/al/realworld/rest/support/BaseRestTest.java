@@ -34,13 +34,10 @@ import org.springframework.boot.test.http.server.LocalTestWebServer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.support.RestClientAdapter;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.service.invoker.HttpServiceProxyFactory;
-import tools.jackson.databind.SerializationFeature;
-import tools.jackson.databind.json.JsonMapper;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class BaseRestTest {
@@ -54,12 +51,6 @@ public class BaseRestTest {
                                          @Value("${api.version}") String path) {
             var localTestWebServer = LocalTestWebServer.get(applicationContext).withPath(path);
             return restClientBuilder.uriBuilderFactory(localTestWebServer.uriBuilderFactory())
-                    .configureMessageConverters(clientBuilder -> {
-                        var mapper = JsonMapper.builder()
-                                .enable(SerializationFeature.WRAP_ROOT_VALUE)
-                                .build();
-                        clientBuilder.withJsonConverter(new JacksonJsonHttpMessageConverter(mapper));
-                    })
                     .requestInterceptor((request, body, execution) -> {
                         String token = AuthSupport.TokenHolder.token;
                         if (token != null) {

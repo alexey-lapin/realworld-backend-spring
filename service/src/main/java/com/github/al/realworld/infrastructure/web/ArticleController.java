@@ -61,15 +61,9 @@ public class ArticleController implements ArticleOperations {
     public GetArticlesResult findByFilters(String tag,
                                            String author,
                                            String favorited,
-                                           Integer limit,
-                                           Integer offset) {
-        return bus.executeQuery(GetArticles.builder()
-                .tag(tag)
-                .author(author)
-                .favorited(favorited)
-                .limit(limit)
-                .offset(offset)
-                .build());
+                                           int limit,
+                                           long offset) {
+        return bus.executeQuery(new GetArticles(tag, author, favorited, limit, offset));
     }
 
     @Override
@@ -78,7 +72,7 @@ public class ArticleController implements ArticleOperations {
     }
 
     @Override
-    public GetFeedResult feed(Integer limit, Integer offset) {
+    public GetFeedResult feed(int limit, long offset) {
         return bus.executeQuery(new GetFeed(limit, offset));
     }
 
@@ -118,7 +112,7 @@ public class ArticleController implements ArticleOperations {
     }
 
     @Override
-    public void deleteComment(String slug, Long id) {
+    public void deleteComment(String slug, long id) {
         bus.executeCommand(new DeleteComment(slug, id));
     }
 

@@ -61,19 +61,20 @@ public class CreateArticleHandler implements CommandHandler<CreateArticleResult,
     @Override
     public CreateArticleResult handle(CreateArticle command) {
         var currentUserId = authenticationService.getRequiredCurrentUserId();
+        var articleData = command.article();
 
-        var existsByTitle = articleRepository.existsByTitle(command.getTitle());
+        var existsByTitle = articleRepository.existsByTitle(articleData.title());
         if (existsByTitle) {
-            throw badRequest("article [title=%s] already exists", command.getTitle());
+            throw badRequest("article [title=%s] already exists", articleData.title());
         }
 
-        var tags = handleTags(command);
+        var tags = handleTags(articleData);
 
         var article = Article.builder()
-                .slug(slugService.makeSlug(command.getTitle()))
-                .title(command.getTitle())
-                .description(command.getDescription())
-                .body(command.getBody())
+                .slug(slugService.makeSlug(articleData.title()))
+                .title(articleData.title())
+                .description(articleData.description())
+                .body(articleData.body())
                 .authorId(currentUserId)
                 .tags(tags)
                 .build();
@@ -86,9 +87,9 @@ public class CreateArticleHandler implements CommandHandler<CreateArticleResult,
         return new CreateArticleResult(data);
     }
 
-    private List<Tag> handleTags(CreateArticle command) {
+    private List<Tag> handleTags(CreateArticle.Data articleData) {
         List<Tag> tags = new ArrayList<>();
-        var tagList = command.getTagList();
+        var tagList = articleData.tagList();
         if (tagList != null && !tagList.isEmpty()) {
             var existingTags = tagRepository.findAllByNameIn(tagList);
             var existingTagNames = existingTags.stream()

@@ -47,7 +47,7 @@ public class GetFeedHandler implements QueryHandler<GetFeedResult, GetFeed> {
     public GetFeedResult handle(GetFeed query) {
         var currentUserId = authenticationService.getRequiredCurrentUserId();
 
-        var articles = articleRepository.findAllAssemblyByFollowerId(currentUserId, query.getLimit(), query.getOffset());
+        var articles = articleRepository.findAllAssemblyByFollowerId(currentUserId, query.limit(), query.offset());
 
         var results = articles.stream()
                 .map(article -> conversionService.convert(article, ArticleDto.class))

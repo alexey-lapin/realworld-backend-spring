@@ -47,8 +47,8 @@ public class DeleteCommentHandler implements CommandHandler<DeleteCommentResult,
     public DeleteCommentResult handle(DeleteComment command) {
         var currentUserId = authenticationService.getRequiredCurrentUserId();
 
-        var comment = commentRepository.findById(command.getId())
-                .orElseThrow(() -> notFound("comment [id=%s] does not exist", command.getId()));
+        var comment = commentRepository.findById(command.id())
+                .orElseThrow(() -> notFound("comment [id=%s] does not exist", command.id()));
 
         if (comment.authorId() != currentUserId) {
             throw forbidden("comment [id=%s] is not owned by %s", comment.id(),

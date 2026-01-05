@@ -104,14 +104,14 @@ public class ArticleJdbcRepositoryAdapter implements ArticleRepository {
                                                           Long authorId,
                                                           Long favoritedById,
                                                           int limit,
-                                                          int offset) {
+                                                          long offset) {
         return assemblyRepository.findFiltered(tagId, authorId, favoritedById, userId, limit, offset).stream()
                 .map(articleMapper::toDomain)
                 .toList();
     }
 
     @Override
-    public List<ArticleAssembly> findAllAssemblyByFollowerId(long userId, Integer limit, Integer offset) {
+    public List<ArticleAssembly> findAllAssemblyByFollowerId(long userId, int limit, long offset) {
         return assemblyRepository.findFeed(userId, limit, offset).stream()
                 .map(articleMapper::toDomain)
                 .toList();

@@ -31,7 +31,9 @@ import com.github.al.realworld.api.command.UpdateUser;
 import com.github.al.realworld.api.command.UpdateUserResult;
 import com.github.al.realworld.api.query.GetCurrentUserResult;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.service.annotation.GetExchange;
 import org.springframework.web.service.annotation.PostExchange;
 import org.springframework.web.service.annotation.PutExchange;
@@ -41,6 +43,7 @@ public interface UserOperations {
     @PostExchange("/users/login")
     LoginUserResult login(@Valid @RequestBody LoginUser command);
 
+    @ResponseStatus(HttpStatus.CREATED)
     @PostExchange("/users")
     RegisterUserResult register(@Valid @RequestBody RegisterUser command);
 

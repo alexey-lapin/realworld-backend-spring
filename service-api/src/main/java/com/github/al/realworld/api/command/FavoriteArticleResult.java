@@ -24,15 +24,8 @@
 package com.github.al.realworld.api.command;
 
 import com.github.al.realworld.api.dto.ArticleDto;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
 
-@NoArgsConstructor
-@AllArgsConstructor
-@Getter
-public class FavoriteArticleResult {
-
-    private ArticleDto article;
-
+public record FavoriteArticleResult(
+        ArticleDto article
+) {
 }

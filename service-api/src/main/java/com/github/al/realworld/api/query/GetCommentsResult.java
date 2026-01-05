@@ -24,17 +24,10 @@
 package com.github.al.realworld.api.query;
 
 import com.github.al.realworld.api.dto.CommentDto;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 import java.util.List;
 
-@NoArgsConstructor
-@AllArgsConstructor
-@Getter
-public class GetCommentsResult {
-
-    private List<CommentDto> comments;
-
+public record GetCommentsResult(
+        List<CommentDto> comments
+) {
 }

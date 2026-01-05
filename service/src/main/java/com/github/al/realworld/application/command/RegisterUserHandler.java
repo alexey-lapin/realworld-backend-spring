@@ -51,17 +51,19 @@ public class RegisterUserHandler implements CommandHandler<RegisterUserResult, R
     @Transactional
     @Override
     public RegisterUserResult handle(RegisterUser command) {
-        if (userRepository.existsByEmail(command.getEmail())) {
-            throw badRequest("user [email=%s] already exists", command.getEmail());
+        var userData = command.user();
+
+        if (userRepository.existsByEmail(userData.email())) {
+            throw badRequest("user [email=%s] already exists", userData.email());
         }
-        if (userRepository.existsByUsername(command.getUsername())) {
-            throw badRequest("user [name=%s] already exists", command.getUsername());
+        if (userRepository.existsByUsername(userData.username())) {
+            throw badRequest("user [name=%s] already exists", userData.username());
         }
 
         var user = User.builder()
-                .username(command.getUsername())
-                .email(command.getEmail())
-                .password(passwordEncoder.encode(command.getPassword()))
+                .username(userData.username())
+                .email(userData.email())
+                .password(passwordEncoder.encode(userData.password()))
                 .build();
 
         var savedUser = userRepository.save(user);

@@ -30,7 +30,7 @@ import org.mapstruct.Mapper;
 import org.springframework.core.convert.converter.Converter;
 
 @Mapper(config = MappingConfig.class)
-public abstract class ProfileAssemblyConverter implements Converter<Profile, ProfileDto> {
+public abstract class ProfileConverter implements Converter<Profile, ProfileDto> {
 
     @Override
     public abstract ProfileDto convert(Profile source);

@@ -23,23 +23,13 @@
  */
 package com.github.al.realworld.api.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-
 import java.time.ZonedDateTime;
 
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
-@Getter
-public class CommentDto {
-
-    private Long id;
-    private ZonedDateTime createdAt;
-    private ZonedDateTime updatedAt;
-    private String body;
-    private ProfileDto author;
-
+public record CommentDto(
+        Long id,
+        ZonedDateTime createdAt,
+        ZonedDateTime updatedAt,
+        String body,
+        ProfileDto author
+) {
 }

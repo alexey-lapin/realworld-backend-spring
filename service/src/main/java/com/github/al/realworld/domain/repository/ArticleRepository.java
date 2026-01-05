@@ -58,11 +58,11 @@ public interface ArticleRepository {
                                                    Long authorId,
                                                    Long favoritedById,
                                                    int limit,
-                                                   int offset);
+                                                   long offset);
 
     List<ArticleAssembly> findAllAssemblyByFollowerId(long userId,
-                                                      Integer limit,
-                                                      Integer offset);
+                                                      int limit,
+                                                      long offset);
 
     long countByFilters(Long tagId, Long authorId, Long favoritedById);
 

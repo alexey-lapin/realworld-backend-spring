@@ -23,20 +23,10 @@
  */
 package com.github.al.realworld.api.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
-@Getter
-public class ProfileDto {
-
-    private String username;
-    private String bio;
-    private String image;
-    private Boolean following;
-
+public record ProfileDto(
+        String username,
+        String bio,
+        String image,
+        Boolean following
+) {
 }

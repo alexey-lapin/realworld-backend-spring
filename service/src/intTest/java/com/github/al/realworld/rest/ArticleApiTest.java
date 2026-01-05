@@ -68,40 +68,40 @@ public class ArticleApiTest extends BaseRestTest {
         String user = auth.register().login().getUsername();
 
         CreateArticle command = createArticleCommand();
-        ArticleDto article = articleClient.create(command).getArticle();
+        ArticleDto article = articleClient.create(command).article();
 
-        assertThat(article.getSlug()).isEqualTo(command.getTitle());
-        assertThat(article.getTitle()).isEqualTo(command.getTitle());
-        assertThat(article.getDescription()).isEqualTo(command.getDescription());
-        assertThat(article.getBody()).isEqualTo(command.getBody());
-        assertThat(article.getAuthor().getUsername()).isEqualTo(user);
+        assertThat(article.slug()).isEqualTo(command.article().title());
+        assertThat(article.title()).isEqualTo(command.article().title());
+        assertThat(article.description()).isEqualTo(command.article().description());
+        assertThat(article.body()).isEqualTo(command.article().body());
+        assertThat(article.author().username()).isEqualTo(user);
     }
 
     @Test
     void should_returnCorrectArticleData_when_favoriteAndUnfavorite() {
         String user = auth.register().login().getUsername();
 
-        ArticleDto created = articleClient.create(createArticleCommand()).getArticle();
+        ArticleDto created = articleClient.create(createArticleCommand()).article();
 
-        ArticleDto favoritedArticle = articleClient.favorite(created.getSlug()).getArticle();
-        assertThat(favoritedArticle.getFavorited()).isTrue();
-        assertThat(favoritedArticle.getFavoritesCount()).isEqualTo(1);
+        ArticleDto favoritedArticle = articleClient.favorite(created.slug()).article();
+        assertThat(favoritedArticle.favorited()).isTrue();
+        assertThat(favoritedArticle.favoritesCount()).isEqualTo(1);
 
-        ArticleDto unfavoritedArticle = articleClient.unfavorite(created.getSlug()).getArticle();
-        assertThat(unfavoritedArticle.getFavorited()).isFalse();
-        assertThat(unfavoritedArticle.getFavoritesCount()).isEqualTo(0);
+        ArticleDto unfavoritedArticle = articleClient.unfavorite(created.slug()).article();
+        assertThat(unfavoritedArticle.favorited()).isFalse();
+        assertThat(unfavoritedArticle.favoritesCount()).isEqualTo(0);
     }
 
     @Test
     void should_returnCorrectArticleData_when_delete() {
         String user = auth.register().login().getUsername();
 
-        ArticleDto created = articleClient.create(createArticleCommand()).getArticle();
+        ArticleDto created = articleClient.create(createArticleCommand()).article();
 
-        articleClient.deleteBySlug(created.getSlug());
+        articleClient.deleteBySlug(created.slug());
 
         RestClientResponseException exception = catchThrowableOfType(
-                () -> articleClient.findBySlug(created.getSlug()),
+                () -> articleClient.findBySlug(created.slug()),
                 RestClientResponseException.class
         );
 
@@ -113,12 +113,12 @@ public class ArticleApiTest extends BaseRestTest {
     void should_throw403_when_deleteNotOwned() {
         auth.register().login();
 
-        ArticleDto created = articleClient.create(createArticleCommand()).getArticle();
+        ArticleDto created = articleClient.create(createArticleCommand()).article();
 
         auth.register().login();
 
         RestClientResponseException exception = catchThrowableOfType(
-                () -> articleClient.deleteBySlug(created.getSlug()),
+                () -> articleClient.deleteBySlug(created.slug()),
                 RestClientResponseException.class
         );
 
@@ -141,45 +141,45 @@ public class ArticleApiTest extends BaseRestTest {
     void should_returnCorrectArticleData_when_update() {
         auth.register().login();
 
-        ArticleDto created = articleClient.create(createArticleCommand()).getArticle();
+        ArticleDto created = articleClient.create(createArticleCommand()).article();
 
-        UpdateArticle updateCommand = UpdateArticle.builder()
-                .title(ALTERED_TITLE)
-                .body(ALTERED_BODY)
-                .description(ALTERED_DESCRIPTION)
-                .build();
+        UpdateArticle updateCommand = new UpdateArticle(null, new UpdateArticle.Data(
+                ALTERED_TITLE,
+                ALTERED_DESCRIPTION,
+                ALTERED_BODY
+        ));
 
-        ArticleDto updated = articleClient.updateBySlug(created.getSlug(), updateCommand).getArticle();
+        ArticleDto updated = articleClient.updateBySlug(created.slug(), updateCommand).article();
 
-        assertThat(updated.getSlug()).isEqualTo(ALTERED_TITLE);
-        assertThat(updated.getTitle()).isEqualTo(ALTERED_TITLE);
-        assertThat(updated.getDescription()).isEqualTo(ALTERED_DESCRIPTION);
-        assertThat(updated.getBody()).isEqualTo(ALTERED_BODY);
+        assertThat(updated.slug()).isEqualTo(ALTERED_TITLE);
+        assertThat(updated.title()).isEqualTo(ALTERED_TITLE);
+        assertThat(updated.description()).isEqualTo(ALTERED_DESCRIPTION);
+        assertThat(updated.body()).isEqualTo(ALTERED_BODY);
     }
 
     @Test
     void shouldReturnCorrectCommentData_whenCreateDeleteComment() {
         String user = auth.register().login().getUsername();
 
-        ArticleDto created = articleClient.create(createArticleCommand()).getArticle();
+        ArticleDto created = articleClient.create(createArticleCommand()).article();
 
-        AddComment addComment = AddComment.builder().body(TEST_BODY).build();
+        AddComment addComment = new AddComment(null, new AddComment.Data(TEST_BODY));
 
-        CommentDto comment = articleClient.addComment(created.getSlug(), addComment).getComment();
+        CommentDto comment = articleClient.addComment(created.slug(), addComment).comment();
 
-        assertThat(comment.getId()).isNotNull();
-        assertThat(comment.getAuthor().getUsername()).isEqualTo(user);
-        assertThat(comment.getBody()).isEqualTo(TEST_BODY);
-        assertThat(comment.getCreatedAt()).isNotNull();
-        assertThat(comment.getUpdatedAt()).isNotNull();
+        assertThat(comment.id()).isNotNull();
+        assertThat(comment.author().username()).isEqualTo(user);
+        assertThat(comment.body()).isEqualTo(TEST_BODY);
+        assertThat(comment.createdAt()).isNotNull();
+        assertThat(comment.updatedAt()).isNotNull();
 
-        List<CommentDto> comments = articleClient.findAllComments(created.getSlug()).getComments();
+        List<CommentDto> comments = articleClient.findAllComments(created.slug()).comments();
 
         assertThat(comments).hasSize(1);
 
-        articleClient.deleteComment(created.getSlug(), comment.getId());
+        articleClient.deleteComment(created.slug(), comment.id());
 
-        comments = articleClient.findAllComments(created.getSlug()).getComments();
+        comments = articleClient.findAllComments(created.slug()).comments();
 
         assertThat(comments).hasSize(0);
     }
@@ -188,15 +188,15 @@ public class ArticleApiTest extends BaseRestTest {
     void should_throw403_when_commentIsNotOwned() {
         auth.register().login();
 
-        ArticleDto article = articleClient.create(createArticleCommand()).getArticle();
+        ArticleDto article = articleClient.create(createArticleCommand()).article();
 
-        AddComment addComment = AddComment.builder().body(TEST_BODY).build();
-        CommentDto comment = articleClient.addComment(article.getSlug(), addComment).getComment();
+        AddComment addComment = new AddComment(null, new AddComment.Data(TEST_BODY));
+        CommentDto comment = articleClient.addComment(article.slug(), addComment).comment();
 
         auth.register().login();
 
         RestClientResponseException exception = catchThrowableOfType(
-                () -> articleClient.deleteComment(article.getSlug(), comment.getId()),
+                () -> articleClient.deleteComment(article.slug(), comment.id()),
                 RestClientResponseException.class
         );
 
@@ -207,7 +207,7 @@ public class ArticleApiTest extends BaseRestTest {
     void should_throw404_when_addCommentArticleDoesNotExist() {
         auth.register().login();
 
-        AddComment addComment = AddComment.builder().body(TEST_BODY).build();
+        AddComment addComment = new AddComment(null, new AddComment.Data(TEST_BODY));
         RestClientResponseException exception = catchThrowableOfType(
                 () -> articleClient.addComment(UUID.randomUUID().toString(), addComment),
                 RestClientResponseException.class
@@ -232,10 +232,10 @@ public class ArticleApiTest extends BaseRestTest {
     void should_throw404_when_deleteCommentDoesNotExist() {
         auth.register().login();
 
-        ArticleDto article = articleClient.create(createArticleCommand()).getArticle();
+        ArticleDto article = articleClient.create(createArticleCommand()).article();
 
         RestClientResponseException exception = catchThrowableOfType(
-                () -> articleClient.deleteComment(article.getSlug(), 9999999L),
+                () -> articleClient.deleteComment(article.slug(), 9999999L),
                 RestClientResponseException.class
         );
 
@@ -243,11 +243,12 @@ public class ArticleApiTest extends BaseRestTest {
     }
 
     private static CreateArticle createArticleCommand() {
-        return CreateArticle.builder()
-                .title(UUID.randomUUID().toString())
-                .description(UUID.randomUUID().toString())
-                .body(UUID.randomUUID().toString())
-                .build();
+        return new CreateArticle(new CreateArticle.Data(
+                UUID.randomUUID().toString(),
+                UUID.randomUUID().toString(),
+                UUID.randomUUID().toString(),
+                null
+        ));
     }
 
 }

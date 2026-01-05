@@ -24,14 +24,9 @@
 package com.github.al.realworld.api.query;
 
 import com.github.al.realworld.bus.Query;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
 
-@AllArgsConstructor
-@Getter
-public class GetFeed implements Query<GetFeedResult> {
-
-    private Integer limit;
-    private Integer offset;
-
+public record GetFeed(
+        int limit,
+        long offset
+) implements Query<GetFeedResult> {
 }

@@ -23,27 +23,22 @@
  */
 package com.github.al.realworld.api.command;
 
-import com.fasterxml.jackson.annotation.JsonRootName;
 import com.github.al.realworld.bus.Command;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotNull;
 
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
-@Getter
-@JsonRootName("user")
-public class UpdateUser implements Command<UpdateUserResult> {
+public record UpdateUser(
+        @Valid @NotNull Data user
+) implements Command<UpdateUserResult> {
 
-    @Email
-    private String email;
-    private String username;
-    private String password;
-    private String image;
-    private String bio;
+    public record Data(
+            @Email String email,
+            String username,
+            String password,
+            String image,
+            String bio
+    ) {
+    }
 
 }

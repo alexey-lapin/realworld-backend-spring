@@ -57,16 +57,16 @@ public class UnfollowProfileHandler implements CommandHandler<UnfollowProfileRes
     public UnfollowProfileResult handle(UnfollowProfile command) {
         var currentUserId = authenticationService.getRequiredCurrentUserId();
 
-        var followee = userRepository.findByUsername(command.getFollowee())
-                .orElseThrow(() -> notFound("user [name=%s] does not exist", command.getFollowee()));
+        var followee = userRepository.findByUsername(command.followee())
+                .orElseThrow(() -> notFound("user [name=%s] does not exist", command.followee()));
 
         var followRelation = new FollowRelation(currentUserId, followee.id());
         if (followRelationRepository.exists(followRelation)) {
             followRelationRepository.delete(followRelation);
         }
 
-        var profileAssembly = new Profile(followee.username(), followee.bio(), followee.image(), false);
-        var data = conversionService.convert(profileAssembly, ProfileDto.class);
+        var profile = new Profile(followee.username(), followee.bio(), followee.image(), false);
+        var data = conversionService.convert(profile, ProfileDto.class);
 
         return new UnfollowProfileResult(data);
     }

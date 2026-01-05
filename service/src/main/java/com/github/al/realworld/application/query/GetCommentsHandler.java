@@ -51,8 +51,8 @@ public class GetCommentsHandler implements QueryHandler<GetCommentsResult, GetCo
     public GetCommentsResult handle(GetComments query) {
         var currentUserId = authenticationService.getCurrentUserId();
 
-        var articleId = articleRepository.findIdBySlug(query.getSlug())
-                .orElseThrow(() -> notFound("article [slug=%s] does not exists", query.getSlug()));
+        var articleId = articleRepository.findIdBySlug(query.slug())
+                .orElseThrow(() -> notFound("article [slug=%s] does not exists", query.slug()));
 
         var result = commentRepository.findAllAssemblyByArticleId(currentUserId, articleId).stream()
                 .map(comment -> conversionService.convert(comment, CommentDto.class))
