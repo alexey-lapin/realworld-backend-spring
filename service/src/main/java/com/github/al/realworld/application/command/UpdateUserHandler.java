@@ -61,24 +61,26 @@ public class UpdateUserHandler implements CommandHandler<UpdateUserResult, Updat
 
         var userData = command.user();
 
-        if (userData.username() != null
-            && !userData.username().equals(user.username())
-            && userRepository.existsByUsername(userData.username())) {
-            throw badRequest("user [name=%s] already exists", userData.username());
+        var newUsername = userData.username();
+        if (newUsername != null
+            && !newUsername.equals(user.username())
+            && userRepository.existsByUsername(newUsername)) {
+            throw badRequest("user [name=%s] already exists", newUsername);
         }
 
-        if (userData.email() != null
-            && !userData.email().equals(user.email())
-            && userRepository.existsByEmail(userData.email())) {
-            throw badRequest("user [email=%s] already exists", userData.email());
+        var newEmail = userData.email();
+        if (newEmail != null
+            && !newEmail.equals(user.email())
+            && userRepository.existsByEmail(newEmail)) {
+            throw badRequest("user [email=%s] already exists", newEmail);
         }
 
         var alteredUser = user.toBuilder()
-                .email(userData.email() == null ? user.email() : userData.email())
-                .username(userData.username() == null ? user.username() : userData.username())
-                .password(userData.password() == null ? user.password() : encoder.encode(userData.password()))
-                .bio(userData.bio() == null ? user.bio() : userData.bio())
-                .image(userData.image() == null ? user.image() : userData.image())
+                .email(newEmail != null ? newEmail : user.email())
+                .username(newUsername != null ? newUsername : user.username())
+                .password(userData.password() != null ? encoder.encode(userData.password()) : user.password())
+                .bio(userData.bio() != null ? userData.bio() : user.bio())
+                .image(userData.image() != null ? userData.image() : user.image())
                 .build();
 
         var savedUser = userRepository.save(alteredUser);

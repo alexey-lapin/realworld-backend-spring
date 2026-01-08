@@ -31,6 +31,7 @@ import com.github.al.realworld.domain.model.Tag;
 import com.github.al.realworld.domain.repository.ArticleRepository;
 import com.github.al.realworld.infrastructure.config.MappingConfig;
 import lombok.RequiredArgsConstructor;
+import org.mapstruct.AnnotateWith;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.springframework.stereotype.Repository;
@@ -48,11 +49,6 @@ public class ArticleJdbcRepositoryAdapter implements ArticleRepository {
     private final ArticleJdbcRepository repository;
     private final ArticleAssemblyJdbcRepository assemblyRepository;
     private final ArticleMapper articleMapper;
-
-    @Override
-    public boolean existsByTitle(String title) {
-        return repository.existsByTitle(title);
-    }
 
     @Override
     public Optional<Long> findIdBySlug(String slug) {
@@ -128,6 +124,7 @@ public class ArticleJdbcRepositoryAdapter implements ArticleRepository {
         return assemblyRepository.countFeed(userId);
     }
 
+    @AnnotateWith(MappingConfig.GeneratedMapper.class)
     @Mapper(config = MappingConfig.class)
     interface ArticleMapper {
 

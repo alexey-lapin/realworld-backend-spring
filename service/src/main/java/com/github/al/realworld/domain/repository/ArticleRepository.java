@@ -32,8 +32,6 @@ import java.util.Optional;
 
 public interface ArticleRepository {
 
-    boolean existsByTitle(String title);
-
     Optional<Long> findIdBySlug(String slug);
 
     Optional<Article> findBySlug(String slug);

@@ -27,6 +27,7 @@ import com.github.al.realworld.domain.model.Tag;
 import com.github.al.realworld.domain.repository.TagRepository;
 import com.github.al.realworld.infrastructure.config.MappingConfig;
 import lombok.RequiredArgsConstructor;
+import org.mapstruct.AnnotateWith;
 import org.mapstruct.Mapper;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.relational.core.conversion.DbActionExecutionException;
@@ -66,13 +67,6 @@ public class TagJdbcRepositoryAdapter implements TagRepository {
     }
 
     @Override
-    public Tag save(Tag tag) {
-        var entity = tagMapper.fromDomain(tag);
-        var saved = repository.save(entity);
-        return tagMapper.toDomain(saved);
-    }
-
-    @Override
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public Tag saveOrGet(Tag tag) {
         var entity = tagMapper.fromDomain(tag);
@@ -89,13 +83,7 @@ public class TagJdbcRepositoryAdapter implements TagRepository {
         }
     }
 
-    @Override
-    public List<Tag> saveAll(Collection<Tag> tags) {
-        var entities = tags.stream().map(tagMapper::fromDomain).toList();
-        var saved = repository.saveAll(entities);
-        return saved.stream().map(tagMapper::toDomain).toList();
-    }
-
+    @AnnotateWith(MappingConfig.GeneratedMapper.class)
     @Mapper(config = MappingConfig.class)
     interface TagMapper {
 

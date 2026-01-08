@@ -51,7 +51,7 @@ public class DeleteArticleHandler implements CommandHandler<DeleteArticleResult,
     public DeleteArticleResult handle(DeleteArticle command) {
         var currentUserId = authenticationService.getRequiredCurrentUserId();
 
-        var article = articleRepository.findAssemblyBySlug(null, command.slug())
+        var article = articleRepository.findBySlug(command.slug())
                 .orElseThrow(() -> notFound("article [slug=%s] does not exist", command.slug()));
 
         if (article.authorId() != currentUserId) {

@@ -22,8 +22,8 @@ if (hasIntTests) {
 }
 
 configure<JavaPluginExtension> {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
+    sourceCompatibility = JavaVersion.VERSION_25
+    targetCompatibility = JavaVersion.VERSION_25
 }
 
 spotless {
@@ -63,6 +63,7 @@ tasks {
 
     withType<JavaCompile>().configureEach {
         shouldRunAfter("spotlessJavaCheck")
+        options.compilerArgs.add("-parameters")
     }
 }
 

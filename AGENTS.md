@@ -80,13 +80,13 @@ Use Gradle `--tests` to target a class or method.
 Single unit test class:
 
 ```bash
-./gradlew :service:test --tests "com.github.al.realworld.application.service.SlugServiceTest"
+./gradlew :service:test --tests "com.github.al.realworld.application.service.DefaultSlugServiceTest"
 ```
 
 Single test method:
 
 ```bash
-./gradlew :service:test --tests "com.github.al.realworld.application.service.SlugServiceTest.name1"
+./gradlew :service:test --tests "com.github.al.realworld.application.service.DefaultSlugServiceTest.name1"
 ```
 
 Single integration test class:

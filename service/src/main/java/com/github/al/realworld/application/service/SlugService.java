@@ -23,25 +23,6 @@
  */
 package com.github.al.realworld.application.service;
 
-import org.springframework.stereotype.Component;
-
-import java.text.Normalizer;
-import java.util.Locale;
-import java.util.regex.Pattern;
-
-@Component
-public class SlugService {
-
-    private static final Pattern NON_LATIN = Pattern.compile("[^\\w_-]");
-    private static final Pattern SEPARATORS = Pattern.compile("[\\s\\p{Punct}&&[^-]]");
-
-    public String makeSlug(String input) {
-        String noSeparators = SEPARATORS.matcher(input).replaceAll("-");
-        String normalized = Normalizer.normalize(noSeparators, Normalizer.Form.NFD);
-        String slug = NON_LATIN.matcher(normalized).replaceAll("");
-        return slug.toLowerCase(Locale.ENGLISH)
-                .replaceAll("-{2,}", "-")
-                .replaceAll("^-|-$", "");
-    }
-
+public interface SlugService {
+    String makeSlug(String input);
 }

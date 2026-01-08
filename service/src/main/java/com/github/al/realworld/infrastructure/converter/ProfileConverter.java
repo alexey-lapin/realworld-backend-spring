@@ -26,9 +26,11 @@ package com.github.al.realworld.infrastructure.converter;
 import com.github.al.realworld.api.dto.ProfileDto;
 import com.github.al.realworld.domain.model.Profile;
 import com.github.al.realworld.infrastructure.config.MappingConfig;
+import org.mapstruct.AnnotateWith;
 import org.mapstruct.Mapper;
 import org.springframework.core.convert.converter.Converter;
 
+@AnnotateWith(MappingConfig.GeneratedMapper.class)
 @Mapper(config = MappingConfig.class)
 public abstract class ProfileConverter implements Converter<Profile, ProfileDto> {
 

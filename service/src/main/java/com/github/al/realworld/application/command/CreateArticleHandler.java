@@ -43,8 +43,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.github.al.realworld.application.exception.BadRequestException.badRequest;
-
 @RequiredArgsConstructor
 @Service
 public class CreateArticleHandler implements CommandHandler<CreateArticleResult, CreateArticle> {
@@ -60,11 +58,6 @@ public class CreateArticleHandler implements CommandHandler<CreateArticleResult,
     public CreateArticleResult handle(CreateArticle command) {
         var currentUserId = authenticationService.getRequiredCurrentUserId();
         var articleData = command.article();
-
-        var existsByTitle = articleRepository.existsByTitle(articleData.title());
-        if (existsByTitle) {
-            throw badRequest("article [title=%s] already exists", articleData.title());
-        }
 
         var tags = handleTags(articleData);
 
@@ -86,24 +79,26 @@ public class CreateArticleHandler implements CommandHandler<CreateArticleResult,
     }
 
     private List<Tag> handleTags(CreateArticle.Data articleData) {
-        List<Tag> tags = new ArrayList<>();
         var tagList = articleData.tagList();
-        if (tagList != null && !tagList.isEmpty()) {
-            var existingTags = tagRepository.findAllByNameIn(tagList);
-            var existingTagNames = existingTags.stream()
-                    .map(Tag::name)
-                    .collect(Collectors.toSet());
-            var newTags = tagList.stream()
-                    .filter(name -> !existingTagNames.contains(name))
-                    .map(Tag::new)
-                    .toList();
-            for (var newTag : newTags) {
-                var tag = tagRepository.saveOrGet(newTag);
-                tags.add(tag);
-            }
-            tags.addAll(existingTags);
-            Collections.sort(tags);
+        if (tagList == null || tagList.isEmpty()) {
+            return Collections.emptyList();
         }
+
+        var existingTags = tagRepository.findAllByNameIn(tagList);
+        var existingTagNames = existingTags.stream()
+                .map(Tag::name)
+                .collect(Collectors.toSet());
+
+        var newTags = tagList.stream()
+                .filter(name -> !existingTagNames.contains(name))
+                .map(Tag::new)
+                .map(tagRepository::saveOrGet)
+                .toList();
+
+        var tags = new ArrayList<>(existingTags);
+        tags.addAll(newTags);
+        Collections.sort(tags);
+
         return tags;
     }
 

@@ -61,9 +61,10 @@ public class UpdateArticleHandler implements CommandHandler<UpdateArticleResult,
                     command.slug(), authenticationService.getCurrentUserName());
         }
 
+        var newTitle = articleData.title();
         var alteredArticle = article.toBuilder()
-                .slug(articleData.title() != null ? slugService.makeSlug(articleData.title()) : article.slug())
-                .title(articleData.title() != null ? articleData.title() : article.title())
+                .slug(newTitle != null ? slugService.makeSlug(newTitle) : article.slug())
+                .title(newTitle != null ? newTitle : article.title())
                 .description(articleData.description() != null ? articleData.description() : article.description())
                 .body(articleData.body() != null ? articleData.body() : article.body())
                 .build();

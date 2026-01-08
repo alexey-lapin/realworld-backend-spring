@@ -24,11 +24,11 @@
 package com.github.al.realworld.api.operation;
 
 import com.github.al.realworld.api.query.GetTagsResult;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.service.annotation.GetExchange;
 
 public interface TagOperations {
 
-    @GetMapping("/tags")
+    @GetExchange("/tags")
     GetTagsResult findAll();
 
 }

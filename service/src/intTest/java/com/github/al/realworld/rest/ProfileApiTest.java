@@ -23,11 +23,11 @@
  */
 package com.github.al.realworld.rest;
 
-import com.github.al.realworld.api.dto.ProfileDto;
 import com.github.al.realworld.api.operation.ProfileClient;
 import com.github.al.realworld.rest.auth.AuthSupport;
 import com.github.al.realworld.rest.support.BaseRestTest;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -49,50 +49,111 @@ public class ProfileApiTest extends BaseRestTest {
         auth.logout();
     }
 
-    @Test
-    void should_returnNull_when_userIsNotRegistered() {
+    @Nested
+    class GetProfile {
 
-        RestClientResponseException exception = catchThrowableOfType(
-                () -> profileClient.findByUsername("u3"),
-                RestClientResponseException.class
-        );
+        @Test
+        void should_returnNull_when_userIsNotRegistered() {
+            var exception = catchThrowableOfType(
+                    RestClientResponseException.class,
+                    () -> profileClient.findByUsername("u3")
+            );
 
-        assertThat(exception.getStatusCode().value()).isEqualTo(HttpStatus.NOT_FOUND.value());
+            assertThat(exception.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        }
+
+        @Test
+        void should_returnCorrectData_when_userIsRegistered() {
+            auth.register("u1", "u1@example.com", "1234");
+
+            var profile = profileClient.findByUsername("u1").profile();
+
+            assertThat(profile.username()).isEqualTo("u1");
+        }
+
     }
 
-    @Test
-    void should_returnCorrectData_when_userIsRegistered() {
-        auth.register("u1", "u1@example.com", "1234");
+    @Nested
+    class FollowProfile {
 
-        ProfileDto profile = profileClient.findByUsername("u1").profile();
+        @Test
+        void should_throw401_when_unauthorized() {
+            var exception = catchThrowableOfType(
+                    RestClientResponseException.class,
+                    () -> profileClient.follow("u2")
+            );
 
-        assertThat(profile.username()).isEqualTo("u1");
+            assertThat(exception.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+        }
+
+        @Test
+        void should_returnCorrectProfileData_when_followAndUnfollow() {
+            auth.register().login();
+            var user2 = auth.register().getUsername();
+
+            profileClient.follow(user2);
+
+            var profile1 = profileClient.findByUsername(user2).profile();
+            assertThat(profile1.following()).isTrue();
+
+            profileClient.unfollow(user2);
+
+            var profile2 = profileClient.findByUsername(user2).profile();
+            assertThat(profile2.following()).isFalse();
+        }
+
+        @Test
+        void should_throw404_when_followNonExistentUser() {
+            auth.register().login();
+
+            var exception = catchThrowableOfType(
+                    RestClientResponseException.class,
+                    () -> profileClient.follow("non-existent-user")
+            );
+
+            assertThat(exception.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        }
+
+        @Test
+        void should_handleDoubleFollow() {
+            auth.register().login();
+            var user2 = auth.register().getUsername();
+
+            profileClient.follow(user2);
+            var profile = profileClient.follow(user2).profile();
+
+            assertThat(profile.following()).isTrue();
+        }
+
     }
 
-    @Test
-    void should_throw401_when_unauthorized() {
-        RestClientResponseException ex = catchThrowableOfType(
-                () -> profileClient.follow("u2"),
-                RestClientResponseException.class
-        );
+    @Nested
+    class UnfollowProfile {
 
-        assertThat(ex.getStatusCode().value()).isEqualTo(HttpStatus.UNAUTHORIZED.value());
-    }
+        @Test
+        void should_throw404_when_unfollowNonExistentUser() {
+            auth.register().login();
 
-    @Test
-    void should_returnCorrectProfileData_when_followAndUnfollow() {
-        auth.register().login();
-        String user2 = auth.register().getUsername();
+            var exception = catchThrowableOfType(
+                    RestClientResponseException.class,
+                    () -> profileClient.unfollow("non-existent-user")
+            );
 
-        profileClient.follow(user2);
+            assertThat(exception.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        }
 
-        ProfileDto profile1 = profileClient.findByUsername(user2).profile();
-        assertThat(profile1.following()).isTrue();
+        @Test
+        void should_handleDoubleUnfollow() {
+            auth.register().login();
+            var user2 = auth.register().getUsername();
 
-        profileClient.unfollow(user2);
+            profileClient.follow(user2);
+            profileClient.unfollow(user2);
+            var profile = profileClient.unfollow(user2).profile();
 
-        ProfileDto profile2 = profileClient.findByUsername(user2).profile();
-        assertThat(profile2.following()).isFalse();
+            assertThat(profile.following()).isFalse();
+        }
+
     }
 
 }

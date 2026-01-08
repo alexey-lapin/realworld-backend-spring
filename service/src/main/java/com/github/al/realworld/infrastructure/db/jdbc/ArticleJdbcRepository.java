@@ -32,8 +32,6 @@ import java.util.Optional;
 
 public interface ArticleJdbcRepository extends ListCrudRepository<ArticleJdbcEntity, Long> {
 
-    boolean existsByTitle(String title);
-
     @Query("""
             select a."id" from "t_articles" a where a."slug" = :slug""")
     Optional<Long> findIdBySlug(@Param("slug") String slug);
