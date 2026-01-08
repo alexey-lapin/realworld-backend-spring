@@ -39,6 +39,8 @@ public interface TagRepository {
 
     Tag save(Tag tag);
 
+    Tag saveOrGet(Tag tag);
+
     List<Tag> saveAll(Collection<Tag> tags);
 
 }

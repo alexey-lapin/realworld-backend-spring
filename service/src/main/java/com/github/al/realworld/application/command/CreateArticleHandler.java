@@ -35,8 +35,6 @@ import com.github.al.realworld.domain.repository.ArticleRepository;
 import com.github.al.realworld.domain.repository.TagRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.convert.ConversionService;
-import org.springframework.dao.DuplicateKeyException;
-import org.springframework.data.relational.core.conversion.DbActionExecutionException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -100,15 +98,7 @@ public class CreateArticleHandler implements CommandHandler<CreateArticleResult,
                     .map(Tag::new)
                     .toList();
             for (var newTag : newTags) {
-                Tag tag;
-                try {
-                    tag = tagRepository.save(newTag);
-                } catch (DbActionExecutionException ex) {
-                    if (ex.getCause() instanceof DuplicateKeyException) {
-                        tag = tagRepository.findByName(newTag.name()).orElseThrow();
-                    }
-                    throw ex;
-                }
+                var tag = tagRepository.saveOrGet(newTag);
                 tags.add(tag);
             }
             tags.addAll(existingTags);

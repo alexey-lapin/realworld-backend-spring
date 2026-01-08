@@ -23,6 +23,8 @@
  */
 package com.github.al.realworld.infrastructure.db.jdbc;
 
+import com.github.al.realworld.domain.model.Tag;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.repository.ListCrudRepository;
 
 import java.util.Collection;
