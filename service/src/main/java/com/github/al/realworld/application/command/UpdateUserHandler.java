@@ -59,24 +59,28 @@ public class UpdateUserHandler implements CommandHandler<UpdateUserResult, Updat
                 .orElseThrow(() -> notFound("user [name=%s] does not exist",
                         authenticationService.getCurrentUserName()));
 
-        if (command.getUsername() != null
-            && !command.getUsername().equals(user.username())
-            && userRepository.existsByUsername(command.getUsername())) {
-            throw badRequest("user [name=%s] already exists", command.getUsername());
+        var userData = command.user();
+
+        var newUsername = userData.username();
+        if (newUsername != null
+            && !newUsername.equals(user.username())
+            && userRepository.existsByUsername(newUsername)) {
+            throw badRequest("user [name=%s] already exists", newUsername);
         }
 
-        if (command.getEmail() != null
-            && !command.getEmail().equals(user.email())
-            && userRepository.existsByEmail(command.getEmail())) {
-            throw badRequest("user [email=%s] already exists", command.getEmail());
+        var newEmail = userData.email();
+        if (newEmail != null
+            && !newEmail.equals(user.email())
+            && userRepository.existsByEmail(newEmail)) {
+            throw badRequest("user [email=%s] already exists", newEmail);
         }
 
         var alteredUser = user.toBuilder()
-                .email(command.getEmail() == null ? user.email() : command.getEmail())
-                .username(command.getUsername() == null ? user.username() : command.getUsername())
-                .password(command.getPassword() == null ? user.password() : encoder.encode(command.getPassword()))
-                .bio(command.getBio() == null ? user.bio() : command.getBio())
-                .image(command.getImage() == null ? user.image() : command.getImage())
+                .email(newEmail != null ? newEmail : user.email())
+                .username(newUsername != null ? newUsername : user.username())
+                .password(userData.password() != null ? encoder.encode(userData.password()) : user.password())
+                .bio(userData.bio() != null ? userData.bio() : user.bio())
+                .image(userData.image() != null ? userData.image() : user.image())
                 .build();
 
         var savedUser = userRepository.save(alteredUser);

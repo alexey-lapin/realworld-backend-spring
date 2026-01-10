@@ -33,22 +33,46 @@ import java.util.Optional;
 public interface ArticleAssemblyJdbcRepository extends Repository<ArticleAssemblyJdbcEntity, Long> {
 
     // language=SQL
+    String FAVORITE_QUERY = """
+            case \
+                when :currentUserId is null then false \
+                else exists (select 1 \
+                             from "t_favorites" fv \
+                             where fv."article_id" = ar."id" \
+                               and fv."user_id" = :currentUserId) \
+                end as favorited, \
+            case \
+                when :currentUserId is null then false \
+                else exists (select 1 \
+                             from "t_follows" fl \
+                             where fl."followee_id" = ar."author_id" \
+                               and fl."follower_id" = :currentUserId) \
+                end as author_following \
+            """;
+
+    // language=SQL
     String BASE_QUERY = """
             select ar.*, \
-                   case \
-                       when :currentUserId is null then false \
-                       else exists (select 1 \
-                                    from "t_favorites" fv \
-                                    where fv."article_id" = ar."id" \
-                                      and fv."user_id" = :currentUserId) \
-                       end as favorited, \
-                   case \
-                       when :currentUserId is null then false \
-                       else exists (select 1 \
-                                    from "t_follows" fl \
-                                    where fl."followee_id" = ar."author_id" \
-                                      and fl."follower_id" = :currentUserId) \
-                       end as author_following \
+            """ + FAVORITE_QUERY + """
+            from "v_articles_read" ar \
+            """;
+
+    // language=SQL
+    String LIST_BASE_QUERY = """
+            select ar."id", \
+                   ar."created_at", \
+                   ar."updated_at", \
+                   ar."slug", \
+                   ar."title", \
+                   ar."description", \
+                   null as "body", \
+                   ar."tag_list", \
+                   ar."author_id", \
+                   ar."favorites_count", \
+                   ar."author_username", \
+                   ar."author_bio", \
+                   ar."author_image", \
+            """ + FAVORITE_QUERY + """
             from "v_articles_read" ar \
             """;
 
@@ -62,7 +86,7 @@ public interface ArticleAssemblyJdbcRepository extends Repository<ArticleAssembl
     Optional<ArticleAssemblyJdbcEntity> findBySlug(@Param("slug") String slug,
                                                    @Param("currentUserId") Long currentUserId);
 
-    @Query(BASE_QUERY + """
+    @Query(LIST_BASE_QUERY + """
             where (:authorId is null or ar."author_id" = :authorId) \
               and (:tagId is null or \
                    exists (select 1 \
@@ -85,7 +109,7 @@ public interface ArticleAssemblyJdbcRepository extends Repository<ArticleAssembl
             @Param("offset") long offset
     );
 
-    @Query(BASE_QUERY + """
+    @Query(LIST_BASE_QUERY + """
                 join "t_follows" fl on fl."followee_id" = ar."author_id" \
             where fl."follower_id" = :currentUserId \
             order by ar."created_at" desc \

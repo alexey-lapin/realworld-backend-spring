@@ -35,8 +35,6 @@ import com.github.al.realworld.domain.repository.ArticleRepository;
 import com.github.al.realworld.domain.repository.TagRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.convert.ConversionService;
-import org.springframework.dao.DuplicateKeyException;
-import org.springframework.data.relational.core.conversion.DbActionExecutionException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -44,8 +42,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import static com.github.al.realworld.application.exception.BadRequestException.badRequest;
 
 @RequiredArgsConstructor
 @Service
@@ -61,19 +57,15 @@ public class CreateArticleHandler implements CommandHandler<CreateArticleResult,
     @Override
     public CreateArticleResult handle(CreateArticle command) {
         var currentUserId = authenticationService.getRequiredCurrentUserId();
+        var articleData = command.article();
 
-        var existsByTitle = articleRepository.existsByTitle(command.getTitle());
-        if (existsByTitle) {
-            throw badRequest("article [title=%s] already exists", command.getTitle());
-        }
-
-        var tags = handleTags(command);
+        var tags = handleTags(articleData);
 
         var article = Article.builder()
-                .slug(slugService.makeSlug(command.getTitle()))
-                .title(command.getTitle())
-                .description(command.getDescription())
-                .body(command.getBody())
+                .slug(slugService.makeSlug(articleData.title()))
+                .title(articleData.title())
+                .description(articleData.description())
+                .body(articleData.body())
                 .authorId(currentUserId)
                 .tags(tags)
                 .build();
@@ -86,33 +78,27 @@ public class CreateArticleHandler implements CommandHandler<CreateArticleResult,
         return new CreateArticleResult(data);
     }
 
-    private List<Tag> handleTags(CreateArticle command) {
-        List<Tag> tags = new ArrayList<>();
-        var tagList = command.getTagList();
-        if (tagList != null && !tagList.isEmpty()) {
-            var existingTags = tagRepository.findAllByNameIn(tagList);
-            var existingTagNames = existingTags.stream()
-                    .map(Tag::name)
-                    .collect(Collectors.toSet());
-            var newTags = tagList.stream()
-                    .filter(name -> !existingTagNames.contains(name))
-                    .map(Tag::new)
-                    .toList();
-            for (var newTag : newTags) {
-                Tag tag;
-                try {
-                    tag = tagRepository.save(newTag);
-                } catch (DbActionExecutionException ex) {
-                    if (ex.getCause() instanceof DuplicateKeyException) {
-                        tag = tagRepository.findByName(newTag.name()).orElseThrow();
-                    }
-                    throw ex;
-                }
-                tags.add(tag);
-            }
-            tags.addAll(existingTags);
-            Collections.sort(tags);
+    private List<Tag> handleTags(CreateArticle.Data articleData) {
+        var tagList = articleData.tagList();
+        if (tagList == null || tagList.isEmpty()) {
+            return Collections.emptyList();
         }
+
+        var existingTags = tagRepository.findAllByNameIn(tagList);
+        var existingTagNames = existingTags.stream()
+                .map(Tag::name)
+                .collect(Collectors.toSet());
+
+        var newTags = tagList.stream()
+                .filter(name -> !existingTagNames.contains(name))
+                .map(Tag::new)
+                .map(tagRepository::saveOrGet)
+                .toList();
+
+        var tags = new ArrayList<>(existingTags);
+        tags.addAll(newTags);
+        Collections.sort(tags);
+
         return tags;
     }
 

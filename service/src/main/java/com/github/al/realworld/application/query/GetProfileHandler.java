@@ -49,9 +49,9 @@ public class GetProfileHandler implements QueryHandler<GetProfileResult, GetProf
     public GetProfileResult handle(GetProfile query) {
         var currentUserId = authenticationService.getCurrentUserId();
 
-        var profileAssembly = profileRepository.findByUsername(query.getUsername(), currentUserId)
-                .orElseThrow(() -> notFound("user [name=%s] does not exist", query.getUsername()));
-        var data = conversionService.convert(profileAssembly, ProfileDto.class);
+        var profile = profileRepository.findByUsername(query.username(), currentUserId)
+                .orElseThrow(() -> notFound("user [name=%s] does not exist", query.username()));
+        var data = conversionService.convert(profile, ProfileDto.class);
 
         return new GetProfileResult(data);
     }

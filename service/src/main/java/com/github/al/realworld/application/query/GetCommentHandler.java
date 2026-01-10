@@ -49,8 +49,8 @@ public class GetCommentHandler implements QueryHandler<GetCommentResult, GetComm
     public GetCommentResult handle(GetComment query) {
         var currentUserId = authenticationService.getCurrentUserId();
 
-        var commentAssembly = commentRepository.findAssemblyById(currentUserId, query.getId())
-                .orElseThrow(() -> notFound("comment [id=%s] does not exists", query.getId()));
+        var commentAssembly = commentRepository.findAssemblyById(currentUserId, query.id())
+                .orElseThrow(() -> notFound("comment [id=%s] does not exists", query.id()));
         var data = conversionService.convert(commentAssembly, CommentDto.class);
 
         return new GetCommentResult(data);

@@ -27,6 +27,7 @@ import com.github.al.realworld.domain.model.User;
 import com.github.al.realworld.domain.repository.UserRepository;
 import com.github.al.realworld.infrastructure.config.MappingConfig;
 import lombok.RequiredArgsConstructor;
+import org.mapstruct.AnnotateWith;
 import org.mapstruct.Mapper;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.converter.Converter;
@@ -76,6 +77,7 @@ public class UserJdbcRepositoryAdapter implements UserRepository {
         return conversionService.convert(saved, User.class);
     }
 
+    @AnnotateWith(MappingConfig.GeneratedMapper.class)
     @Mapper(config = MappingConfig.class)
     interface ToDomainUserMapper extends Converter<UserJdbcEntity, User> {
 
@@ -84,6 +86,7 @@ public class UserJdbcRepositoryAdapter implements UserRepository {
 
     }
 
+    @AnnotateWith(MappingConfig.GeneratedMapper.class)
     @Mapper(config = MappingConfig.class)
     interface FromDomainUserMapper extends Converter<User, UserJdbcEntity> {
 

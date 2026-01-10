@@ -23,29 +23,19 @@
  */
 package com.github.al.realworld.api.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-
 import java.time.ZonedDateTime;
 import java.util.List;
 
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
-@Getter
-public class ArticleDto {
-
-    private String slug;
-    private String title;
-    private String description;
-    private String body;
-    private List<String> tagList;
-    private ZonedDateTime createdAt;
-    private ZonedDateTime updatedAt;
-    private Boolean favorited;
-    private Integer favoritesCount;
-    private ProfileDto author;
-
+public record ArticleDto(
+        String slug,
+        String title,
+        String description,
+        String body,
+        List<String> tagList,
+        ZonedDateTime createdAt,
+        ZonedDateTime updatedAt,
+        Boolean favorited,
+        Integer favoritesCount,
+        ProfileDto author
+) {
 }

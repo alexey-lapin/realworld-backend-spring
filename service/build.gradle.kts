@@ -32,6 +32,7 @@ dependencies {
     implementation(libs.springdoc.openapiStarterWebmvcUi)
 
     runtimeOnly(libs.h2.h2)
+    runtimeOnly(libs.spring.springBootH2console)
 
     testAnnotationProcessor(libs.projectlombok.lombok)
     testCompileOnly(libs.projectlombok.lombok)

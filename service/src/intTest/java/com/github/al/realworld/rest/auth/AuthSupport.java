@@ -46,11 +46,7 @@ public class AuthSupport {
     }
 
     public RegisteredUser register(String username, String email, String password) {
-        userClient.register(RegisterUser.builder()
-                .username(username)
-                .email(email)
-                .password(password)
-                .build());
+        userClient.register(new RegisterUser(new RegisterUser.Data(email, username, password)));
         return new RegisteredUser(email, username, password);
     }
 
@@ -63,8 +59,8 @@ public class AuthSupport {
     }
 
     public void login(String email, String password) {
-        LoginUserResult result = userClient.login(new LoginUser(email, password));
-        TokenHolder.token = result.getUser().getToken();
+        LoginUserResult result = userClient.login(new LoginUser(new LoginUser.Data(email, password)));
+        TokenHolder.token = result.user().token();
     }
 
     public void logout() {

@@ -51,20 +51,22 @@ public class UpdateArticleHandler implements CommandHandler<UpdateArticleResult,
     @Override
     public UpdateArticleResult handle(UpdateArticle command) {
         var currentUserId = authenticationService.getRequiredCurrentUserId();
+        var articleData = command.article();
 
-        var article = articleRepository.findBySlug(command.getSlug())
-                .orElseThrow(() -> notFound("article [slug=%s] does not exist", command.getSlug()));
+        var article = articleRepository.findBySlug(command.slug())
+                .orElseThrow(() -> notFound("article [slug=%s] does not exist", command.slug()));
 
         if (article.authorId() != currentUserId) {
             throw forbidden("article [slug=%s] is not owned by %s",
-                    command.getSlug(), authenticationService.getCurrentUserName());
+                    command.slug(), authenticationService.getCurrentUserName());
         }
 
+        var newTitle = articleData.title();
         var alteredArticle = article.toBuilder()
-                .slug(command.getTitle() != null ? slugService.makeSlug(command.getTitle()) : article.slug())
-                .title(command.getTitle() != null ? command.getTitle() : article.title())
-                .description(command.getDescription() != null ? command.getDescription() : article.description())
-                .body(command.getBody() != null ? command.getBody() : article.body())
+                .slug(newTitle != null ? slugService.makeSlug(newTitle) : article.slug())
+                .title(newTitle != null ? newTitle : article.title())
+                .description(articleData.description() != null ? articleData.description() : article.description())
+                .body(articleData.body() != null ? articleData.body() : article.body())
                 .build();
 
         articleRepository.save(alteredArticle);

@@ -26,5 +26,5 @@ package com.github.al.realworld.api.operation;
 import org.springframework.web.service.annotation.HttpExchange;
 
 @HttpExchange
-public interface TagClient {
+public interface TagClient extends TagOperations {
 }

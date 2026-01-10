@@ -24,15 +24,8 @@
 package com.github.al.realworld.api.query;
 
 import com.github.al.realworld.api.dto.ProfileDto;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
 
-@NoArgsConstructor
-@AllArgsConstructor
-@Getter
-public class GetProfileResult {
-
-    private ProfileDto profile;
-
+public record GetProfileResult(
+        ProfileDto profile
+) {
 }

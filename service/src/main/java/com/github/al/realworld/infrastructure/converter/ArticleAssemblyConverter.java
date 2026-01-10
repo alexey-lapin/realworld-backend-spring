@@ -26,6 +26,7 @@ package com.github.al.realworld.infrastructure.converter;
 import com.github.al.realworld.api.dto.ArticleDto;
 import com.github.al.realworld.domain.model.ArticleAssembly;
 import com.github.al.realworld.infrastructure.config.MappingConfig;
+import org.mapstruct.AnnotateWith;
 import org.mapstruct.Mapper;
 import org.springframework.core.convert.converter.Converter;
 
@@ -33,6 +34,7 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
+@AnnotateWith(MappingConfig.GeneratedMapper.class)
 @Mapper(config = MappingConfig.class)
 public abstract class ArticleAssemblyConverter implements Converter<ArticleAssembly, ArticleDto> {
 

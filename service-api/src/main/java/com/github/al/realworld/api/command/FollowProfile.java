@@ -24,13 +24,8 @@
 package com.github.al.realworld.api.command;
 
 import com.github.al.realworld.bus.Command;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
 
-@AllArgsConstructor
-@Getter
-public class FollowProfile implements Command<FollowProfileResult> {
-
-    private String followee;
-
+public record FollowProfile(
+        String followee
+) implements Command<FollowProfileResult> {
 }

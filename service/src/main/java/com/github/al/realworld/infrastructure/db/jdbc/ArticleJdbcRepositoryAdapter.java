@@ -25,11 +25,13 @@ package com.github.al.realworld.infrastructure.db.jdbc;
 
 import com.github.al.realworld.domain.model.Article;
 import com.github.al.realworld.domain.model.ArticleAssembly;
+import com.github.al.realworld.domain.model.ArticleItem;
 import com.github.al.realworld.domain.model.Profile;
 import com.github.al.realworld.domain.model.Tag;
 import com.github.al.realworld.domain.repository.ArticleRepository;
 import com.github.al.realworld.infrastructure.config.MappingConfig;
 import lombok.RequiredArgsConstructor;
+import org.mapstruct.AnnotateWith;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.springframework.stereotype.Repository;
@@ -47,11 +49,6 @@ public class ArticleJdbcRepositoryAdapter implements ArticleRepository {
     private final ArticleJdbcRepository repository;
     private final ArticleAssemblyJdbcRepository assemblyRepository;
     private final ArticleMapper articleMapper;
-
-    @Override
-    public boolean existsByTitle(String title) {
-        return repository.existsByTitle(title);
-    }
 
     @Override
     public Optional<Long> findIdBySlug(String slug) {
@@ -99,21 +96,21 @@ public class ArticleJdbcRepositoryAdapter implements ArticleRepository {
     }
 
     @Override
-    public List<ArticleAssembly> findAllAssemblyByFilters(Long userId,
-                                                          Long tagId,
-                                                          Long authorId,
-                                                          Long favoritedById,
-                                                          int limit,
-                                                          int offset) {
+    public List<ArticleItem> findAllItemsByFilters(Long userId,
+                                                   Long tagId,
+                                                   Long authorId,
+                                                   Long favoritedById,
+                                                   int limit,
+                                                   long offset) {
         return assemblyRepository.findFiltered(tagId, authorId, favoritedById, userId, limit, offset).stream()
-                .map(articleMapper::toDomain)
+                .map(articleMapper::toItem)
                 .toList();
     }
 
     @Override
-    public List<ArticleAssembly> findAllAssemblyByFollowerId(long userId, Integer limit, Integer offset) {
+    public List<ArticleItem> findAllItemsByFollowerId(long userId, int limit, long offset) {
         return assemblyRepository.findFeed(userId, limit, offset).stream()
-                .map(articleMapper::toDomain)
+                .map(articleMapper::toItem)
                 .toList();
     }
 
@@ -127,6 +124,7 @@ public class ArticleJdbcRepositoryAdapter implements ArticleRepository {
         return assemblyRepository.countFeed(userId);
     }
 
+    @AnnotateWith(MappingConfig.GeneratedMapper.class)
     @Mapper(config = MappingConfig.class)
     interface ArticleMapper {
 
@@ -140,6 +138,9 @@ public class ArticleJdbcRepositoryAdapter implements ArticleRepository {
 
         @Mapping(target = "author", source = "source")
         ArticleAssembly toDomain(ArticleAssemblyJdbcEntity source);
+
+        @Mapping(target = "author", source = "source")
+        ArticleItem toItem(ArticleAssemblyJdbcEntity source);
 
         default Profile profile(ArticleAssemblyJdbcEntity source) {
             return new Profile(source.authorUsername(),

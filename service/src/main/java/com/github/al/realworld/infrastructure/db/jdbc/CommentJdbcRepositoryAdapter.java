@@ -29,6 +29,7 @@ import com.github.al.realworld.domain.model.Profile;
 import com.github.al.realworld.domain.repository.CommentRepository;
 import com.github.al.realworld.infrastructure.config.MappingConfig;
 import lombok.RequiredArgsConstructor;
+import org.mapstruct.AnnotateWith;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.springframework.stereotype.Repository;
@@ -80,6 +81,7 @@ public class CommentJdbcRepositoryAdapter implements CommentRepository {
         repository.deleteAllByArticleId(articleId);
     }
 
+    @AnnotateWith(MappingConfig.GeneratedMapper.class)
     @Mapper(config = MappingConfig.class)
     interface CommentMapper {
 

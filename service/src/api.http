@@ -1,3 +1,5 @@
+# User Api
+
 ### Register user1
 POST http://localhost:8080/api/users
 Content-Type: application/json
@@ -9,6 +11,10 @@ Content-Type: application/json
     "password": "user1"
   }
 }
+
+> {%
+    client.global.set("token", response.body.user.token)
+%}
 
 ### Register user2
 POST http://localhost:8080/api/users
@@ -22,20 +28,32 @@ Content-Type: application/json
   }
 }
 
-### Login
+> {%
+    client.global.set("token", response.body.user.token)
+%}
+
+### Login user1
 POST http://localhost:8080/api/users/login
 Content-Type: application/json
 
 {
-  "user": {}
+  "user": {
+    "email": "user1@example.com",
+    "password": "user1"
+  }
 }
+
+> {%
+    client.global.set("token", response.body.user.token)
+%}
 
 ### Current user
 GET http://localhost:8080/api/user
-Authorization: Token eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyMSJ9.KhfrLRupqnjbXsLggm4dnw-bx_reBEbl1MOGo2HYisY
+Authorization: Token {{token}}
 
 ### Update User
 PUT http://localhost:8080/api/user
+Authorization: Token {{token}}
 Content-Type: application/json
 
 {
@@ -43,68 +61,74 @@ Content-Type: application/json
 }
 
 ###
+
+# Profile Api
+
+### Get profile
 GET http://localhost:8080/api/profiles/user1
-Authorization1: Token eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyMSJ9.KhfrLRupqnjbXsLggm4dnw-bx_reBEbl1MOGo2HYisY
-Authorization: Token eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyMiJ9.1Z7Ub2ffEvIMvyRZAWSxPABXkyN70FDpwyQRNKt9ReI
+Authorization: Token {{token}}
 
-###
+### Follow profile
 POST http://localhost:8080/api/profiles/user1/follow
-Authorization: Token eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyMiJ9.1Z7Ub2ffEvIMvyRZAWSxPABXkyN70FDpwyQRNKt9ReI
+Authorization: {{token}}
+
+### Unfollow profile
+DELETE http://localhost:8080/api/profiles/user1/follow
+Authorization: Token {{token}}
 
 ###
-DELETE http://localhost:8080/api/profiles/{{username}}/follow
 
-###
+# Article Api
+
+### Feed articles
 GET http://localhost:8080/api/articles/feed?
     offset=0&
     limit=100
-Authorization: Token eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyMiJ9.1Z7Ub2ffEvIMvyRZAWSxPABXkyN70FDpwyQRNKt9ReI
+Authorization: Token {{token}}
 
-###
+### Filter articles
 GET http://localhost:8080/api/articles?
-    tag={{$placeholder}}&
-    author={{$placeholder}}&
-    favorited={{$placeholder}}&
-    offset={{$placeholder}}&
-    limit={{$placeholder}}
-
-###
-GET http://localhost:8080/api/articles
+    tag=&
+    author=&
+    favorited=&
+    offset=0&
+    limit=100
 
 ### Create article
 POST http://localhost:8080/api/articles
-Authorization: Token eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyMSJ9.KhfrLRupqnjbXsLggm4dnw-bx_reBEbl1MOGo2HYisY
+Authorization: {{token}}
 Content-Type: application/json
 
 {
   "article": {
     "title": "art2",
     "description": "art1",
-    "body": "art1"
+    "body": "art1",
+    "tagList": ["qwer", "asdf"]
   }
 }
 
-###
+### Get article
 GET http://localhost:8080/api/articles/art2
 
-###
-PUT http://localhost:8080/api/articles/{{slug}}
+### Update article
+PUT http://localhost:8080/api/articles/art2
 Content-Type: application/json
 
 {
   "article": {}
 }
 
-###
+### Delete article
 DELETE http://localhost:8080/api/articles/art2
-Authorization: Token eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyMSJ9.KhfrLRupqnjbXsLggm4dnw-bx_reBEbl1MOGo2HYisY
+Authorization: Token {{token}}
 
-###
-GET http://localhost:8080/api/articles/{{slug}}/comments
+### List comments
+GET http://localhost:8080/api/articles/art2/comments
 
 ### Add comment
 POST http://localhost:8080/api/articles/art2/comments
-Authorization: Token eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyMSJ9.KhfrLRupqnjbXsLggm4dnw-bx_reBEbl1MOGo2HYisY
+Authorization: Token {{token}}
 Content-Type: application/json
 
 {
@@ -113,16 +137,19 @@ Content-Type: application/json
   }
 }
 
-###
-DELETE http://localhost:8080/api/articles/{{slug}}/comments/{{id}}
+### Delete comment
+DELETE http://localhost:8080/api/articles/art2/comments/1
 
-###
+### Favorite article
 POST http://localhost:8080/api/articles/art2/favorite
-Authorization: Token eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyMSJ9.KhfrLRupqnjbXsLggm4dnw-bx_reBEbl1MOGo2HYisY
-Authorization1: Token eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyMiJ9.1Z7Ub2ffEvIMvyRZAWSxPABXkyN70FDpwyQRNKt9ReI
+Authorization: Token {{token}}
+
+### Unfavorite article
+DELETE http://localhost:8080/api/articles/art2/favorite
 
 ###
-DELETE http://localhost:8080/api/articles/{{slug}}/favorite
 
-###
+# Tags Api
+
+### List tags
 GET http://localhost:8080/api/tags

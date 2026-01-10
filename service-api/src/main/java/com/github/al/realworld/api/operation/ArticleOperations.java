@@ -33,6 +33,7 @@ import com.github.al.realworld.api.command.UpdateArticle;
 import com.github.al.realworld.api.command.UpdateArticleResult;
 import com.github.al.realworld.api.query.GetArticleResult;
 import com.github.al.realworld.api.query.GetArticlesResult;
+import com.github.al.realworld.api.query.GetCommentResult;
 import com.github.al.realworld.api.query.GetCommentsResult;
 import com.github.al.realworld.api.query.GetFeedResult;
 import jakarta.validation.Valid;
@@ -52,24 +53,24 @@ public interface ArticleOperations {
     GetArticlesResult findByFilters(@RequestParam(required = false) String tag,
                                     @RequestParam(required = false) String author,
                                     @RequestParam(required = false) String favorited,
-                                    @RequestParam(defaultValue = "20") Integer limit,
-                                    @RequestParam(defaultValue = "0") Integer offset);
+                                    @RequestParam(defaultValue = "20") int limit,
+                                    @RequestParam(defaultValue = "0") long offset);
 
     @ResponseStatus(HttpStatus.CREATED)
     @PostExchange("/articles")
     CreateArticleResult create(@Valid @RequestBody CreateArticle command);
 
     @GetExchange("/articles/feed")
-    GetFeedResult feed(@RequestParam(defaultValue = "20") Integer limit,
-                       @RequestParam(defaultValue = "0") Integer offset);
+    GetFeedResult feed(@RequestParam(defaultValue = "20") int limit,
+                       @RequestParam(defaultValue = "0") long offset);
 
     @GetExchange("/articles/{slug}")
     GetArticleResult findBySlug(@PathVariable("slug") String slug);
 
     @PutExchange("/articles/{slug}")
-    UpdateArticleResult updateBySlug(@PathVariable("slug") String slug, @Valid @RequestBody UpdateArticle command);
+    UpdateArticleResult updateBySlug(@PathVariable("slug") String slug,
+                                     @Valid @RequestBody UpdateArticle command);
 
-    @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteExchange("/articles/{slug}")
     void deleteBySlug(@PathVariable("slug") String slug);
 
@@ -82,10 +83,16 @@ public interface ArticleOperations {
     @GetExchange("/articles/{slug}/comments")
     GetCommentsResult findAllComments(@PathVariable("slug") String slug);
 
+    @GetExchange("/articles/{slug}/comments/{id}")
+    GetCommentResult findComment(@PathVariable("slug") String slug,
+                                 @PathVariable("id") long id);
+
     @PostExchange("/articles/{slug}/comments")
-    AddCommentResult addComment(@PathVariable("slug") String slug, @Valid @RequestBody AddComment command);
+    AddCommentResult addComment(@PathVariable("slug") String slug,
+                                @Valid @RequestBody AddComment data);
 
     @DeleteExchange("/articles/{slug}/comments/{id}")
-    void deleteComment(@PathVariable("slug") String slug, @PathVariable("id") Long id);
+    void deleteComment(@PathVariable("slug") String slug,
+                       @PathVariable("id") long id);
 
 }

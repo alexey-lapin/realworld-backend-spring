@@ -24,13 +24,8 @@
 package com.github.al.realworld.api.query;
 
 import com.github.al.realworld.bus.Query;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
 
-@AllArgsConstructor
-@Getter
-public class GetComments implements Query<GetCommentsResult> {
-
-    private String slug;
-
+public record GetComments(
+        String slug
+) implements Query<GetCommentsResult> {
 }

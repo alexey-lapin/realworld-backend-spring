@@ -23,30 +23,23 @@
  */
 package com.github.al.realworld.api.command;
 
-import com.fasterxml.jackson.annotation.JsonRootName;
 import com.github.al.realworld.bus.Command;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
-import lombok.NoArgsConstructor;
+import jakarta.validation.constraints.NotNull;
 
 import java.util.List;
 
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder(toBuilder = true)
-@Getter
-@JsonRootName("article")
-public class CreateArticle implements Command<CreateArticleResult> {
+public record CreateArticle(
+        @Valid @NotNull Data article
+) implements Command<CreateArticleResult> {
 
-    @NotBlank
-    private String title;
-    @NotBlank
-    private String description;
-    @NotBlank
-    private String body;
-    private List<String> tagList;
+    public record Data(
+            @NotBlank String title,
+            @NotBlank String description,
+            @NotBlank String body,
+            List<String> tagList
+    ) {
+    }
 
 }

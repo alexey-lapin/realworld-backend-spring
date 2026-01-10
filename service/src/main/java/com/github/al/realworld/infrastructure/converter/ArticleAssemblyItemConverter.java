@@ -23,16 +23,26 @@
  */
 package com.github.al.realworld.infrastructure.converter;
 
-import com.github.al.realworld.api.dto.ProfileDto;
-import com.github.al.realworld.domain.model.Profile;
+import com.github.al.realworld.api.dto.ArticleItemDto;
+import com.github.al.realworld.domain.model.ArticleItem;
 import com.github.al.realworld.infrastructure.config.MappingConfig;
+import org.mapstruct.AnnotateWith;
 import org.mapstruct.Mapper;
 import org.springframework.core.convert.converter.Converter;
 
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+
+@AnnotateWith(MappingConfig.GeneratedMapper.class)
 @Mapper(config = MappingConfig.class)
-public abstract class ProfileAssemblyConverter implements Converter<Profile, ProfileDto> {
+public abstract class ArticleAssemblyItemConverter implements Converter<ArticleItem, ArticleItemDto> {
 
     @Override
-    public abstract ProfileDto convert(Profile source);
+    public abstract ArticleItemDto convert(ArticleItem source);
+
+    protected ZonedDateTime convert(Instant instant) {
+        return instant.atZone(ZoneId.systemDefault());
+    }
 
 }

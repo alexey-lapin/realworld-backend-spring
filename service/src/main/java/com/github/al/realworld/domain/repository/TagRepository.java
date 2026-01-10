@@ -37,8 +37,6 @@ public interface TagRepository {
 
     List<Tag> findAll();
 
-    Tag save(Tag tag);
-
-    List<Tag> saveAll(Collection<Tag> tags);
+    Tag saveOrGet(Tag tag);
 
 }

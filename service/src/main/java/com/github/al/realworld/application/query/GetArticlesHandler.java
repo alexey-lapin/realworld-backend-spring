@@ -23,7 +23,7 @@
  */
 package com.github.al.realworld.application.query;
 
-import com.github.al.realworld.api.dto.ArticleDto;
+import com.github.al.realworld.api.dto.ArticleItemDto;
 import com.github.al.realworld.api.query.GetArticles;
 import com.github.al.realworld.api.query.GetArticlesResult;
 import com.github.al.realworld.application.service.AuthenticationService;
@@ -56,10 +56,10 @@ public class GetArticlesHandler implements QueryHandler<GetArticlesResult, GetAr
         var currentUserId = authenticationService.getCurrentUserId();
 
         Long tagId;
-        if (query.getTag() == null) {
+        if (query.tag() == null) {
             tagId = null;
         } else {
-            tagId = tagRepository.findByName(query.getTag())
+            tagId = tagRepository.findByName(query.tag())
                     .map(Tag::id)
                     .orElse(null);
             if (tagId == null) {
@@ -68,10 +68,10 @@ public class GetArticlesHandler implements QueryHandler<GetArticlesResult, GetAr
         }
 
         Long authorId;
-        if (query.getAuthor() == null) {
+        if (query.author() == null) {
             authorId = null;
         } else {
-            authorId = userRepository.findByUsername(query.getAuthor())
+            authorId = userRepository.findByUsername(query.author())
                     .map(User::id)
                     .orElse(null);
             if (authorId == null) {
@@ -80,10 +80,10 @@ public class GetArticlesHandler implements QueryHandler<GetArticlesResult, GetAr
         }
 
         Long favoritedById;
-        if (query.getFavorited() == null) {
+        if (query.favorited() == null) {
             favoritedById = null;
         } else {
-            favoritedById = userRepository.findByUsername(query.getFavorited())
+            favoritedById = userRepository.findByUsername(query.favorited())
                     .map(User::id)
                     .orElse(null);
             if (favoritedById == null) {
@@ -91,15 +91,15 @@ public class GetArticlesHandler implements QueryHandler<GetArticlesResult, GetAr
             }
         }
 
-        var articles = articleRepository.findAllAssemblyByFilters(currentUserId,
+        var articles = articleRepository.findAllItemsByFilters(currentUserId,
                 tagId,
                 authorId,
                 favoritedById,
-                query.getLimit(),
-                query.getOffset());
+                query.limit(),
+                query.offset());
 
         var results = articles.stream()
-                .map(a -> conversionService.convert(a, ArticleDto.class))
+                .map(a -> conversionService.convert(a, ArticleItemDto.class))
                 .toList();
 
         var count = articleRepository.countByFilters(tagId, authorId, favoritedById);

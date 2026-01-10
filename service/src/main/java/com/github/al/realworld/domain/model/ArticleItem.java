@@ -21,47 +21,23 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.github.al.realworld.application.service;
+package com.github.al.realworld.domain.model;
 
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import java.time.Instant;
+import java.util.List;
 
-import static org.assertj.core.api.Assertions.assertThat;
+public record ArticleItem(
+        long id,
+        Instant createdAt,
+        Instant updatedAt,
+        long authorId,
+        String slug,
+        String title,
+        String description,
+        List<String> tagList,
+        int favoritesCount,
+        boolean favorited,
+        Profile author
+) {
 
-class SlugServiceTest {
-
-    private static SlugService slugService;
-
-    @BeforeAll
-    static void beforeAll() {
-        slugService = new SlugService();
-    }
-
-    @Test
-    void name1() {
-        String slug = slugService.makeSlug("qwer");
-
-        assertThat(slug).isEqualTo("qwer");
-    }
-
-    @Test
-    void name2() {
-        String slug = slugService.makeSlug("qwer-");
-
-        assertThat(slug).isEqualTo("qwer");
-    }
-
-    @Test
-    void name3() {
-        String slug = slugService.makeSlug("qw er-");
-
-        assertThat(slug).isEqualTo("qw-er");
-    }
-
-    @Test
-    void name4() {
-        String slug = slugService.makeSlug("Qw er-");
-
-        assertThat(slug).isEqualTo("qw-er");
-    }
 }

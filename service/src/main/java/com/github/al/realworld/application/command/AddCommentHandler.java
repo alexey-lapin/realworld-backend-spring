@@ -52,13 +52,13 @@ public class AddCommentHandler implements CommandHandler<AddCommentResult, AddCo
     public AddCommentResult handle(AddComment command) {
         var currentUserId = authenticationService.getRequiredCurrentUserId();
 
-        var articleId = articleRepository.findIdBySlug(command.getSlug())
-                .orElseThrow(() -> notFound("article [slug=%s] does not exist", command.getSlug()));
+        var articleId = articleRepository.findIdBySlug(command.slug())
+                .orElseThrow(() -> notFound("article [slug=%s] does not exist", command.slug()));
 
         var comment = Comment.builder()
                 .articleId(articleId)
                 .authorId(currentUserId)
-                .body(command.getBody())
+                .body(command.comment().body())
                 .build();
 
         var savedComment = commentRepository.save(comment);

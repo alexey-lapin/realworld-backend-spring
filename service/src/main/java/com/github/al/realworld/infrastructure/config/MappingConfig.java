@@ -26,7 +26,16 @@ package com.github.al.realworld.infrastructure.config;
 import org.mapstruct.MapperConfig;
 import org.mapstruct.extensions.spring.SpringMapperConfig;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+
 @MapperConfig(componentModel = "spring", uses = ConversionServiceAdapter.class)
 @SpringMapperConfig
 public interface MappingConfig {
+
+    @Retention(RetentionPolicy.CLASS)
+    @interface GeneratedMapper {
+
+    }
+
 }
