@@ -92,7 +92,7 @@ Single test method:
 Single integration test class:
 
 ```bash
-./gradlew :service:integrationTest --tests "com.github.al.realworld.rest.ArticleApiTest"
+./gradlew :service:integrationTest --tests "com.github.al.realworld.test.client.ArticleApiTest"
 ```
 
 Tip: prefix with `:service:` when iterating locally to avoid running all modules.

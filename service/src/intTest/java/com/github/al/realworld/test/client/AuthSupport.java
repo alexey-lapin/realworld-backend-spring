@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.github.al.realworld.rest.auth;
+package com.github.al.realworld.test.client;
 
 import com.github.al.realworld.api.command.LoginUser;
 import com.github.al.realworld.api.command.LoginUserResult;

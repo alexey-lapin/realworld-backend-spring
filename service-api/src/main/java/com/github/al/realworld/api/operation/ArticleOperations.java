@@ -33,7 +33,6 @@ import com.github.al.realworld.api.command.UpdateArticle;
 import com.github.al.realworld.api.command.UpdateArticleResult;
 import com.github.al.realworld.api.query.GetArticleResult;
 import com.github.al.realworld.api.query.GetArticlesResult;
-import com.github.al.realworld.api.query.GetCommentResult;
 import com.github.al.realworld.api.query.GetCommentsResult;
 import com.github.al.realworld.api.query.GetFeedResult;
 import jakarta.validation.Valid;
@@ -82,10 +81,6 @@ public interface ArticleOperations {
 
     @GetExchange("/articles/{slug}/comments")
     GetCommentsResult findAllComments(@PathVariable("slug") String slug);
-
-    @GetExchange("/articles/{slug}/comments/{id}")
-    GetCommentResult findComment(@PathVariable("slug") String slug,
-                                 @PathVariable("id") long id);
 
     @PostExchange("/articles/{slug}/comments")
     AddCommentResult addComment(@PathVariable("slug") String slug,

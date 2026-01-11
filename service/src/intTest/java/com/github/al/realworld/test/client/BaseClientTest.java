@@ -21,13 +21,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.github.al.realworld.rest.support;
+package com.github.al.realworld.test.client;
 
 import com.github.al.realworld.api.operation.ArticleClient;
 import com.github.al.realworld.api.operation.ProfileClient;
 import com.github.al.realworld.api.operation.TagClient;
 import com.github.al.realworld.api.operation.UserClient;
-import com.github.al.realworld.rest.auth.AuthSupport;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.http.server.LocalTestWebServer;
@@ -40,7 +39,7 @@ import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.service.invoker.HttpServiceProxyFactory;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class BaseRestTest {
+public abstract class BaseClientTest {
 
     @Configuration(proxyBeanMethods = false)
     public static class RestConfig {
@@ -49,7 +48,7 @@ public class BaseRestTest {
         public RestClient testRestClient(RestClient.Builder restClientBuilder,
                                          WebApplicationContext applicationContext,
                                          @Value("${api.version}") String path) {
-            var localTestWebServer = LocalTestWebServer.get(applicationContext).withPath(path);
+            var localTestWebServer = LocalTestWebServer.obtain(applicationContext).withPath(path);
             return restClientBuilder.uriBuilderFactory(localTestWebServer.uriBuilderFactory())
                     .requestInterceptor((request, body, execution) -> {
                         String token = AuthSupport.TokenHolder.token;

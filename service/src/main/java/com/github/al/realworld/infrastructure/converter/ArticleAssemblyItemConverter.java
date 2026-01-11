@@ -33,6 +33,7 @@ import org.springframework.core.convert.converter.Converter;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.List;
 
 @AnnotateWith(MappingConfig.GeneratedMapper.class)
 @Mapper(config = MappingConfig.class)
@@ -43,6 +44,10 @@ public abstract class ArticleAssemblyItemConverter implements Converter<ArticleI
 
     protected ZonedDateTime convert(Instant instant) {
         return instant.atZone(ZoneId.systemDefault());
+    }
+
+    protected List<String> convert(List<String> tags) {
+        return tags == null ? List.of() : tags;
     }
 
 }

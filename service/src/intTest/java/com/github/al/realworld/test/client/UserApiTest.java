@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.github.al.realworld.rest;
+package com.github.al.realworld.test.client;
 
 import com.github.al.realworld.api.command.LoginUser;
 import com.github.al.realworld.api.command.RegisterUser;
@@ -29,8 +29,6 @@ import com.github.al.realworld.api.command.UpdateUser;
 import com.github.al.realworld.api.operation.UserClient;
 import com.github.al.realworld.domain.repository.UserRepository;
 import com.github.al.realworld.infrastructure.db.jdbc.UserJdbcRepository;
-import com.github.al.realworld.rest.auth.AuthSupport;
-import com.github.al.realworld.rest.support.BaseRestTest;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -43,7 +41,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowableOfType;
 
-public class UserApiTest extends BaseRestTest {
+public class UserApiTest extends BaseClientTest {
 
     public static final String ALTERED_EMAIL = "altered-email@example.com";
     public static final String ALTERED_USERNAME = "altered-username";
@@ -278,6 +276,20 @@ public class UserApiTest extends BaseRestTest {
             var user = userClient.update(updateUser).user();
 
             assertThat(user.bio()).isEqualTo(ALTERED_BIO);
+        }
+
+        @Test
+        void should_throw400_whenUpdateUserWithEmptyPayload() {
+            auth.register().login();
+
+            var updateUser = new UpdateUser(new UpdateUser.Data(null, null, null, null, null));
+
+            var exception = catchThrowableOfType(
+                    RestClientResponseException.class,
+                    () -> userClient.update(updateUser)
+            );
+
+            assertThat(exception.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         }
 
         @Test
