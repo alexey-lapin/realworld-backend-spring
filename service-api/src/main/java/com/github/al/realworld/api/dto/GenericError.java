@@ -21,31 +21,18 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.github.al.realworld.application.service;
+package com.github.al.realworld.api.dto;
 
-import com.github.al.realworld.application.exception.UnauthorizedException;
-import org.jspecify.annotations.Nullable;
+import java.util.List;
 
-public interface AuthenticationService {
+public record GenericError(
+        Errors errors
+) {
 
-    @Nullable Long getCurrentUserId();
+    public record Errors(
+            List<String> body
+    ) {
 
-    default long getRequiredCurrentUserId() {
-        var currentUserId = getCurrentUserId();
-        if (currentUserId == null) {
-            throw new UnauthorizedException("current user id is not present");
-        }
-        return currentUserId;
-    }
-
-    @Nullable String getCurrentUserName();
-
-    default String getRequiredCurrentUserName() {
-        var currentUsername = getCurrentUserName();
-        if (currentUsername == null) {
-            throw new UnauthorizedException("current user id is not present");
-        }
-        return currentUsername;
     }
 
 }

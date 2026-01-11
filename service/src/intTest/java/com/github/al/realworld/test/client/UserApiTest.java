@@ -81,7 +81,7 @@ public class UserApiTest extends BaseClientTest {
         }
 
         @Test
-        void should_throw400_whenRegisterWithExistingEmail() {
+        void should_throw422_whenRegisterWithExistingEmail() {
             var command = registerCommand();
             userClient.register(command);
 
@@ -96,11 +96,11 @@ public class UserApiTest extends BaseClientTest {
                     () -> userClient.register(duplicateEmailCommand)
             );
 
-            assertThat(exception.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+            assertThat(exception.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_CONTENT);
         }
 
         @Test
-        void should_throw400_whenRegisterWithExistingUsername() {
+        void should_throw422_whenRegisterWithExistingUsername() {
             var command = registerCommand();
             userClient.register(command);
 
@@ -115,8 +115,9 @@ public class UserApiTest extends BaseClientTest {
                     () -> userClient.register(duplicateUsernameCommand)
             );
 
-            assertThat(exception.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+            assertThat(exception.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_CONTENT);
         }
+
     }
 
     @Nested
@@ -146,15 +147,16 @@ public class UserApiTest extends BaseClientTest {
         }
 
         @Test
-        void should_return400_whenLoginNonExistentUser() {
+        void should_return422_whenLoginNonExistentUser() {
             var s = UUID.randomUUID().toString();
             var exception = catchThrowableOfType(
                     RestClientResponseException.class,
                     () -> userClient.login(new LoginUser(new LoginUser.Data(s + "@ex.com", s)))
             );
 
-            assertThat(exception.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+            assertThat(exception.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_CONTENT);
         }
+
     }
 
     @Nested
@@ -184,7 +186,7 @@ public class UserApiTest extends BaseClientTest {
         }
 
         @Test
-        void should_throw400_whenGetCurrentUser_and_userDoesNotExist() {
+        void should_throw422_whenGetCurrentUser_and_userDoesNotExist() {
             var registeredUser = auth.register().login();
 
             // Delete the user but keep the token active
@@ -197,8 +199,9 @@ public class UserApiTest extends BaseClientTest {
             );
 
             // GetCurrentUserHandler throws BadRequestException
-            assertThat(exception.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+            assertThat(exception.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_CONTENT);
         }
+
     }
 
     @Nested
@@ -225,7 +228,7 @@ public class UserApiTest extends BaseClientTest {
         }
 
         @Test
-        void should_throw400_whenUpdateUserWithExistingEmail() {
+        void should_throw422_whenUpdateUserWithExistingEmail() {
             var registeredUser = auth.register();
 
             auth.register().login();
@@ -243,11 +246,11 @@ public class UserApiTest extends BaseClientTest {
                     () -> userClient.update(updateUser)
             );
 
-            assertThat(exception.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+            assertThat(exception.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_CONTENT);
         }
 
         @Test
-        void should_throw400_whenUpdateUserWithExistingName() {
+        void should_throw422_whenUpdateUserWithExistingName() {
             var registeredUser = auth.register();
 
             auth.register().login();
@@ -265,7 +268,7 @@ public class UserApiTest extends BaseClientTest {
                     () -> userClient.update(updateUser)
             );
 
-            assertThat(exception.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+            assertThat(exception.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_CONTENT);
         }
 
         @Test
@@ -279,7 +282,7 @@ public class UserApiTest extends BaseClientTest {
         }
 
         @Test
-        void should_throw400_whenUpdateUserWithEmptyPayload() {
+        void should_throw422_whenUpdateUserWithEmptyPayload() {
             auth.register().login();
 
             var updateUser = new UpdateUser(new UpdateUser.Data(null, null, null, null, null));
@@ -289,7 +292,7 @@ public class UserApiTest extends BaseClientTest {
                     () -> userClient.update(updateUser)
             );
 
-            assertThat(exception.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+            assertThat(exception.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_CONTENT);
         }
 
         @Test
@@ -312,6 +315,7 @@ public class UserApiTest extends BaseClientTest {
             // UpdateUserHandler throws NotFoundException
             assertThat(exception.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
         }
+
     }
 
     private static RegisterUser registerCommand() {

@@ -27,6 +27,7 @@ import com.github.al.realworld.api.command.AddComment;
 import com.github.al.realworld.api.command.CreateArticle;
 import com.github.al.realworld.api.command.UpdateArticle;
 import com.github.al.realworld.api.dto.ArticleItemDto;
+import com.github.al.realworld.api.dto.GenericError;
 import com.github.al.realworld.api.operation.ArticleClient;
 import com.github.al.realworld.api.operation.ProfileClient;
 import com.github.al.realworld.api.operation.TagClient;
@@ -111,6 +112,12 @@ public class ArticleApiTest extends BaseClientTest {
             );
 
             assertThat(exception.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+
+            var error = exception.getResponseBodyAs(GenericError.class);
+            assertThat(error).isNotNull();
+            assertThat(error.errors()).isNotNull();
+            assertThat(error.errors().body()).hasSize(1);
+            assertThat(error.errors().body().getFirst()).isNotBlank();
         }
 
         @Test
@@ -616,7 +623,7 @@ public class ArticleApiTest extends BaseClientTest {
 
             var created = articleClient.create(createArticleCommand()).article();
 
-            var addComment = new AddComment(null, new AddComment.Data(TEST_BODY));
+            var addComment = new AddComment(created.slug(), new AddComment.Data(TEST_BODY));
 
             var comment = articleClient.addComment(created.slug(), addComment).comment();
 
@@ -643,7 +650,7 @@ public class ArticleApiTest extends BaseClientTest {
 
             var article = articleClient.create(createArticleCommand()).article();
 
-            var addComment = new AddComment(null, new AddComment.Data(TEST_BODY));
+            var addComment = new AddComment(article.slug(), new AddComment.Data(TEST_BODY));
             var comment = articleClient.addComment(article.slug(), addComment).comment();
 
             auth.register().login();
@@ -660,10 +667,11 @@ public class ArticleApiTest extends BaseClientTest {
         void should_throw404_when_addCommentArticleDoesNotExist() {
             auth.register().login();
 
-            var addComment = new AddComment(null, new AddComment.Data(TEST_BODY));
+            var slug = UUID.randomUUID().toString();
+            var addComment = new AddComment(slug, new AddComment.Data(TEST_BODY));
             var exception = catchThrowableOfType(
                     RestClientResponseException.class,
-                    () -> articleClient.addComment(UUID.randomUUID().toString(), addComment)
+                    () -> articleClient.addComment(slug, addComment)
             );
 
             assertThat(exception.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
@@ -724,7 +732,7 @@ public class ArticleApiTest extends BaseClientTest {
             var result = articleClient.feed(20, 0);
 
             assertThat(result.articles()).hasSize(1);
-            assertThat(result.articles().get(0).title()).isEqualTo(article.title());
+            assertThat(result.articles().getFirst().title()).isEqualTo(article.title());
             assertThat(result.articlesCount()).isEqualTo(1);
         }
 
