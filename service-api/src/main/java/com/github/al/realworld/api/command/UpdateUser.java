@@ -28,26 +28,29 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
+import org.jspecify.annotations.Nullable;
 
 public record UpdateUser(
         @Valid @NotNull Data user
 ) implements Command<UpdateUserResult> {
 
     public record Data(
-            @Email String email,
-            String username,
-            String password,
-            String image,
-            String bio
+            @Email @Nullable String email,
+            @Nullable String username,
+            @Nullable String password,
+            @Nullable String image,
+            @Nullable String bio
     ) {
+
         @AssertTrue(message = "at least one field must be provided")
         public boolean hasAtLeastOneField() {
             return email != null
-                || username != null
-                || password != null
-                || image != null
-                || bio != null;
+                   || username != null
+                   || password != null
+                   || image != null
+                   || bio != null;
         }
+
     }
 
 }

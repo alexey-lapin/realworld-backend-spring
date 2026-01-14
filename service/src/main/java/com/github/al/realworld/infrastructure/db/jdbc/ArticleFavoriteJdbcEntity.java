@@ -33,4 +33,5 @@ public record ArticleFavoriteJdbcEntity(
         long articleId,
         long userId
 ) {
+
 }

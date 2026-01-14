@@ -28,4 +28,5 @@ import com.github.al.realworld.bus.Query;
 public record GetProfile(
         String username
 ) implements Query<GetProfileResult> {
+
 }

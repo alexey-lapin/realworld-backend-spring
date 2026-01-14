@@ -26,6 +26,7 @@ package com.github.al.realworld.infrastructure.db.jdbc;
 import com.github.al.realworld.domain.model.Profile;
 import com.github.al.realworld.domain.repository.ProfileRepository;
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
@@ -37,7 +38,7 @@ public class ProfileJdbcRepositoryAdapter implements ProfileRepository {
     private final ProfileJdbcRepository repository;
 
     @Override
-    public Optional<Profile> findByUsername(String username, Long userId) {
+    public Optional<Profile> findByUsername(String username, @Nullable Long userId) {
         return repository.findByUsername(username, userId);
     }
 

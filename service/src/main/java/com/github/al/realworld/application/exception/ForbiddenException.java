@@ -23,13 +23,15 @@
  */
 package com.github.al.realworld.application.exception;
 
+import org.jspecify.annotations.Nullable;
+
 public final class ForbiddenException extends ApplicationException {
 
     public ForbiddenException(String message) {
         super(message);
     }
 
-    public static ForbiddenException forbidden(String message, Object... args) {
+    public static ForbiddenException forbidden(String message, @Nullable Object... args) {
         return new ForbiddenException(String.format(message, args));
     }
 

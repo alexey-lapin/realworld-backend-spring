@@ -27,4 +27,5 @@ public record UserWithToken(
         User user,
         String token
 ) {
+
 }

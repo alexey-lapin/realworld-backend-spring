@@ -26,6 +26,7 @@ package com.github.al.realworld.bus;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.GenericTypeResolver;
 import org.springframework.stereotype.Component;
+import org.springframework.util.Assert;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -47,22 +48,30 @@ public class Registry {
 
     private void registerCommandHandler(ApplicationContext applicationContext, CommandHandler commandHandler) {
         Class<?>[] handlerTypes = GenericTypeResolver.resolveTypeArguments(commandHandler.getClass(), CommandHandler.class);
+        Assert.notNull(handlerTypes, "unable to resolve type params");
+        Assert.isTrue(handlerTypes.length == 2, "wrong number of type params");
         Class<? extends Command> commandType = (Class<? extends Command>) handlerTypes[1];
         commandHandlerProviders.put(commandType, new CommandHandlerProvider(applicationContext, commandHandler.getClass()));
     }
 
     private void registerQueryHandler(ApplicationContext applicationContext, QueryHandler queryHandler) {
         Class<?>[] handlerTypes = GenericTypeResolver.resolveTypeArguments(queryHandler.getClass(), QueryHandler.class);
+        Assert.notNull(handlerTypes, "unable to resolve type params");
+        Assert.isTrue(handlerTypes.length == 2, "wrong number of type params");
         Class<? extends Query> queryType = (Class<? extends Query>) handlerTypes[1];
         queryHandlerProviders.put(queryType, new QueryHandlerProvider(applicationContext, queryHandler.getClass()));
     }
 
     <R, C extends Command<R>> CommandHandler<R, C> getCommandHandler(Class<C> commandType) {
-        return commandHandlerProviders.get(commandType).get();
+        var commandHandlerProvider = commandHandlerProviders.get(commandType);
+        Assert.notNull(commandHandlerProvider, "unable to find commandHandlerProvider");
+        return commandHandlerProvider.get();
     }
 
     <R, Q extends Query<R>> QueryHandler<R, Q> getQueryHandler(Class<Q> queryType) {
-        return queryHandlerProviders.get(queryType).get();
+        var queryHandlerProvider = queryHandlerProviders.get(queryType);
+        Assert.notNull(queryHandlerProvider, "unable to find commandHandlerProvider");
+        return queryHandlerProvider.get();
     }
 
 }

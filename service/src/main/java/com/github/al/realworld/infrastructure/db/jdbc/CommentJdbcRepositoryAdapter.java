@@ -27,8 +27,10 @@ import com.github.al.realworld.domain.model.Comment;
 import com.github.al.realworld.domain.model.CommentAssembly;
 import com.github.al.realworld.domain.model.Profile;
 import com.github.al.realworld.domain.repository.CommentRepository;
-import com.github.al.realworld.infrastructure.config.MappingConfig;
+import com.github.al.realworld.infrastructure.config.mapping.MappingConfig;
+import com.github.al.realworld.infrastructure.mapping.GeneratedMapper;
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.Nullable;
 import org.mapstruct.AnnotateWith;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -52,13 +54,13 @@ public class CommentJdbcRepositoryAdapter implements CommentRepository {
     }
 
     @Override
-    public Optional<CommentAssembly> findAssemblyById(Long userId, long id) {
+    public Optional<CommentAssembly> findAssemblyById(@Nullable Long userId, long id) {
         return assemblyRepository.findById(id, userId)
                 .map(commentMapper::toDomain);
     }
 
     @Override
-    public List<CommentAssembly> findAllAssemblyByArticleId(Long userId, long articleId) {
+    public List<CommentAssembly> findAllAssemblyByArticleId(@Nullable Long userId, long articleId) {
         return assemblyRepository.findAllByArticleId(articleId, userId).stream()
                 .map(commentMapper::toDomain)
                 .toList();
@@ -81,9 +83,9 @@ public class CommentJdbcRepositoryAdapter implements CommentRepository {
         repository.deleteAllByArticleId(articleId);
     }
 
-    @AnnotateWith(MappingConfig.GeneratedMapper.class)
+    @AnnotateWith(GeneratedMapper.class)
     @Mapper(config = MappingConfig.class)
-    interface CommentMapper {
+    public interface CommentMapper {
 
         Comment toDomain(CommentJdbcEntity source);
 

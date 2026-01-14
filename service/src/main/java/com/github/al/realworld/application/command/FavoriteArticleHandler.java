@@ -27,12 +27,12 @@ import com.github.al.realworld.api.command.FavoriteArticle;
 import com.github.al.realworld.api.command.FavoriteArticleResult;
 import com.github.al.realworld.api.dto.ArticleDto;
 import com.github.al.realworld.application.service.AuthenticationService;
+import com.github.al.realworld.application.service.ConversionService;
 import com.github.al.realworld.bus.CommandHandler;
 import com.github.al.realworld.domain.model.ArticleFavorite;
 import com.github.al.realworld.domain.repository.ArticleFavoriteRepository;
 import com.github.al.realworld.domain.repository.ArticleRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

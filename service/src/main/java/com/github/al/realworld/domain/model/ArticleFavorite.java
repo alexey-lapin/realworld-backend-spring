@@ -27,4 +27,5 @@ public record ArticleFavorite(
         long articleId,
         long userId
 ) {
+
 }

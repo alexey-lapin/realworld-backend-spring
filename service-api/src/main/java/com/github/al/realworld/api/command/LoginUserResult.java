@@ -28,4 +28,5 @@ import com.github.al.realworld.api.dto.UserDto;
 public record LoginUserResult(
         UserDto user
 ) {
+
 }

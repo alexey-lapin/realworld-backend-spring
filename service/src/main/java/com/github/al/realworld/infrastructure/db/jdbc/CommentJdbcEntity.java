@@ -42,4 +42,5 @@ public record CommentJdbcEntity(
         long authorId,
         String body
 ) {
+
 }

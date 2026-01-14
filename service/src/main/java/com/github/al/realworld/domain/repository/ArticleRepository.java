@@ -26,6 +26,7 @@ package com.github.al.realworld.domain.repository;
 import com.github.al.realworld.domain.model.Article;
 import com.github.al.realworld.domain.model.ArticleAssembly;
 import com.github.al.realworld.domain.model.ArticleItem;
+import org.jspecify.annotations.Nullable;
 
 import java.util.List;
 import java.util.Optional;
@@ -46,16 +47,16 @@ public interface ArticleRepository {
 
     // read model
 
-    Optional<ArticleAssembly> findAssemblyById(Long userId,
+    Optional<ArticleAssembly> findAssemblyById(@Nullable Long userId,
                                                long id);
 
-    Optional<ArticleAssembly> findAssemblyBySlug(Long userId,
+    Optional<ArticleAssembly> findAssemblyBySlug(@Nullable Long userId,
                                                  String slug);
 
-    List<ArticleItem> findAllItemsByFilters(Long userId,
-                                            Long tagId,
-                                            Long authorId,
-                                            Long favoritedById,
+    List<ArticleItem> findAllItemsByFilters(@Nullable Long userId,
+                                            @Nullable Long tagId,
+                                            @Nullable Long authorId,
+                                            @Nullable Long favoritedById,
                                             int limit,
                                             long offset);
 
@@ -63,7 +64,7 @@ public interface ArticleRepository {
                                                int limit,
                                                long offset);
 
-    long countByFilters(Long tagId, Long authorId, Long favoritedById);
+    long countByFilters(@Nullable Long tagId, @Nullable Long authorId, @Nullable Long favoritedById);
 
     long countFeed(long userId);
 

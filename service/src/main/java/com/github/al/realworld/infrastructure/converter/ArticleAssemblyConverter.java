@@ -25,7 +25,9 @@ package com.github.al.realworld.infrastructure.converter;
 
 import com.github.al.realworld.api.dto.ArticleDto;
 import com.github.al.realworld.domain.model.ArticleAssembly;
-import com.github.al.realworld.infrastructure.config.MappingConfig;
+import com.github.al.realworld.infrastructure.config.mapping.MappingConfig;
+import com.github.al.realworld.infrastructure.mapping.GeneratedMapper;
+import org.jspecify.annotations.Nullable;
 import org.mapstruct.AnnotateWith;
 import org.mapstruct.Mapper;
 import org.springframework.core.convert.converter.Converter;
@@ -35,7 +37,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
 
-@AnnotateWith(MappingConfig.GeneratedMapper.class)
+@AnnotateWith(GeneratedMapper.class)
 @Mapper(config = MappingConfig.class)
 public abstract class ArticleAssemblyConverter implements Converter<ArticleAssembly, ArticleDto> {
 
@@ -46,7 +48,7 @@ public abstract class ArticleAssemblyConverter implements Converter<ArticleAssem
         return instant.atZone(ZoneId.systemDefault());
     }
 
-    protected List<String> convert(List<String> tags) {
+    protected List<String> convert(@Nullable List<String> tags) {
         return tags == null ? List.of() : tags;
     }
 

@@ -29,4 +29,5 @@ public record Profile(
         String image,
         boolean following
 ) {
+
 }

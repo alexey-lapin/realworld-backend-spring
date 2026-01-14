@@ -30,4 +30,5 @@ import java.util.List;
 public record GetCommentsResult(
         List<CommentDto> comments
 ) {
+
 }

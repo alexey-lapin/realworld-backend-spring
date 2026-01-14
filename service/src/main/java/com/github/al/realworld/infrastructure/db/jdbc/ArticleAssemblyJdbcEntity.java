@@ -47,4 +47,5 @@ public record ArticleAssemblyJdbcEntity(
         String authorImage,
         boolean authorFollowing
 ) {
+
 }

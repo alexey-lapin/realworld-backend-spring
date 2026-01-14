@@ -23,6 +23,7 @@
  */
 package com.github.al.realworld.infrastructure.db.jdbc;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.data.jdbc.repository.query.Query;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.query.Param;
@@ -48,11 +49,11 @@ public interface CommentAssemblyJdbcRepository extends Repository<CommentAssembl
     @Query(BASE_QUERY + """
             where ca."id" = :id""")
     Optional<CommentAssemblyJdbcEntity> findById(@Param("id") long id,
-                                                 @Param("currentUserId") Long currentUserId);
+                                                 @Param("currentUserId") @Nullable Long currentUserId);
 
     @Query(BASE_QUERY + """
             where ca."article_id" = :articleId""")
     List<CommentAssemblyJdbcEntity> findAllByArticleId(@Param("articleId") long articleId,
-                                                       @Param("currentUserId") Long currentUserId);
+                                                       @Param("currentUserId") @Nullable Long currentUserId);
 
 }

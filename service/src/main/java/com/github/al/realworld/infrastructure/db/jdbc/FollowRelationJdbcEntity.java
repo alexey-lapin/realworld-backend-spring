@@ -33,4 +33,5 @@ public record FollowRelationJdbcEntity(
         long followerId,
         long followeeId
 ) {
+
 }

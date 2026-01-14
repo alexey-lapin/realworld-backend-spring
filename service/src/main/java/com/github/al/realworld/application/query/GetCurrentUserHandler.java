@@ -27,12 +27,12 @@ import com.github.al.realworld.api.dto.UserDto;
 import com.github.al.realworld.api.query.GetCurrentUser;
 import com.github.al.realworld.api.query.GetCurrentUserResult;
 import com.github.al.realworld.application.service.AuthenticationService;
+import com.github.al.realworld.application.service.ConversionService;
 import com.github.al.realworld.application.service.JwtService;
 import com.github.al.realworld.bus.QueryHandler;
 import com.github.al.realworld.domain.model.UserWithToken;
 import com.github.al.realworld.domain.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 

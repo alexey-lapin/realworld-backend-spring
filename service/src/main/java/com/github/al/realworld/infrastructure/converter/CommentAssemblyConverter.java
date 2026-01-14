@@ -25,7 +25,8 @@ package com.github.al.realworld.infrastructure.converter;
 
 import com.github.al.realworld.api.dto.CommentDto;
 import com.github.al.realworld.domain.model.CommentAssembly;
-import com.github.al.realworld.infrastructure.config.MappingConfig;
+import com.github.al.realworld.infrastructure.config.mapping.MappingConfig;
+import com.github.al.realworld.infrastructure.mapping.GeneratedMapper;
 import org.mapstruct.AnnotateWith;
 import org.mapstruct.Mapper;
 import org.springframework.core.convert.converter.Converter;
@@ -34,7 +35,7 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
-@AnnotateWith(MappingConfig.GeneratedMapper.class)
+@AnnotateWith(GeneratedMapper.class)
 @Mapper(config = MappingConfig.class)
 public abstract class CommentAssemblyConverter implements Converter<CommentAssembly, CommentDto> {
 

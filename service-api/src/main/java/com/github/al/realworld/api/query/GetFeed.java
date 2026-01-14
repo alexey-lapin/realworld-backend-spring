@@ -29,4 +29,5 @@ public record GetFeed(
         int limit,
         long offset
 ) implements Query<GetFeedResult> {
+
 }

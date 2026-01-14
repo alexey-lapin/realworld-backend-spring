@@ -38,6 +38,7 @@ public record RegisterUser(
             @NotBlank String username,
             @NotBlank String password
     ) {
+
     }
 
 }

@@ -28,4 +28,5 @@ import com.github.al.realworld.api.dto.ArticleDto;
 public record GetArticleResult(
         ArticleDto article
 ) {
+
 }

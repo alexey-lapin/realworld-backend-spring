@@ -28,4 +28,5 @@ import com.github.al.realworld.bus.Command;
 public record FavoriteArticle(
         String slug
 ) implements Command<FavoriteArticleResult> {
+
 }

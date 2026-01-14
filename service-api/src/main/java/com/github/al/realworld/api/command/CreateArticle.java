@@ -27,6 +27,7 @@ import com.github.al.realworld.bus.Command;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.List;
 
@@ -38,8 +39,9 @@ public record CreateArticle(
             @NotBlank String title,
             @NotBlank String description,
             @NotBlank String body,
-            List<String> tagList
+            @Nullable List<String> tagList
     ) {
+
     }
 
 }

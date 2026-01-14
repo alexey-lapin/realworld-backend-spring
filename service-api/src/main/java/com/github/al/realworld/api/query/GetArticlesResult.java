@@ -31,4 +31,5 @@ public record GetArticlesResult(
         List<ArticleItemDto> articles,
         long articlesCount
 ) {
+
 }

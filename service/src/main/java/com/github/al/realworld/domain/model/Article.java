@@ -44,4 +44,5 @@ public record Article(
         @Singular
         List<Tag> tags
 ) {
+
 }

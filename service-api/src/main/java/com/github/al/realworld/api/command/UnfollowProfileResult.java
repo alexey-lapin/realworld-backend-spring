@@ -28,4 +28,5 @@ import com.github.al.realworld.api.dto.ProfileDto;
 public record UnfollowProfileResult(
         ProfileDto profile
 ) {
+
 }

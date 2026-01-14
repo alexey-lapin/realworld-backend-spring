@@ -28,4 +28,5 @@ import com.github.al.realworld.api.dto.CommentDto;
 public record AddCommentResult(
         CommentDto comment
 ) {
+
 }

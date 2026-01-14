@@ -29,8 +29,10 @@ import com.github.al.realworld.domain.model.ArticleItem;
 import com.github.al.realworld.domain.model.Profile;
 import com.github.al.realworld.domain.model.Tag;
 import com.github.al.realworld.domain.repository.ArticleRepository;
-import com.github.al.realworld.infrastructure.config.MappingConfig;
+import com.github.al.realworld.infrastructure.config.mapping.MappingConfig;
+import com.github.al.realworld.infrastructure.mapping.GeneratedMapper;
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.Nullable;
 import org.mapstruct.AnnotateWith;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -84,22 +86,22 @@ public class ArticleJdbcRepositoryAdapter implements ArticleRepository {
     }
 
     @Override
-    public Optional<ArticleAssembly> findAssemblyById(Long userId, long id) {
+    public Optional<ArticleAssembly> findAssemblyById(@Nullable Long userId, long id) {
         return assemblyRepository.findById(id, userId)
                 .map(articleMapper::toDomain);
     }
 
     @Override
-    public Optional<ArticleAssembly> findAssemblyBySlug(Long userId, String slug) {
+    public Optional<ArticleAssembly> findAssemblyBySlug(@Nullable Long userId, String slug) {
         return assemblyRepository.findBySlug(slug, userId)
                 .map(articleMapper::toDomain);
     }
 
     @Override
-    public List<ArticleItem> findAllItemsByFilters(Long userId,
-                                                   Long tagId,
-                                                   Long authorId,
-                                                   Long favoritedById,
+    public List<ArticleItem> findAllItemsByFilters(@Nullable Long userId,
+                                                   @Nullable Long tagId,
+                                                   @Nullable Long authorId,
+                                                   @Nullable Long favoritedById,
                                                    int limit,
                                                    long offset) {
         return assemblyRepository.findFiltered(tagId, authorId, favoritedById, userId, limit, offset).stream()
@@ -115,7 +117,7 @@ public class ArticleJdbcRepositoryAdapter implements ArticleRepository {
     }
 
     @Override
-    public long countByFilters(Long tagId, Long authorId, Long favoritedById) {
+    public long countByFilters(@Nullable Long tagId, @Nullable Long authorId, @Nullable Long favoritedById) {
         return assemblyRepository.countFiltered(tagId, authorId, favoritedById);
     }
 
@@ -124,9 +126,9 @@ public class ArticleJdbcRepositoryAdapter implements ArticleRepository {
         return assemblyRepository.countFeed(userId);
     }
 
-    @AnnotateWith(MappingConfig.GeneratedMapper.class)
+    @AnnotateWith(GeneratedMapper.class)
     @Mapper(config = MappingConfig.class)
-    interface ArticleMapper {
+    public interface ArticleMapper {
 
         @Mapping(target = "tagList", source = "tags")
         @Mapping(target = "tagIds", source = "tags")
@@ -149,14 +151,14 @@ public class ArticleJdbcRepositoryAdapter implements ArticleRepository {
                     source.authorFollowing());
         }
 
-        default List<String> tagList(String source) {
+        default @Nullable List<String> tagList(@Nullable String source) {
             if (source == null) {
                 return null;
             }
             return Arrays.stream(source.split(",")).toList();
         }
 
-        default String tagList(List<Tag> source) {
+        default @Nullable String tagList(@Nullable List<Tag> source) {
             if (source == null || source.isEmpty()) {
                 return null;
             }

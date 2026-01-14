@@ -26,16 +26,18 @@ package com.github.al.realworld.application.command;
 import com.github.al.realworld.api.command.RegisterUser;
 import com.github.al.realworld.api.command.RegisterUserResult;
 import com.github.al.realworld.api.dto.UserDto;
+import com.github.al.realworld.application.service.ConversionService;
 import com.github.al.realworld.application.service.JwtService;
 import com.github.al.realworld.bus.CommandHandler;
 import com.github.al.realworld.domain.model.User;
 import com.github.al.realworld.domain.model.UserWithToken;
 import com.github.al.realworld.domain.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.core.convert.ConversionService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Objects;
 
 import static com.github.al.realworld.application.exception.BadRequestException.badRequest;
 
@@ -60,10 +62,13 @@ public class RegisterUserHandler implements CommandHandler<RegisterUserResult, R
             throw badRequest("user [name=%s] already exists", userData.username());
         }
 
+        var encodedPassword = passwordEncoder.encode(userData.password());
+        Objects.requireNonNull(encodedPassword);
+
         var user = User.builder()
                 .username(userData.username())
                 .email(userData.email())
-                .password(passwordEncoder.encode(userData.password()))
+                .password(encodedPassword)
                 .build();
 
         var savedUser = userRepository.save(user);

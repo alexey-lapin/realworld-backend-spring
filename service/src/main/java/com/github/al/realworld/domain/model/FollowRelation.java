@@ -27,4 +27,5 @@ public record FollowRelation(
         long followerId,
         long followeeId
 ) {
+
 }

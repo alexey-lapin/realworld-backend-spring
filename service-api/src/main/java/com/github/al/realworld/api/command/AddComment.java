@@ -38,6 +38,7 @@ public record AddComment(
     public record Data(
             @NotBlank String body
     ) {
+
     }
 
 }

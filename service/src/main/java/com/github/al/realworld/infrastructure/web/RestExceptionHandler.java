@@ -65,11 +65,11 @@ public class RestExceptionHandler {
                 var statusCode = errorResponse.getStatusCode();
                 if (statusCode.isSameCodeAs(HttpStatus.UNAUTHORIZED)
                     || statusCode.isSameCodeAs(HttpStatus.FORBIDDEN)) {
-                    responseEntity(statusCode, message);
+                    return responseEntity(statusCode, message);
                 } else if (statusCode.is4xxClientError()) {
-                    responseEntity(HttpStatus.UNPROCESSABLE_CONTENT, message);
+                    return responseEntity(HttpStatus.UNPROCESSABLE_CONTENT, message);
                 } else {
-                    responseEntity(statusCode, message);
+                    return responseEntity(statusCode, message);
                 }
             }
         } else if (e instanceof ConstraintViolationException ex) {

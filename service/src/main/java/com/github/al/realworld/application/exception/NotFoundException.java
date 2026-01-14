@@ -23,13 +23,15 @@
  */
 package com.github.al.realworld.application.exception;
 
+import org.jspecify.annotations.Nullable;
+
 public final class NotFoundException extends ApplicationException {
 
     public NotFoundException(String message) {
         super(message);
     }
 
-    public static NotFoundException notFound(String message, Object... args) {
+    public static NotFoundException notFound(String message, @Nullable Object... args) {
         return new NotFoundException(String.format(message, args));
     }
 

@@ -31,4 +31,5 @@ public record GetFeedResult(
         List<ArticleItemDto> articles,
         long articlesCount
 ) {
+
 }

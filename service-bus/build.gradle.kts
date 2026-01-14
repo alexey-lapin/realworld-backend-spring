@@ -1,4 +1,5 @@
 plugins {
+    alias(libs.plugins.spring.nullability)
     id("realworld.java-conventions")
 }
 

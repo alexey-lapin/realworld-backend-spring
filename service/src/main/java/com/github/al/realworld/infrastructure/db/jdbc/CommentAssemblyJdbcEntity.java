@@ -42,4 +42,5 @@ public record CommentAssemblyJdbcEntity(
         String authorImage,
         boolean authorFollowing
 ) {
+
 }

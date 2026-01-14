@@ -25,6 +25,7 @@ package com.github.al.realworld.domain.repository;
 
 import com.github.al.realworld.domain.model.Comment;
 import com.github.al.realworld.domain.model.CommentAssembly;
+import org.jspecify.annotations.Nullable;
 
 import java.util.List;
 import java.util.Optional;
@@ -33,9 +34,9 @@ public interface CommentRepository {
 
     Optional<Comment> findById(long id);
 
-    Optional<CommentAssembly> findAssemblyById(Long userId, long id);
+    Optional<CommentAssembly> findAssemblyById(@Nullable Long userId, long id);
 
-    List<CommentAssembly> findAllAssemblyByArticleId(Long userId, long articleId);
+    List<CommentAssembly> findAllAssemblyByArticleId(@Nullable Long userId, long articleId);
 
     Comment save(Comment comment);
 

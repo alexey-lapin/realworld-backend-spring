@@ -27,6 +27,7 @@ import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.gen.RSAKeyGenerator;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.Nullable;
 import org.springframework.boot.actuate.info.InfoEndpoint;
 import org.springframework.boot.actuate.startup.StartupEndpoint;
 import org.springframework.boot.health.actuate.endpoint.HealthEndpoint;
@@ -130,7 +131,7 @@ public class SecurityConfig {
                     Pattern.CASE_INSENSITIVE);
 
             @Override
-            public String resolve(HttpServletRequest request) {
+            public @Nullable String resolve(HttpServletRequest request) {
                 String authorization = request.getHeader(HttpHeaders.AUTHORIZATION);
                 if (authorization == null) {
                     return null;

@@ -25,7 +25,8 @@ package com.github.al.realworld.infrastructure.db.jdbc;
 
 import com.github.al.realworld.domain.model.Tag;
 import com.github.al.realworld.domain.repository.TagRepository;
-import com.github.al.realworld.infrastructure.config.MappingConfig;
+import com.github.al.realworld.infrastructure.config.mapping.MappingConfig;
+import com.github.al.realworld.infrastructure.mapping.GeneratedMapper;
 import lombok.RequiredArgsConstructor;
 import org.mapstruct.AnnotateWith;
 import org.mapstruct.Mapper;
@@ -83,9 +84,9 @@ public class TagJdbcRepositoryAdapter implements TagRepository {
         }
     }
 
-    @AnnotateWith(MappingConfig.GeneratedMapper.class)
+    @AnnotateWith(GeneratedMapper.class)
     @Mapper(config = MappingConfig.class)
-    interface TagMapper {
+    public interface TagMapper {
 
         Tag toDomain(TagJdbcEntity source);
 

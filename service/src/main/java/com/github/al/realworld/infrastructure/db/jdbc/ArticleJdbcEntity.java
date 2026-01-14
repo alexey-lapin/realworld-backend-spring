@@ -50,4 +50,5 @@ public record ArticleJdbcEntity(
         @MappedCollection(idColumn = "article_id", keyColumn = "order")
         List<ArticleTagJdbcEntity> tagIds
 ) {
+
 }

@@ -25,12 +25,11 @@ package com.github.al.realworld.infrastructure.db.jdbc;
 
 import com.github.al.realworld.domain.model.User;
 import com.github.al.realworld.domain.repository.UserRepository;
-import com.github.al.realworld.infrastructure.config.MappingConfig;
+import com.github.al.realworld.infrastructure.config.mapping.MappingConfig;
+import com.github.al.realworld.infrastructure.mapping.GeneratedMapper;
 import lombok.RequiredArgsConstructor;
 import org.mapstruct.AnnotateWith;
 import org.mapstruct.Mapper;
-import org.springframework.core.convert.ConversionService;
-import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
@@ -39,8 +38,8 @@ import java.util.Optional;
 @Repository
 public class UserJdbcRepositoryAdapter implements UserRepository {
 
-    private final ConversionService conversionService;
     private final UserJdbcRepository repository;
+    private final UserMapper userMapper;
 
     @Override
     public boolean existsByEmail(String email) {
@@ -55,43 +54,35 @@ public class UserJdbcRepositoryAdapter implements UserRepository {
     @Override
     public Optional<User> findById(long id) {
         return repository.findById(id)
-                .map(e -> conversionService.convert(e, User.class));
+                .map(userMapper::toDomain);
     }
 
     @Override
     public Optional<User> findByEmail(String email) {
         return repository.findByEmail(email)
-                .map(e -> conversionService.convert(e, User.class));
+                .map(userMapper::toDomain);
     }
 
     @Override
     public Optional<User> findByUsername(String username) {
         return repository.findByUsername(username)
-                .map(e -> conversionService.convert(e, User.class));
+                .map(userMapper::toDomain);
     }
 
     @Override
     public User save(User user) {
-        var entity = conversionService.convert(user, UserJdbcEntity.class);
+        var entity = userMapper.fromDomain(user);
         var saved = repository.save(entity);
-        return conversionService.convert(saved, User.class);
+        return userMapper.toDomain(saved);
     }
 
-    @AnnotateWith(MappingConfig.GeneratedMapper.class)
+    @AnnotateWith(GeneratedMapper.class)
     @Mapper(config = MappingConfig.class)
-    interface ToDomainUserMapper extends Converter<UserJdbcEntity, User> {
+    public interface UserMapper {
 
-        @Override
-        User convert(UserJdbcEntity source);
+        User toDomain(UserJdbcEntity source);
 
-    }
-
-    @AnnotateWith(MappingConfig.GeneratedMapper.class)
-    @Mapper(config = MappingConfig.class)
-    interface FromDomainUserMapper extends Converter<User, UserJdbcEntity> {
-
-        @Override
-        UserJdbcEntity convert(User source);
+        UserJdbcEntity fromDomain(User source);
 
     }
 

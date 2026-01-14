@@ -23,13 +23,15 @@
  */
 package com.github.al.realworld.application.exception;
 
+import org.jspecify.annotations.Nullable;
+
 public final class UnauthorizedException extends ApplicationException {
 
     public UnauthorizedException(String message) {
         super(message);
     }
 
-    public static UnauthorizedException unauthorized(String message, Object... args) {
+    public static UnauthorizedException unauthorized(String message, @Nullable Object... args) {
         return new UnauthorizedException(String.format(message, args));
     }
 

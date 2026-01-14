@@ -38,4 +38,5 @@ public record ArticleDto(
         Integer favoritesCount,
         ProfileDto author
 ) {
+
 }

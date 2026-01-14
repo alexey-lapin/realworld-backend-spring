@@ -29,4 +29,5 @@ public record DeleteComment(
         String slug,
         long id
 ) implements Command<DeleteCommentResult> {
+
 }

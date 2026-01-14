@@ -27,13 +27,13 @@ import com.github.al.realworld.api.command.UnfollowProfile;
 import com.github.al.realworld.api.command.UnfollowProfileResult;
 import com.github.al.realworld.api.dto.ProfileDto;
 import com.github.al.realworld.application.service.AuthenticationService;
+import com.github.al.realworld.application.service.ConversionService;
 import com.github.al.realworld.bus.CommandHandler;
 import com.github.al.realworld.domain.model.FollowRelation;
 import com.github.al.realworld.domain.model.Profile;
 import com.github.al.realworld.domain.repository.FollowRelationRepository;
 import com.github.al.realworld.domain.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
