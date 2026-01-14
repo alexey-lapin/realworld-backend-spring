@@ -21,11 +21,18 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.github.al.realworld.api.query;
+package com.github.al.realworld.api.dto;
 
-import com.github.al.realworld.api.dto.CommentDto;
+import java.util.List;
 
-public record GetCommentResult(
-        CommentDto comment
+public record GenericError(
+        Errors errors
 ) {
+
+    public record Errors(
+            List<String> body
+    ) {
+
+    }
+
 }

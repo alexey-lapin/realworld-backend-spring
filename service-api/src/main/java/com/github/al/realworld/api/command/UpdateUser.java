@@ -25,6 +25,7 @@ package com.github.al.realworld.api.command;
 
 import com.github.al.realworld.bus.Command;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 
@@ -39,6 +40,14 @@ public record UpdateUser(
             String image,
             String bio
     ) {
+        @AssertTrue(message = "at least one field must be provided")
+        public boolean hasAtLeastOneField() {
+            return email != null
+                || username != null
+                || password != null
+                || image != null
+                || bio != null;
+        }
     }
 
 }

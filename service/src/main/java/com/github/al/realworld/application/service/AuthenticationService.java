@@ -33,7 +33,7 @@ public interface AuthenticationService {
     default long getRequiredCurrentUserId() {
         var currentUserId = getCurrentUserId();
         if (currentUserId == null) {
-            throw new UnauthorizedException();
+            throw new UnauthorizedException("current user id is not present");
         }
         return currentUserId;
     }
@@ -43,7 +43,7 @@ public interface AuthenticationService {
     default String getRequiredCurrentUserName() {
         var currentUsername = getCurrentUserName();
         if (currentUsername == null) {
-            throw new UnauthorizedException();
+            throw new UnauthorizedException("current user id is not present");
         }
         return currentUsername;
     }

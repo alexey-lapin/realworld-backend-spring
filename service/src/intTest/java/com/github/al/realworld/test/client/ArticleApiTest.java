@@ -21,17 +21,16 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.github.al.realworld.rest;
+package com.github.al.realworld.test.client;
 
 import com.github.al.realworld.api.command.AddComment;
 import com.github.al.realworld.api.command.CreateArticle;
 import com.github.al.realworld.api.command.UpdateArticle;
 import com.github.al.realworld.api.dto.ArticleItemDto;
+import com.github.al.realworld.api.dto.GenericError;
 import com.github.al.realworld.api.operation.ArticleClient;
 import com.github.al.realworld.api.operation.ProfileClient;
 import com.github.al.realworld.api.operation.TagClient;
-import com.github.al.realworld.rest.auth.AuthSupport;
-import com.github.al.realworld.rest.support.BaseRestTest;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -48,7 +47,7 @@ import java.util.stream.IntStream;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowableOfType;
 
-public class ArticleApiTest extends BaseRestTest {
+public class ArticleApiTest extends BaseClientTest {
 
     public static final String TEST_TITLE = "test-title";
     public static final String TEST_DESCRIPTION = "test-description";
@@ -113,6 +112,12 @@ public class ArticleApiTest extends BaseRestTest {
             );
 
             assertThat(exception.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+
+            var error = exception.getResponseBodyAs(GenericError.class);
+            assertThat(error).isNotNull();
+            assertThat(error.errors()).isNotNull();
+            assertThat(error.errors().body()).hasSize(1);
+            assertThat(error.errors().body().getFirst()).isNotBlank();
         }
 
         @Test
@@ -308,7 +313,7 @@ public class ArticleApiTest extends BaseRestTest {
 
             var article = articleClient.create(command).article();
 
-            assertThat(article.tagList()).isNull();
+            assertThat(article.tagList()).isEmpty();
         }
 
         @Test
@@ -324,7 +329,7 @@ public class ArticleApiTest extends BaseRestTest {
 
             var article = articleClient.create(command).article();
 
-            assertThat(article.tagList()).isNull();
+            assertThat(article.tagList()).isEmpty();
         }
 
         @Test
@@ -618,7 +623,7 @@ public class ArticleApiTest extends BaseRestTest {
 
             var created = articleClient.create(createArticleCommand()).article();
 
-            var addComment = new AddComment(null, new AddComment.Data(TEST_BODY));
+            var addComment = new AddComment(created.slug(), new AddComment.Data(TEST_BODY));
 
             var comment = articleClient.addComment(created.slug(), addComment).comment();
 
@@ -640,26 +645,12 @@ public class ArticleApiTest extends BaseRestTest {
         }
 
         @Test
-        void should_returnCommentData_when_findBySlugAndId() {
-            var user = auth.register().login().getUsername();
-            var article = articleClient.create(createArticleCommand()).article();
-            var addComment = new AddComment(null, new AddComment.Data(TEST_BODY));
-            var comment = articleClient.addComment(article.slug(), addComment).comment();
-
-            var result = articleClient.findComment(article.slug(), comment.id());
-
-            assertThat(result.comment().id()).isEqualTo(comment.id());
-            assertThat(result.comment().body()).isEqualTo(TEST_BODY);
-            assertThat(result.comment().author().username()).isEqualTo(user);
-        }
-
-        @Test
         void should_throw403_when_commentIsNotOwned() {
             auth.register().login();
 
             var article = articleClient.create(createArticleCommand()).article();
 
-            var addComment = new AddComment(null, new AddComment.Data(TEST_BODY));
+            var addComment = new AddComment(article.slug(), new AddComment.Data(TEST_BODY));
             var comment = articleClient.addComment(article.slug(), addComment).comment();
 
             auth.register().login();
@@ -676,10 +667,11 @@ public class ArticleApiTest extends BaseRestTest {
         void should_throw404_when_addCommentArticleDoesNotExist() {
             auth.register().login();
 
-            var addComment = new AddComment(null, new AddComment.Data(TEST_BODY));
+            var slug = UUID.randomUUID().toString();
+            var addComment = new AddComment(slug, new AddComment.Data(TEST_BODY));
             var exception = catchThrowableOfType(
                     RestClientResponseException.class,
-                    () -> articleClient.addComment(UUID.randomUUID().toString(), addComment)
+                    () -> articleClient.addComment(slug, addComment)
             );
 
             assertThat(exception.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
@@ -706,19 +698,6 @@ public class ArticleApiTest extends BaseRestTest {
             var exception = catchThrowableOfType(
                     RestClientResponseException.class,
                     () -> articleClient.deleteComment(article.slug(), 9999999L)
-            );
-
-            assertThat(exception.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
-        }
-
-        @Test
-        void should_throw404_when_findCommentDoesNotExist() {
-            auth.register().login();
-            var article = articleClient.create(createArticleCommand()).article();
-
-            var exception = catchThrowableOfType(
-                    RestClientResponseException.class,
-                    () -> articleClient.findComment(article.slug(), 9999999L)
             );
 
             assertThat(exception.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
@@ -753,7 +732,7 @@ public class ArticleApiTest extends BaseRestTest {
             var result = articleClient.feed(20, 0);
 
             assertThat(result.articles()).hasSize(1);
-            assertThat(result.articles().get(0).title()).isEqualTo(article.title());
+            assertThat(result.articles().getFirst().title()).isEqualTo(article.title());
             assertThat(result.articlesCount()).isEqualTo(1);
         }
 

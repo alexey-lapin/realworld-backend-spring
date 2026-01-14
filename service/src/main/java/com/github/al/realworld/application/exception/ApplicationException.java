@@ -21,12 +21,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.github.al.realworld.api.query;
+package com.github.al.realworld.application.exception;
 
-import com.github.al.realworld.bus.Query;
+public sealed abstract class ApplicationException extends RuntimeException
+        permits BadRequestException, ForbiddenException, NotFoundException, UnauthorizedException {
 
-public record GetComment(
-        String slug,
-        long id
-) implements Query<GetCommentResult> {
+    public ApplicationException(String message) {
+        super(message);
+    }
+
 }

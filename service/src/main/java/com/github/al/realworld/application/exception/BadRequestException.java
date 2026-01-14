@@ -23,14 +23,7 @@
  */
 package com.github.al.realworld.application.exception;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.ResponseStatus;
-
-@ResponseStatus(HttpStatus.BAD_REQUEST)
-public class BadRequestException extends RuntimeException {
-
-    public BadRequestException() {
-    }
+public final class BadRequestException extends ApplicationException {
 
     public BadRequestException(String message) {
         super(message);
