@@ -39,4 +39,5 @@ public record User(
         String bio,
         String image
 ) {
+
 }

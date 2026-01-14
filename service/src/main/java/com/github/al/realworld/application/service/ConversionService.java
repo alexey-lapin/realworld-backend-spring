@@ -21,21 +21,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.github.al.realworld.infrastructure.config;
+package com.github.al.realworld.application.service;
 
-import org.mapstruct.MapperConfig;
-import org.mapstruct.extensions.spring.SpringMapperConfig;
+public interface ConversionService {
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-
-@MapperConfig(componentModel = "spring", uses = ConversionServiceAdapter.class)
-@SpringMapperConfig
-public interface MappingConfig {
-
-    @Retention(RetentionPolicy.CLASS)
-    @interface GeneratedMapper {
-
-    }
+    <T> T convert(Object source, Class<T> targetType);
 
 }

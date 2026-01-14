@@ -37,6 +37,7 @@ public record LoginUser(
             @Email @NotBlank String email,
             @NotBlank String password
     ) {
+
     }
 
 }

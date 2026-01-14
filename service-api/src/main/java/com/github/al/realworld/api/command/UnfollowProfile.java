@@ -28,4 +28,5 @@ import com.github.al.realworld.bus.Command;
 public record UnfollowProfile(
         String followee
 ) implements Command<UnfollowProfileResult> {
+
 }

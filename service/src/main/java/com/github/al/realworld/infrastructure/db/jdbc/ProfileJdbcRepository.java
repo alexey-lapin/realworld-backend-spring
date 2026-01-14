@@ -24,6 +24,7 @@
 package com.github.al.realworld.infrastructure.db.jdbc;
 
 import com.github.al.realworld.domain.model.Profile;
+import org.jspecify.annotations.Nullable;
 import org.springframework.data.jdbc.repository.query.Query;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.query.Param;
@@ -45,6 +46,6 @@ public interface ProfileJdbcRepository extends Repository<Profile, Long> {
             where u."username" = :username
             """)
     Optional<Profile> findByUsername(@Param("username") String username,
-                                     @Param("currentUserId") Long currentUserId);
+                                     @Param("currentUserId") @Nullable Long currentUserId);
 
 }

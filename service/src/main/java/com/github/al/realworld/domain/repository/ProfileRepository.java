@@ -24,11 +24,12 @@
 package com.github.al.realworld.domain.repository;
 
 import com.github.al.realworld.domain.model.Profile;
+import org.jspecify.annotations.Nullable;
 
 import java.util.Optional;
 
 public interface ProfileRepository {
 
-    Optional<Profile> findByUsername(String username, Long userId);
+    Optional<Profile> findByUsername(String username, @Nullable Long userId);
 
 }

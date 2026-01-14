@@ -28,4 +28,5 @@ import com.github.al.realworld.bus.Query;
 public record GetComments(
         String slug
 ) implements Query<GetCommentsResult> {
+
 }

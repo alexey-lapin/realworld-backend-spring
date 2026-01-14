@@ -27,11 +27,11 @@ import com.github.al.realworld.api.dto.CommentDto;
 import com.github.al.realworld.api.query.GetComments;
 import com.github.al.realworld.api.query.GetCommentsResult;
 import com.github.al.realworld.application.service.AuthenticationService;
+import com.github.al.realworld.application.service.ConversionService;
 import com.github.al.realworld.bus.QueryHandler;
 import com.github.al.realworld.domain.repository.ArticleRepository;
 import com.github.al.realworld.domain.repository.CommentRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

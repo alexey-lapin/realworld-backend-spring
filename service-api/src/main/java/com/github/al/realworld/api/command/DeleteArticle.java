@@ -28,4 +28,5 @@ import com.github.al.realworld.bus.Command;
 public record DeleteArticle(
         String slug
 ) implements Command<DeleteArticleResult> {
+
 }

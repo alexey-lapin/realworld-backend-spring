@@ -32,4 +32,5 @@ public record TagJdbcEntity(
         long id,
         String name
 ) {
+
 }

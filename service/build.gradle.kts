@@ -5,6 +5,7 @@ import org.springframework.boot.gradle.tasks.bundling.BootJar
 
 plugins {
     alias(libs.plugins.spring.boot)
+    alias(libs.plugins.spring.nullability)
     alias(libs.plugins.graalvm)
     id("realworld.java-conventions")
 }

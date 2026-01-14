@@ -36,6 +36,7 @@ import com.github.al.realworld.api.query.GetArticlesResult;
 import com.github.al.realworld.api.query.GetCommentsResult;
 import com.github.al.realworld.api.query.GetFeedResult;
 import jakarta.validation.Valid;
+import org.jspecify.annotations.Nullable;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -49,9 +50,9 @@ import org.springframework.web.service.annotation.PutExchange;
 public interface ArticleOperations {
 
     @GetExchange("/articles")
-    GetArticlesResult findByFilters(@RequestParam(required = false) String tag,
-                                    @RequestParam(required = false) String author,
-                                    @RequestParam(required = false) String favorited,
+    GetArticlesResult findByFilters(@RequestParam(required = false) @Nullable String tag,
+                                    @RequestParam(required = false) @Nullable String author,
+                                    @RequestParam(required = false) @Nullable String favorited,
                                     @RequestParam(defaultValue = "20") int limit,
                                     @RequestParam(defaultValue = "0") long offset);
 

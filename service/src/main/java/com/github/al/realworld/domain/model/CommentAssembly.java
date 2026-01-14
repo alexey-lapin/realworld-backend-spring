@@ -34,4 +34,5 @@ public record CommentAssembly(
         String body,
         Profile author
 ) {
+
 }

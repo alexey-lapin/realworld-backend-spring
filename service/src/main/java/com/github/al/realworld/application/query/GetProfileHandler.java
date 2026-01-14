@@ -27,10 +27,10 @@ import com.github.al.realworld.api.dto.ProfileDto;
 import com.github.al.realworld.api.query.GetProfile;
 import com.github.al.realworld.api.query.GetProfileResult;
 import com.github.al.realworld.application.service.AuthenticationService;
+import com.github.al.realworld.application.service.ConversionService;
 import com.github.al.realworld.bus.QueryHandler;
 import com.github.al.realworld.domain.repository.ProfileRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

@@ -27,15 +27,17 @@ import com.github.al.realworld.api.command.UpdateUser;
 import com.github.al.realworld.api.command.UpdateUserResult;
 import com.github.al.realworld.api.dto.UserDto;
 import com.github.al.realworld.application.service.AuthenticationService;
+import com.github.al.realworld.application.service.ConversionService;
 import com.github.al.realworld.application.service.JwtService;
 import com.github.al.realworld.bus.CommandHandler;
 import com.github.al.realworld.domain.model.UserWithToken;
 import com.github.al.realworld.domain.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.core.convert.ConversionService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Objects;
 
 import static com.github.al.realworld.application.exception.BadRequestException.badRequest;
 import static com.github.al.realworld.application.exception.NotFoundException.notFound;
@@ -75,10 +77,15 @@ public class UpdateUserHandler implements CommandHandler<UpdateUserResult, Updat
             throw badRequest("user [email=%s] already exists", newEmail);
         }
 
+        var encodedPassword = userData.password() == null
+                ? user.password()
+                : encoder.encode(userData.password());
+        Objects.requireNonNull(encodedPassword);
+
         var alteredUser = user.toBuilder()
                 .email(newEmail != null ? newEmail : user.email())
                 .username(newUsername != null ? newUsername : user.username())
-                .password(userData.password() != null ? encoder.encode(userData.password()) : user.password())
+                .password(encodedPassword)
                 .bio(userData.bio() != null ? userData.bio() : user.bio())
                 .image(userData.image() != null ? userData.image() : user.image())
                 .build();

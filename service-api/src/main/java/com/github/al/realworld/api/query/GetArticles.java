@@ -24,12 +24,14 @@
 package com.github.al.realworld.api.query;
 
 import com.github.al.realworld.bus.Query;
+import org.jspecify.annotations.Nullable;
 
 public record GetArticles(
-        String tag,
-        String author,
-        String favorited,
+        @Nullable String tag,
+        @Nullable String author,
+        @Nullable String favorited,
         int limit,
         long offset
 ) implements Query<GetArticlesResult> {
+
 }

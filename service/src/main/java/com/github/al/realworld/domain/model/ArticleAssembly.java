@@ -40,4 +40,5 @@ public record ArticleAssembly(
         boolean favorited,
         Profile author
 ) {
+
 }

@@ -28,4 +28,5 @@ import com.github.al.realworld.bus.Command;
 public record UnfavoriteArticle(
         String slug
 ) implements Command<UnfavoriteArticleResult> {
+
 }

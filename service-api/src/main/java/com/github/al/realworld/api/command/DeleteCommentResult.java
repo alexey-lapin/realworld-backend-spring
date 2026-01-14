@@ -24,4 +24,5 @@
 package com.github.al.realworld.api.command;
 
 public record DeleteCommentResult() {
+
 }

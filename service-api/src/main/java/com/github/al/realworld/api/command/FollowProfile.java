@@ -28,4 +28,5 @@ import com.github.al.realworld.bus.Command;
 public record FollowProfile(
         String followee
 ) implements Command<FollowProfileResult> {
+
 }

@@ -30,4 +30,5 @@ public record UserDto(
         String bio,
         String image
 ) {
+
 }

@@ -27,6 +27,7 @@ import com.github.al.realworld.bus.Command;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.With;
+import org.jspecify.annotations.Nullable;
 
 public record UpdateArticle(
         @With
@@ -35,10 +36,11 @@ public record UpdateArticle(
 ) implements Command<UpdateArticleResult> {
 
     public record Data(
-            String title,
-            String description,
-            String body
+            @Nullable String title,
+            @Nullable String description,
+            @Nullable String body
     ) {
+
     }
 
 }

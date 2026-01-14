@@ -23,6 +23,7 @@
  */
 package com.github.al.realworld.infrastructure.db.jdbc;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.data.jdbc.repository.query.Query;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.query.Param;
@@ -52,39 +53,39 @@ public interface ArticleAssemblyJdbcRepository extends Repository<ArticleAssembl
 
     // language=SQL
     String BASE_QUERY = """
-            select ar.*, \
-            """ + FAVORITE_QUERY + """
-            from "v_articles_read" ar \
-            """;
+                                select ar.*, \
+                                """ + FAVORITE_QUERY + """
+                                from "v_articles_read" ar \
+                                """;
 
     // language=SQL
     String LIST_BASE_QUERY = """
-            select ar."id", \
-                   ar."created_at", \
-                   ar."updated_at", \
-                   ar."slug", \
-                   ar."title", \
-                   ar."description", \
-                   null as "body", \
-                   ar."tag_list", \
-                   ar."author_id", \
-                   ar."favorites_count", \
-                   ar."author_username", \
-                   ar."author_bio", \
-                   ar."author_image", \
-            """ + FAVORITE_QUERY + """
-            from "v_articles_read" ar \
-            """;
+                                     select ar."id", \
+                                            ar."created_at", \
+                                            ar."updated_at", \
+                                            ar."slug", \
+                                            ar."title", \
+                                            ar."description", \
+                                            null as "body", \
+                                            ar."tag_list", \
+                                            ar."author_id", \
+                                            ar."favorites_count", \
+                                            ar."author_username", \
+                                            ar."author_bio", \
+                                            ar."author_image", \
+                                     """ + FAVORITE_QUERY + """
+                                     from "v_articles_read" ar \
+                                     """;
 
     @Query(BASE_QUERY + """
             where ar."id" = :id""")
     Optional<ArticleAssemblyJdbcEntity> findById(@Param("id") long id,
-                                                 @Param("currentUserId") Long currentUserId);
+                                                 @Param("currentUserId") @Nullable Long currentUserId);
 
     @Query(BASE_QUERY + """
             where ar."slug" = :slug""")
     Optional<ArticleAssemblyJdbcEntity> findBySlug(@Param("slug") String slug,
-                                                   @Param("currentUserId") Long currentUserId);
+                                                   @Param("currentUserId") @Nullable Long currentUserId);
 
     @Query(LIST_BASE_QUERY + """
             where (:authorId is null or ar."author_id" = :authorId) \
@@ -101,10 +102,10 @@ public interface ArticleAssemblyJdbcRepository extends Repository<ArticleAssembl
             order by ar."created_at" desc \
             limit :limit offset :offset""")
     List<ArticleAssemblyJdbcEntity> findFiltered(
-            @Param("tagId") Long tagId,
-            @Param("authorId") Long authorId,
-            @Param("favoritedById") Long favoritedById,
-            @Param("currentUserId") Long currentUserId,
+            @Param("tagId") @Nullable Long tagId,
+            @Param("authorId") @Nullable Long authorId,
+            @Param("favoritedById") @Nullable Long favoritedById,
+            @Param("currentUserId") @Nullable Long currentUserId,
             @Param("limit") int limit,
             @Param("offset") long offset
     );
@@ -134,9 +135,9 @@ public interface ArticleAssemblyJdbcRepository extends Repository<ArticleAssembl
                            where fv."article_id" = ar."id" \
                              and fv."user_id" = :favoritedById))""")
     long countFiltered(
-            @Param("tagId") Long tagId,
-            @Param("authorId") Long authorId,
-            @Param("favoritedById") Long favoritedById
+            @Param("tagId") @Nullable Long tagId,
+            @Param("authorId") @Nullable Long authorId,
+            @Param("favoritedById") @Nullable Long favoritedById
     );
 
     @Query("""

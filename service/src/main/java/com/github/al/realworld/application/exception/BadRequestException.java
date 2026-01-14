@@ -23,13 +23,15 @@
  */
 package com.github.al.realworld.application.exception;
 
+import org.jspecify.annotations.Nullable;
+
 public final class BadRequestException extends ApplicationException {
 
     public BadRequestException(String message) {
         super(message);
     }
 
-    public static BadRequestException badRequest(String message, Object... args) {
+    public static BadRequestException badRequest(String message, @Nullable Object... args) {
         return new BadRequestException(String.format(message, args));
     }
 

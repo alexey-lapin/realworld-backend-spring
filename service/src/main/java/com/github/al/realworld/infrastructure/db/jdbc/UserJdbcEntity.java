@@ -34,14 +34,15 @@ import java.time.Instant;
 public record UserJdbcEntity(
         @Id
         long id,
+        @CreatedDate
+        Instant createdAt,
+        @LastModifiedDate
+        Instant updatedAt,
         String username,
         String email,
         String password,
         String bio,
-        String image,
-        @CreatedDate
-        Instant createdAt,
-        @LastModifiedDate
-        Instant updatedAt
+        String image
 ) {
+
 }

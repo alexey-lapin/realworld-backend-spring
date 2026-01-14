@@ -29,4 +29,5 @@ import org.springframework.data.relational.core.mapping.Table;
 public record ArticleTagJdbcEntity(
         long tagId
 ) {
+
 }

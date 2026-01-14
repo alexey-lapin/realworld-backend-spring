@@ -47,6 +47,7 @@ import com.github.al.realworld.api.query.GetFeedResult;
 import com.github.al.realworld.bus.Bus;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.Nullable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -58,9 +59,9 @@ public class ArticleController implements ArticleOperations {
     private final Bus bus;
 
     @Override
-    public GetArticlesResult findByFilters(String tag,
-                                           String author,
-                                           String favorited,
+    public GetArticlesResult findByFilters(@Nullable String tag,
+                                           @Nullable String author,
+                                           @Nullable String favorited,
                                            int limit,
                                            long offset) {
         return bus.executeQuery(new GetArticles(tag, author, favorited, limit, offset));

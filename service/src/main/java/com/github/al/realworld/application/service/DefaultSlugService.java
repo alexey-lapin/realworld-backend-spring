@@ -23,14 +23,14 @@
  */
 package com.github.al.realworld.application.service;
 
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import java.text.Normalizer;
 import java.util.Locale;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.regex.Pattern;
 
-@Component
+@Service
 public class DefaultSlugService implements SlugService {
 
     private static final String RANDOM_CHARS = "abcdefghijklmnopqrstuvwxyz0123456789";

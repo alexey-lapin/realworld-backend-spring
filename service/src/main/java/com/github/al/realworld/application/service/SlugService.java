@@ -24,5 +24,7 @@
 package com.github.al.realworld.application.service;
 
 public interface SlugService {
+
     String makeSlug(String input);
+
 }
