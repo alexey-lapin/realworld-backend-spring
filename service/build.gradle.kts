@@ -50,6 +50,7 @@ graalvmNative {
         named("main") {
             imageName.set(rootProject.name)
             buildArgs.add("--verbose")
+            buildArgs.add("-H:DeadlockWatchdogInterval=120")
         }
     }
 }
