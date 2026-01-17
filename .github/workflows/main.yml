@@ -222,6 +222,7 @@ jobs:
   build-docker:
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/')
+    needs: [build-native]
     steps:
       - name: Checkout
         uses: actions/checkout@v6
