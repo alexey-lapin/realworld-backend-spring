@@ -28,10 +28,14 @@ import org.jspecify.annotations.Nullable;
 import org.springframework.aot.hint.MemberCategory;
 import org.springframework.aot.hint.RuntimeHints;
 import org.springframework.aot.hint.RuntimeHintsRegistrar;
+import org.springframework.aot.hint.TypeReference;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportRuntimeHints;
 
-@ImportRuntimeHints(GraalConfig.ServiceApiHints.class)
+@ImportRuntimeHints({
+        GraalConfig.ServiceApiHints.class,
+        GraalConfig.SpringDocActuatorHints.class
+})
 @Configuration(proxyBeanMethods = false)
 public class GraalConfig {
 
@@ -40,6 +44,16 @@ public class GraalConfig {
         @Override
         public void registerHints(RuntimeHints hints, @Nullable ClassLoader classLoader) {
             hints.reflection().registerType(UpdateUser.Data.class, MemberCategory.INVOKE_PUBLIC_METHODS);
+        }
+
+    }
+
+    public static class SpringDocActuatorHints implements RuntimeHintsRegistrar {
+
+        @Override
+        public void registerHints(RuntimeHints hints, @Nullable ClassLoader classLoader) {
+            var type = TypeReference.of("org.springframework.boot.webmvc.actuate.endpoint.web.AbstractWebMvcEndpointHandlerMapping$OperationHandler");
+            hints.reflection().registerType(type, MemberCategory.ACCESS_DECLARED_FIELDS);
         }
 
     }
