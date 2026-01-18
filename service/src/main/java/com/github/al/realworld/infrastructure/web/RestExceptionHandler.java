@@ -43,11 +43,15 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.util.List;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @RestControllerAdvice
 public class RestExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<GenericError> handleException(Exception e) {
+        log.error("Exception occurred", e);
         var message = List.of(e.getMessage());
         if (e instanceof ApplicationException ex) {
             return switch (ex) {
