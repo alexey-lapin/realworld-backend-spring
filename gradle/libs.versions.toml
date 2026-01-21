@@ -14,7 +14,7 @@ springBootDependencies = { group = "org.springframework.boot", name = "spring-bo
 springdoc-openapiStarterWebmvcUi = { group = "org.springdoc", name = "springdoc-openapi-starter-webmvc-ui", version = "3.0.1" }
 
 [plugins]
-graalvm = { id = "org.graalvm.buildtools.native", version = "0.11.3" }
+graalvm = { id = "org.graalvm.buildtools.native", version = "0.11.4" }
 spring-boot = { id = "org.springframework.boot", version.ref = "springBoot" }
 spring-nullability = { id = "io.spring.nullability", version = "0.0.9" }
 versions = { id = "com.github.ben-manes.versions", version = "0.53.0" }
