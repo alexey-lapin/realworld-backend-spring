@@ -20,6 +20,7 @@ dependencies {
     implementation(project(":service-bus"))
     implementation(project(":service-api"))
 
+    implementation(libs.instrumentation.opentelemetryLogbackAppender10)
     implementation(libs.mapstruct.core)
     implementation(libs.mapstruct.springAnnotations)
     implementation(libs.mapstruct.springExtensions)
@@ -27,6 +28,7 @@ dependencies {
     implementation(libs.spring.springBootStarterDataJdbc)
     implementation(libs.spring.springBootStarterLiquibase)
     implementation(libs.spring.springBootStarterOauth2ResourceServer)
+    implementation(libs.spring.springBootStarterOpentelemetry)
     implementation(libs.spring.springBootStarterSecurity)
     implementation(libs.spring.springBootStarterValidation)
     implementation(libs.spring.springBootStarterWebmvc)

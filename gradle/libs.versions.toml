@@ -12,6 +12,7 @@ mapstruct-springAnnotations = { group = "org.mapstruct.extensions.spring", name 
 mapstruct-springExtensions = { group = "org.mapstruct.extensions.spring", name = "mapstruct-spring-extensions", version.ref = "mapstruct-spring" }
 springBootDependencies = { group = "org.springframework.boot", name = "spring-boot-dependencies", version.ref = "springBoot" }
 springdoc-openapiStarterWebmvcUi = { group = "org.springdoc", name = "springdoc-openapi-starter-webmvc-ui", version = "3.0.1" }
+opentelemetryInstrumentationDependencies = { group = "io.opentelemetry.instrumentation", name = "opentelemetry-instrumentation-bom-alpha", version = "2.24.0-alpha" }
 
 [plugins]
 graalvm = { id = "org.graalvm.buildtools.native", version = "0.11.4" }
