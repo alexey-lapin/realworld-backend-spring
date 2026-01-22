@@ -17,7 +17,7 @@ Content-Type: application/json
 }
 
 > {%
-    client.global.set("token", response.body.user.token)
+    client.global.set("token", response.body.user?.token)
 %}
 
 ###
@@ -34,7 +34,7 @@ Content-Type: application/json
 }
 
 > {%
-    client.global.set("token", response.body.user.token)
+    client.global.set("token", response.body.user?.token)
 %}
 
 ###
@@ -50,7 +50,7 @@ Content-Type: application/json
 }
 
 > {%
-    client.global.set("token", response.body.user.token)
+    client.global.set("token", response.body.user?.token)
 %}
 
 ###
@@ -117,7 +117,7 @@ Content-Type: application/json
 }
 
 > {%
-    client.global.set("article_slug", response.body.article.slug)
+    client.global.set("article_slug", response.body.article?.slug)
 %}
 
 ###
