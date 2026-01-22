@@ -16,5 +16,5 @@ springdoc-openapiStarterWebmvcUi = { group = "org.springdoc", name = "springdoc-
 [plugins]
 graalvm = { id = "org.graalvm.buildtools.native", version = "0.11.4" }
 spring-boot = { id = "org.springframework.boot", version.ref = "springBoot" }
-spring-nullability = { id = "io.spring.nullability", version = "0.0.9" }
+spring-nullability = { id = "io.spring.nullability", version = "0.0.10" }
 versions = { id = "com.github.ben-manes.versions", version = "0.53.0" }
