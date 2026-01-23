@@ -1,7 +1,7 @@
 [versions]
 mapstruct = "1.6.3"
 mapstruct-spring = "2.0.0"
-springBoot = "4.0.1"
+springBoot = "4.0.2"
 
 [libraries]
 gradle-plugin-release = { group = "pl.allegro.tech.build", name = "axion-release-plugin", version = "1.21.1" }
