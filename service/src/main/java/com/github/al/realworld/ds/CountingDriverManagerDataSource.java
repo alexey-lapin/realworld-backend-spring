@@ -10,21 +10,21 @@ import java.sql.SQLException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class ExtDriverManagerDataSource extends DriverManagerDataSource {
+public class CountingDriverManagerDataSource extends DriverManagerDataSource {
 
     private final AtomicInteger openedCount = new AtomicInteger();
 
     private final AtomicInteger activeCount = new AtomicInteger();
 
-    public ExtDriverManagerDataSource() {
+    public CountingDriverManagerDataSource() {
         super();
     }
 
-    public ExtDriverManagerDataSource(String url) {
+    public CountingDriverManagerDataSource(String url) {
         super(url);
     }
 
-    public ExtDriverManagerDataSource(String url, String username, String password) {
+    public CountingDriverManagerDataSource(String url, String username, String password) {
         super(url, username, password);
     }
 

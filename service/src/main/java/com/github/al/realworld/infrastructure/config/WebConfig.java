@@ -23,6 +23,9 @@
  */
 package com.github.al.realworld.infrastructure.config;
 
+import com.github.al.realworld.ds.CountingDriverManagerDataSource;
+import com.github.al.realworld.ds.MeteredCountingDriverManagerDataSource;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.springframework.beans.factory.SmartInitializingSingleton;
 import org.springframework.boot.health.registry.HealthContributorRegistry;
 import org.springframework.boot.jdbc.autoconfigure.DataSourceProperties;
@@ -55,16 +58,25 @@ public class WebConfig implements WebMvcConfigurer {
     }
 
     @Bean
-    public DataSource primaryDataSource(DataSourceProperties properties) {
-        properties.initializeDataSourceBuilder().build();
-        return properties.initializeDataSourceBuilder().build();
+    public DataSource primaryDataSource(DataSourceProperties properties, MeterRegistry meterRegistry) {
+        return createMeteredDataSource(properties, meterRegistry, "primary");
     }
 
     @Fallback
     @Bean
-    public DataSource secondaryDataSource(DataSourceProperties properties) {
-        properties.initializeDataSourceBuilder().build();
-        return properties.initializeDataSourceBuilder().build();
+    public DataSource secondaryDataSource(DataSourceProperties properties, MeterRegistry meterRegistry) {
+        return createMeteredDataSource(properties, meterRegistry, "secondary");
+    }
+
+    private DataSource createMeteredDataSource(
+            DataSourceProperties properties,
+            MeterRegistry meterRegistry,
+            String dataSourceName
+    ) {
+        var dataSource = properties.initializeDataSourceBuilder()
+                .type(CountingDriverManagerDataSource.class)
+                .build();
+        return new MeteredCountingDriverManagerDataSource(dataSource, meterRegistry, dataSourceName);
     }
 
 }
