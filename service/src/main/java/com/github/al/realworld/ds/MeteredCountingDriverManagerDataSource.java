@@ -29,11 +29,29 @@ import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tags;
 import org.springframework.jdbc.datasource.DelegatingDataSource;
 
+/**
+ * {@link DelegatingDataSource} that publishes connection counters from
+ * {@link CountingDriverManagerDataSource} to Micrometer.
+ */
 public class MeteredCountingDriverManagerDataSource extends DelegatingDataSource {
 
+    /**
+     * Meter name for the cumulative opened connection count.
+     */
     static final String OPENED_CONNECTIONS_METER_NAME = "realworld.datasource.connections.opened";
+
+    /**
+     * Meter name for the current active connection count.
+     */
     static final String ACTIVE_CONNECTIONS_METER_NAME = "realworld.datasource.connections.active";
 
+    /**
+     * Creates and registers Micrometer meters for connection counters.
+     *
+     * @param dataSource     counting data source that provides counter values
+     * @param meterRegistry  target meter registry
+     * @param dataSourceName value for the {@code datasource} meter tag
+     */
     public MeteredCountingDriverManagerDataSource(
             CountingDriverManagerDataSource dataSource,
             MeterRegistry meterRegistry,

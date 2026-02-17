@@ -8,6 +8,9 @@ import java.lang.invoke.LambdaMetafactory;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 
+/**
+ * Creates {@link ConnectionHolderSetter} instances backed by Spring's internal transaction object API.
+ */
 final class ConnectionHolderSetterFactory {
 
     private static final String TRANSACTION_OBJECT_CLASS_NAME =
@@ -27,6 +30,12 @@ final class ConnectionHolderSetterFactory {
     private ConnectionHolderSetterFactory() {
     }
 
+    /**
+     * Creates a lambda that invokes Spring's internal
+     * {@code DataSourceTransactionObject#setConnectionHolder(ConnectionHolder, boolean)} method.
+     *
+     * @return compiled setter lambda for assigning a connection holder
+     */
     static ConnectionHolderSetter create() {
         try {
             var callerLookup = MethodHandles.lookup();

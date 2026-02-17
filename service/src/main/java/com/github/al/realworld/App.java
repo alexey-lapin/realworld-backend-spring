@@ -26,7 +26,6 @@ package com.github.al.realworld;
 import com.github.al.realworld.ds.ConnectionAwareTransactionDefinition;
 import com.github.al.realworld.ds.DbqTransactionManager;
 import lombok.RequiredArgsConstructor;
-import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -61,12 +60,7 @@ public class App implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         var connection = dataSource.getConnection();
-        var transaction = dbqTransactionManager.getTransaction(new ConnectionAwareTransactionDefinition(connection) {
-            @Override
-            public @Nullable String getName() {
-                return "dbq";
-            }
-        });
+        var transaction = dbqTransactionManager.getTransaction(new ConnectionAwareTransactionDefinition(connection, "dbq"));
         try {
             tran.run();
             dbqTransactionManager.commit(transaction);
