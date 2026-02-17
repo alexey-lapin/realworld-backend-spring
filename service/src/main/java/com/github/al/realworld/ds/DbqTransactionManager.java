@@ -16,9 +16,7 @@ import java.lang.invoke.MethodType;
 
 public class DbqTransactionManager extends JdbcTransactionManager {
 
-//        private static MethodHandle mh;
-
-    private static ConnectionHolderSetter connectionHolderSetter;
+    private static final ConnectionHolderSetter connectionHolderSetter;
 
     static {
         try {
@@ -54,11 +52,11 @@ public class DbqTransactionManager extends JdbcTransactionManager {
             );
 
             CallSite cs = LambdaMetafactory.metafactory(
-                    myLookup, // IMPORTANT: define lambda in *this* class context
+                    springLookup,
                     "accept",
                     MethodType.methodType(ConnectionHolderSetter.class),
                     samType,
-                    impl,              // direct handle from springLookup
+                    impl,
                     instantiatedType
             );
 
@@ -78,7 +76,6 @@ public class DbqTransactionManager extends JdbcTransactionManager {
             if (transaction instanceof JdbcTransactionObjectSupport txObject) {
                 try {
                     var connection = new CloseSuppressingConnectionWrapper(def.getConnection());
-//                        mh.invoke(txObject, new ConnectionHolder(connection), true);
                     connectionHolderSetter.accept(txObject, new ConnectionHolder(connection), true);
                 } catch (Throwable e) {
                     throw new RuntimeException(e);
