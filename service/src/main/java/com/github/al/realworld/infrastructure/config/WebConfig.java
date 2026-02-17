@@ -23,9 +23,16 @@
  */
 package com.github.al.realworld.infrastructure.config;
 
+import org.springframework.beans.factory.SmartInitializingSingleton;
+import org.springframework.boot.health.registry.HealthContributorRegistry;
+import org.springframework.boot.jdbc.autoconfigure.DataSourceProperties;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Fallback;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+import javax.sql.DataSource;
 
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
@@ -34,6 +41,30 @@ public class WebConfig implements WebMvcConfigurer {
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
                 .allowedMethods("HEAD", "GET", "PUT", "POST", "DELETE", "PATCH");
+    }
+
+    @Bean
+    public Object registryCustomizer(HealthContributorRegistry registry) {
+        return new SmartInitializingSingleton() {
+            @Override
+            public void afterSingletonsInstantiated() {
+                System.out.println(registry);
+                registry.unregisterContributor("secondaryDataSource");
+            }
+        };
+    }
+
+    @Bean
+    public DataSource primaryDataSource(DataSourceProperties properties) {
+        properties.initializeDataSourceBuilder().build();
+        return properties.initializeDataSourceBuilder().build();
+    }
+
+    @Fallback
+    @Bean
+    public DataSource secondaryDataSource(DataSourceProperties properties) {
+        properties.initializeDataSourceBuilder().build();
+        return properties.initializeDataSourceBuilder().build();
     }
 
 }
