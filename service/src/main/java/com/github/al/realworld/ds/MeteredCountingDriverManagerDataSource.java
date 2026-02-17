@@ -46,7 +46,7 @@ public class MeteredCountingDriverManagerDataSource extends DelegatingDataSource
         FunctionCounter.builder(
                         OPENED_CONNECTIONS_METER_NAME,
                         dataSource,
-                        CountingDriverManagerDataSource::getOpenedCount
+                        CountingDriverManagerDataSource::getOpenedConnectionCount
                 )
                 .description("Total number of opened JDBC connections")
                 .baseUnit("connections")
@@ -56,7 +56,7 @@ public class MeteredCountingDriverManagerDataSource extends DelegatingDataSource
         Gauge.builder(
                         ACTIVE_CONNECTIONS_METER_NAME,
                         dataSource,
-                        CountingDriverManagerDataSource::getActiveCount
+                        CountingDriverManagerDataSource::getActiveConnectionCount
                 )
                 .description("Current number of active JDBC connections")
                 .baseUnit("connections")

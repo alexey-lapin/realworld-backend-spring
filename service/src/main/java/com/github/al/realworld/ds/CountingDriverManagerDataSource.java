@@ -12,9 +12,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class CountingDriverManagerDataSource extends DriverManagerDataSource {
 
-    private final AtomicInteger openedCount = new AtomicInteger();
+    private final AtomicInteger openedConnectionCount = new AtomicInteger();
 
-    private final AtomicInteger activeCount = new AtomicInteger();
+    private final AtomicInteger activeConnectionCount = new AtomicInteger();
 
     public CountingDriverManagerDataSource() {
         super();
@@ -28,12 +28,12 @@ public class CountingDriverManagerDataSource extends DriverManagerDataSource {
         super(url, username, password);
     }
 
-    public int getOpenedCount() {
-        return openedCount.get();
+    public int getOpenedConnectionCount() {
+        return openedConnectionCount.get();
     }
 
-    public int getActiveCount() {
-        return activeCount.get();
+    public int getActiveConnectionCount() {
+        return activeConnectionCount.get();
     }
 
     @Override
@@ -47,8 +47,8 @@ public class CountingDriverManagerDataSource extends DriverManagerDataSource {
     }
 
     private Connection registerConnection(Connection connection) {
-        openedCount.incrementAndGet();
-        activeCount.incrementAndGet();
+        openedConnectionCount.incrementAndGet();
+        activeConnectionCount.incrementAndGet();
         return new CloseCallbackConnection(connection);
     }
 
@@ -66,7 +66,7 @@ public class CountingDriverManagerDataSource extends DriverManagerDataSource {
                 try {
                     connection.close();
                 } finally {
-                    activeCount.decrementAndGet();
+                    activeConnectionCount.decrementAndGet();
                 }
             }
         }
