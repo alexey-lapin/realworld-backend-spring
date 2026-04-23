@@ -18,6 +18,7 @@ dependencyResolutionManagement {
     versionCatalogs {
         generate("libs") {
             fromToml("springBootDependencies")
+            fromToml("opentelemetryInstrumentationDependencies")
         }
     }
 }
