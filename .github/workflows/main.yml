@@ -34,7 +34,7 @@ jobs:
           java-version: 25
 
       - name: Setup NodeJS
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: 24
 
@@ -100,7 +100,7 @@ jobs:
           native-image-job-reports: 'true'
 
       - name: Setup NodeJS
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: 24
 
