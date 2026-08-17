@@ -39,7 +39,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Objects;
 
-import static com.github.al.realworld.application.exception.BadRequestException.badRequest;
+import static com.github.al.realworld.application.exception.ConflictException.alreadyTaken;
 
 @RequiredArgsConstructor
 @Service
@@ -56,10 +56,10 @@ public class RegisterUserHandler implements CommandHandler<RegisterUserResult, R
         var userData = command.user();
 
         if (userRepository.existsByEmail(userData.email())) {
-            throw badRequest("user [email=%s] already exists", userData.email());
+            throw alreadyTaken("email", "user [email=%s] already exists", userData.email());
         }
         if (userRepository.existsByUsername(userData.username())) {
-            throw badRequest("user [name=%s] already exists", userData.username());
+            throw alreadyTaken("username", "user [name=%s] already exists", userData.username());
         }
 
         var encodedPassword = passwordEncoder.encode(userData.password());

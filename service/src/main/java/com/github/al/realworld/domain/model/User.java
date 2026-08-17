@@ -25,6 +25,7 @@ package com.github.al.realworld.domain.model;
 
 import lombok.Builder;
 import lombok.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.time.Instant;
 
@@ -36,8 +37,8 @@ public record User(
         @NonNull String username,
         @NonNull String email,
         @NonNull String password,
-        String bio,
-        String image
+        @Nullable String bio,
+        @Nullable String image
 ) {
 
 }

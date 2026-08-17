@@ -23,8 +23,9 @@
  */
 package com.github.al.realworld.application.service;
 
-import com.github.al.realworld.application.exception.UnauthorizedException;
 import org.jspecify.annotations.Nullable;
+
+import static com.github.al.realworld.application.exception.UnauthorizedException.missingToken;
 
 public interface AuthenticationService {
 
@@ -33,7 +34,7 @@ public interface AuthenticationService {
     default long getRequiredCurrentUserId() {
         var currentUserId = getCurrentUserId();
         if (currentUserId == null) {
-            throw new UnauthorizedException("current user id is not present");
+            throw missingToken("current user id is not present");
         }
         return currentUserId;
     }
@@ -43,7 +44,7 @@ public interface AuthenticationService {
     default String getRequiredCurrentUserName() {
         var currentUsername = getCurrentUserName();
         if (currentUsername == null) {
-            throw new UnauthorizedException("current user id is not present");
+            throw missingToken("current user id is not present");
         }
         return currentUsername;
     }

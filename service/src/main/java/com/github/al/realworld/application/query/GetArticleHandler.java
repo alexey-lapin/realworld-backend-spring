@@ -50,7 +50,7 @@ public class GetArticleHandler implements QueryHandler<GetArticleResult, GetArti
         var currentUserId = authenticationService.getCurrentUserId();
 
         var articleAssembly = articleRepository.findAssemblyBySlug(currentUserId, query.slug())
-                .orElseThrow(() -> notFound("article [slug=%s] does not exists", query.slug()));
+                .orElseThrow(() -> notFound("article", "article [slug=%s] does not exists", query.slug()));
         var data = conversionService.convert(articleAssembly, ArticleDto.class);
 
         return new GetArticleResult(data);

@@ -23,10 +23,12 @@
  */
 package com.github.al.realworld.domain.model;
 
+import org.jspecify.annotations.Nullable;
+
 public record Profile(
         String username,
-        String bio,
-        String image,
+        @Nullable String bio,
+        @Nullable String image,
         boolean following
 ) {
 

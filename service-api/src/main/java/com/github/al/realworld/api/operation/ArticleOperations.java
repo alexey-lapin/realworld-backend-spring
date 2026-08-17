@@ -71,6 +71,7 @@ public interface ArticleOperations {
     UpdateArticleResult updateBySlug(@PathVariable("slug") String slug,
                                      @Valid @RequestBody UpdateArticle command);
 
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteExchange("/articles/{slug}")
     void deleteBySlug(@PathVariable("slug") String slug);
 
@@ -83,10 +84,12 @@ public interface ArticleOperations {
     @GetExchange("/articles/{slug}/comments")
     GetCommentsResult findAllComments(@PathVariable("slug") String slug);
 
+    @ResponseStatus(HttpStatus.CREATED)
     @PostExchange("/articles/{slug}/comments")
     AddCommentResult addComment(@PathVariable("slug") String slug,
                                 @Valid @RequestBody AddComment data);
 
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteExchange("/articles/{slug}/comments/{id}")
     void deleteComment(@PathVariable("slug") String slug,
                        @PathVariable("id") long id);

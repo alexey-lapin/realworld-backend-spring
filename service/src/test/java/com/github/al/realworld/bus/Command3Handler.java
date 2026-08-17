@@ -32,4 +32,5 @@ public class Command3Handler implements CommandHandler<String, Command3> {
     public String handle(Command3 command) {
         return "command-3-result";
     }
+
 }

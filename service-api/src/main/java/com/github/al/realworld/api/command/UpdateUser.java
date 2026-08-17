@@ -23,32 +23,43 @@
  */
 package com.github.al.realworld.api.command;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.github.al.realworld.api.dto.JsonNullable;
 import com.github.al.realworld.bus.Command;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import org.jspecify.annotations.Nullable;
 
+/**
+ * Partial update of the authenticated user. An absent field leaves the current value unchanged.
+ */
 public record UpdateUser(
         @Valid @NotNull Data user
 ) implements Command<UpdateUserResult> {
 
+    /**
+     * Constraints on the type argument apply to a present field only, so {@code email},
+     * {@code username} and {@code password} reject an explicit null while {@code bio} and
+     * {@code image} accept one.
+     */
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     public record Data(
-            @Email @Nullable String email,
-            @Nullable String username,
-            @Nullable String password,
-            @Nullable String image,
-            @Nullable String bio
+            @Nullable JsonNullable<@NotBlank @Email String> email,
+            @Nullable JsonNullable<@NotBlank String> username,
+            @Nullable JsonNullable<@NotBlank @Size(min = 8, message = "is too short (minimum is 8 characters)") String> password,
+            @Nullable JsonNullable<String> image,
+            @Nullable JsonNullable<String> bio
     ) {
 
-        @AssertTrue(message = "at least one field must be provided")
-        public boolean hasAtLeastOneField() {
-            return email != null
-                   || username != null
-                   || password != null
-                   || image != null
-                   || bio != null;
+        public boolean isEmpty() {
+            return email == null
+                   && username == null
+                   && password == null
+                   && image == null
+                   && bio == null;
         }
 
     }

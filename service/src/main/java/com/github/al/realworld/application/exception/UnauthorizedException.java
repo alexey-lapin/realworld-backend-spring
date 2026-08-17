@@ -27,12 +27,24 @@ import org.jspecify.annotations.Nullable;
 
 public final class UnauthorizedException extends ApplicationException {
 
-    public UnauthorizedException(String message) {
-        super(message);
+    private UnauthorizedException(String field, String error, String detail) {
+        super(field, error, detail);
     }
 
-    public static UnauthorizedException unauthorized(String message, @Nullable Object... args) {
-        return new UnauthorizedException(String.format(message, args));
+    /**
+     * Rejects a sign-in attempt, reporting {@code credentials} as {@code invalid} without
+     * indicating which credential was wrong.
+     */
+    public static UnauthorizedException invalidCredentials(String detail, @Nullable Object... args) {
+        return new UnauthorizedException("credentials", "invalid", String.format(detail, args));
+    }
+
+    public static UnauthorizedException invalidToken(String detail, @Nullable Object... args) {
+        return new UnauthorizedException("token", "is invalid", String.format(detail, args));
+    }
+
+    public static UnauthorizedException missingToken(String detail, @Nullable Object... args) {
+        return new UnauthorizedException("token", "is missing", String.format(detail, args));
     }
 
 }

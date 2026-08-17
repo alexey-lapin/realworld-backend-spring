@@ -58,7 +58,7 @@ public class FollowProfileHandler implements CommandHandler<FollowProfileResult,
         var currentUserId = authenticationService.getRequiredCurrentUserId();
 
         var followee = userRepository.findByUsername(command.followee())
-                .orElseThrow(() -> notFound("user [name=%s] does not exist", command.followee()));
+                .orElseThrow(() -> notFound("profile", "user [name=%s] does not exist", command.followee()));
 
         var followRelation = new FollowRelation(currentUserId, followee.id());
         if (!followRelationRepository.exists(followRelation)) {

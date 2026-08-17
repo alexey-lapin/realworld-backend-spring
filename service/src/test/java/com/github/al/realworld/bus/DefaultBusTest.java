@@ -41,13 +41,17 @@ class DefaultBusTest {
     }
 
     static class TestCommand1 implements Command<String> {
+
     }
 
     @Component
     public static class TestCommand1Handler implements CommandHandler<String, TestCommand1> {
+
         @Override
         public String handle(TestCommand1 command) {
             return "handle-result-1";
         }
+
     }
+
 }

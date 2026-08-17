@@ -53,7 +53,7 @@ public class FavoriteArticleHandler implements CommandHandler<FavoriteArticleRes
         var currentUserId = authenticationService.getRequiredCurrentUserId();
 
         var articleId = articleRepository.findIdBySlug(command.slug())
-                .orElseThrow(() -> notFound("article [slug=%s] does not exist", command.slug()));
+                .orElseThrow(() -> notFound("article", "article [slug=%s] does not exist", command.slug()));
 
         var articleFavorite = new ArticleFavorite(articleId, currentUserId);
         if (!articleFavoriteRepository.exists(articleFavorite)) {

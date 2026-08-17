@@ -23,10 +23,12 @@
  */
 package com.github.al.realworld.api.dto;
 
+import org.jspecify.annotations.Nullable;
+
 public record ProfileDto(
         String username,
-        String bio,
-        String image,
+        @Nullable String bio,
+        @Nullable String image,
         Boolean following
 ) {
 

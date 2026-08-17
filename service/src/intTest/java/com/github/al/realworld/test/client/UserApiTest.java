@@ -26,6 +26,7 @@ package com.github.al.realworld.test.client;
 import com.github.al.realworld.api.command.LoginUser;
 import com.github.al.realworld.api.command.RegisterUser;
 import com.github.al.realworld.api.command.UpdateUser;
+import com.github.al.realworld.api.dto.JsonNullable;
 import com.github.al.realworld.api.operation.UserClient;
 import com.github.al.realworld.domain.repository.UserRepository;
 import com.github.al.realworld.infrastructure.db.jdbc.UserJdbcRepository;
@@ -81,7 +82,7 @@ public class UserApiTest extends BaseClientTest {
         }
 
         @Test
-        void should_throw422_whenRegisterWithExistingEmail() {
+        void should_throw409_whenRegisterWithExistingEmail() {
             var command = registerCommand();
             userClient.register(command);
 
@@ -96,11 +97,11 @@ public class UserApiTest extends BaseClientTest {
                     () -> userClient.register(duplicateEmailCommand)
             );
 
-            assertThat(exception.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_CONTENT);
+            assertThat(exception.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
         }
 
         @Test
-        void should_throw422_whenRegisterWithExistingUsername() {
+        void should_throw409_whenRegisterWithExistingUsername() {
             var command = registerCommand();
             userClient.register(command);
 
@@ -115,7 +116,7 @@ public class UserApiTest extends BaseClientTest {
                     () -> userClient.register(duplicateUsernameCommand)
             );
 
-            assertThat(exception.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_CONTENT);
+            assertThat(exception.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
         }
 
     }
@@ -147,14 +148,14 @@ public class UserApiTest extends BaseClientTest {
         }
 
         @Test
-        void should_return422_whenLoginNonExistentUser() {
+        void should_return401_whenLoginNonExistentUser() {
             var s = UUID.randomUUID().toString();
             var exception = catchThrowableOfType(
                     RestClientResponseException.class,
                     () -> userClient.login(new LoginUser(new LoginUser.Data(s + "@ex.com", s)))
             );
 
-            assertThat(exception.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_CONTENT);
+            assertThat(exception.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
         }
 
     }
@@ -186,7 +187,7 @@ public class UserApiTest extends BaseClientTest {
         }
 
         @Test
-        void should_throw422_whenGetCurrentUser_and_userDoesNotExist() {
+        void should_throw401_whenGetCurrentUser_and_userDoesNotExist() {
             var registeredUser = auth.register().login();
 
             // Delete the user but keep the token active
@@ -198,8 +199,7 @@ public class UserApiTest extends BaseClientTest {
                     () -> userClient.current()
             );
 
-            // GetCurrentUserHandler throws BadRequestException
-            assertThat(exception.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_CONTENT);
+            assertThat(exception.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
         }
 
     }
@@ -211,13 +211,7 @@ public class UserApiTest extends BaseClientTest {
         void should_returnCorrectData_whenUpdateUser() {
             auth.register().login();
 
-            var updateUser = new UpdateUser(new UpdateUser.Data(
-                    ALTERED_EMAIL,
-                    ALTERED_USERNAME,
-                    ALTERED_PASSWORD,
-                    ALTERED_IMAGE,
-                    ALTERED_BIO
-            ));
+            var updateUser = new UpdateUser(new UpdateUser.Data(new JsonNullable<>(ALTERED_EMAIL), new JsonNullable<>(ALTERED_USERNAME), new JsonNullable<>(ALTERED_PASSWORD), new JsonNullable<>(ALTERED_IMAGE), new JsonNullable<>(ALTERED_BIO)));
 
             var user = userClient.update(updateUser).user();
 
@@ -228,54 +222,42 @@ public class UserApiTest extends BaseClientTest {
         }
 
         @Test
-        void should_throw422_whenUpdateUserWithExistingEmail() {
+        void should_throw409_whenUpdateUserWithExistingEmail() {
             var registeredUser = auth.register();
 
             auth.register().login();
 
-            var updateUser = new UpdateUser(new UpdateUser.Data(
-                    registeredUser.getEmail(),
-                    null,
-                    null,
-                    null,
-                    null
-            ));
+            var updateUser = new UpdateUser(new UpdateUser.Data(new JsonNullable<>(registeredUser.getEmail()), null, null, null, null));
 
             var exception = catchThrowableOfType(
                     RestClientResponseException.class,
                     () -> userClient.update(updateUser)
             );
 
-            assertThat(exception.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_CONTENT);
+            assertThat(exception.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
         }
 
         @Test
-        void should_throw422_whenUpdateUserWithExistingName() {
+        void should_throw409_whenUpdateUserWithExistingName() {
             var registeredUser = auth.register();
 
             auth.register().login();
 
-            var updateUser = new UpdateUser(new UpdateUser.Data(
-                    null,
-                    registeredUser.getUsername(),
-                    null,
-                    null,
-                    null
-            ));
+            var updateUser = new UpdateUser(new UpdateUser.Data(null, new JsonNullable<>(registeredUser.getUsername()), null, null, null));
 
             var exception = catchThrowableOfType(
                     RestClientResponseException.class,
                     () -> userClient.update(updateUser)
             );
 
-            assertThat(exception.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_CONTENT);
+            assertThat(exception.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
         }
 
         @Test
         void should_updateOnlyBio() {
             auth.register().login();
 
-            var updateUser = new UpdateUser(new UpdateUser.Data(null, null, null, null, ALTERED_BIO));
+            var updateUser = new UpdateUser(new UpdateUser.Data(null, null, null, null, new JsonNullable<>(ALTERED_BIO)));
             var user = userClient.update(updateUser).user();
 
             assertThat(user.bio()).isEqualTo(ALTERED_BIO);
@@ -296,24 +278,21 @@ public class UserApiTest extends BaseClientTest {
         }
 
         @Test
-        void should_throw404_whenUpdateUser_and_userDoesNotExist() {
+        void should_throw401_whenUpdateUser_and_userDoesNotExist() {
             var registeredUser = auth.register().login();
 
             // Delete the user but keep the token active
             userRepository.findByEmail(registeredUser.getEmail())
                     .ifPresent(user -> userJdbcRepository.deleteById(user.id()));
 
-            var updateUser = new UpdateUser(new UpdateUser.Data(
-                    null, null, null, null, ALTERED_BIO
-            ));
+            var updateUser = new UpdateUser(new UpdateUser.Data(null, null, null, null, new JsonNullable<>(ALTERED_BIO)));
 
             var exception = catchThrowableOfType(
                     RestClientResponseException.class,
                     () -> userClient.update(updateUser)
             );
 
-            // UpdateUserHandler throws NotFoundException
-            assertThat(exception.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+            assertThat(exception.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
         }
 
     }

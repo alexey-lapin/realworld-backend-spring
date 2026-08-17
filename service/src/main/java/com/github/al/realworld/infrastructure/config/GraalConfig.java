@@ -44,6 +44,7 @@ public class GraalConfig {
         @Override
         public void registerHints(RuntimeHints hints, @Nullable ClassLoader classLoader) {
             hints.reflection().registerType(UpdateUser.Data.class, MemberCategory.INVOKE_PUBLIC_METHODS);
+            hints.resources().registerResourceBundle("ValidationMessages");
         }
 
     }

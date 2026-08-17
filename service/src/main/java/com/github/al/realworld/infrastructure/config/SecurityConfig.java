@@ -23,6 +23,7 @@
  */
 package com.github.al.realworld.infrastructure.config;
 
+import com.github.al.realworld.infrastructure.web.ApiAuthenticationEntryPoint;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.gen.RSAKeyGenerator;
 import jakarta.servlet.http.HttpServletRequest;
@@ -37,7 +38,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -55,7 +55,6 @@ import org.springframework.security.oauth2.server.resource.BearerTokenError;
 import org.springframework.security.oauth2.server.resource.BearerTokenErrors;
 import org.springframework.security.oauth2.server.resource.web.BearerTokenResolver;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -66,7 +65,9 @@ import java.util.regex.Pattern;
 public class SecurityConfig {
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http,
+                                                   ApiAuthenticationEntryPoint authenticationEntryPoint)
+            throws Exception {
         http
                 .authorizeHttpRequests(requests ->
                         requests.requestMatchers("/h2-console", "/h2-console/**").permitAll())
@@ -75,9 +76,11 @@ public class SecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(Customizer.withDefaults())
-                .exceptionHandling(configurer -> configurer.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
+                .exceptionHandling(configurer -> configurer.authenticationEntryPoint(authenticationEntryPoint))
                 .sessionManagement(configurer -> configurer.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .oauth2ResourceServer(configurer -> configurer.jwt(Customizer.withDefaults()))
+                .oauth2ResourceServer(configurer -> configurer
+                        .authenticationEntryPoint(authenticationEntryPoint)
+                        .jwt(Customizer.withDefaults()))
                 .authorizeHttpRequests(configurer -> {
                     configurer.requestMatchers(EndpointRequest.to(
                                     HealthEndpoint.class,

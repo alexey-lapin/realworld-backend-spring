@@ -28,6 +28,7 @@ import com.github.al.realworld.api.command.CreateArticle;
 import com.github.al.realworld.api.command.UpdateArticle;
 import com.github.al.realworld.api.dto.ArticleItemDto;
 import com.github.al.realworld.api.dto.GenericError;
+import com.github.al.realworld.api.dto.JsonNullable;
 import com.github.al.realworld.api.operation.ArticleClient;
 import com.github.al.realworld.api.operation.ProfileClient;
 import com.github.al.realworld.api.operation.TagClient;
@@ -41,6 +42,7 @@ import org.springframework.web.client.RestClientResponseException;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.Executors;
+import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.stream.IntStream;
 
@@ -115,9 +117,7 @@ public class ArticleApiTest extends BaseClientTest {
 
             var error = exception.getResponseBodyAs(GenericError.class);
             assertThat(error).isNotNull();
-            assertThat(error.errors()).isNotNull();
-            assertThat(error.errors().body()).hasSize(1);
-            assertThat(error.errors().body().getFirst()).isNotBlank();
+            assertThat(error.errors()).containsExactly(Map.entry("article", List.of("not found")));
         }
 
         @Test
@@ -126,11 +126,7 @@ public class ArticleApiTest extends BaseClientTest {
 
             var created = articleClient.create(createArticleCommand()).article();
 
-            var updateCommand = new UpdateArticle(null, new UpdateArticle.Data(
-                    ALTERED_TITLE,
-                    ALTERED_DESCRIPTION,
-                    ALTERED_BODY
-            ));
+            var updateCommand = new UpdateArticle(null, new UpdateArticle.Data(new JsonNullable<>(ALTERED_TITLE), new JsonNullable<>(ALTERED_DESCRIPTION), new JsonNullable<>(ALTERED_BODY), null));
 
             var updated = articleClient.updateBySlug(created.slug(), updateCommand).article();
 
@@ -146,7 +142,7 @@ public class ArticleApiTest extends BaseClientTest {
             var created = articleClient.create(createArticleCommand()).article();
 
             auth.register().login();
-            var updateCommand = new UpdateArticle(null, new UpdateArticle.Data(ALTERED_TITLE, null, null));
+            var updateCommand = new UpdateArticle(null, new UpdateArticle.Data(new JsonNullable<>(ALTERED_TITLE), null, null, null));
 
             var exception = catchThrowableOfType(
                     RestClientResponseException.class,
@@ -159,7 +155,7 @@ public class ArticleApiTest extends BaseClientTest {
         @Test
         void should_throw404_when_updateDoesNotExist() {
             auth.register().login();
-            var updateCommand = new UpdateArticle(null, new UpdateArticle.Data(ALTERED_TITLE, null, null));
+            var updateCommand = new UpdateArticle(null, new UpdateArticle.Data(new JsonNullable<>(ALTERED_TITLE), null, null, null));
 
             var exception = catchThrowableOfType(
                     RestClientResponseException.class,
@@ -174,7 +170,7 @@ public class ArticleApiTest extends BaseClientTest {
             auth.register().login();
             var created = articleClient.create(createArticleCommand()).article();
 
-            var updateCommand = new UpdateArticle(null, new UpdateArticle.Data(ALTERED_TITLE, null, null));
+            var updateCommand = new UpdateArticle(null, new UpdateArticle.Data(new JsonNullable<>(ALTERED_TITLE), null, null, null));
             var updated = articleClient.updateBySlug(created.slug(), updateCommand).article();
 
             assertThat(updated.title()).isEqualTo(ALTERED_TITLE);
@@ -187,7 +183,7 @@ public class ArticleApiTest extends BaseClientTest {
             auth.register().login();
             var created = articleClient.create(createArticleCommand()).article();
 
-            var updateCommand = new UpdateArticle(null, new UpdateArticle.Data(null, ALTERED_DESCRIPTION, null));
+            var updateCommand = new UpdateArticle(null, new UpdateArticle.Data(null, new JsonNullable<>(ALTERED_DESCRIPTION), null, null));
             var updated = articleClient.updateBySlug(created.slug(), updateCommand).article();
 
             assertThat(updated.title()).isEqualTo(created.title());
@@ -200,7 +196,7 @@ public class ArticleApiTest extends BaseClientTest {
             auth.register().login();
             var created = articleClient.create(createArticleCommand()).article();
 
-            var updateCommand = new UpdateArticle(null, new UpdateArticle.Data(null, null, ALTERED_BODY));
+            var updateCommand = new UpdateArticle(null, new UpdateArticle.Data(null, null, new JsonNullable<>(ALTERED_BODY), null));
             var updated = articleClient.updateBySlug(created.slug(), updateCommand).article();
 
             assertThat(updated.title()).isEqualTo(created.title());

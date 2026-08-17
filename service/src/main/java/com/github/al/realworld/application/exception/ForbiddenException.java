@@ -27,12 +27,12 @@ import org.jspecify.annotations.Nullable;
 
 public final class ForbiddenException extends ApplicationException {
 
-    public ForbiddenException(String message) {
-        super(message);
+    private ForbiddenException(String field, String detail) {
+        super(field, "forbidden", detail);
     }
 
-    public static ForbiddenException forbidden(String message, @Nullable Object... args) {
-        return new ForbiddenException(String.format(message, args));
+    public static ForbiddenException forbidden(String field, String detail, @Nullable Object... args) {
+        return new ForbiddenException(field, String.format(detail, args));
     }
 
 }

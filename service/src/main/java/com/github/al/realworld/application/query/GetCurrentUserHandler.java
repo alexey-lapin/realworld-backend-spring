@@ -36,7 +36,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import static com.github.al.realworld.application.exception.BadRequestException.badRequest;
+import static com.github.al.realworld.application.exception.UnauthorizedException.invalidToken;
 
 @RequiredArgsConstructor
 @Component
@@ -53,7 +53,7 @@ public class GetCurrentUserHandler implements QueryHandler<GetCurrentUserResult,
         var currentUserId = authenticationService.getRequiredCurrentUserId();
 
         var user = userRepository.findById(currentUserId)
-                .orElseThrow(() -> badRequest("user [name=%s] does not exist",
+                .orElseThrow(() -> invalidToken("user [name=%s] does not exist",
                         authenticationService.getCurrentUserName()));
 
         var token = jwtService.getToken(user);

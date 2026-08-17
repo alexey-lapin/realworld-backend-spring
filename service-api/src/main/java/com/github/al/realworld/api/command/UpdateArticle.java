@@ -23,22 +23,37 @@
  */
 package com.github.al.realworld.api.command;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.github.al.realworld.api.dto.JsonNullable;
 import com.github.al.realworld.bus.Command;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.With;
 import org.jspecify.annotations.Nullable;
 
+import java.util.List;
+
+/**
+ * Partial update of an article. An absent field leaves the current value unchanged; an empty
+ * {@code tagList} removes all tags.
+ */
 public record UpdateArticle(
         @With
         String slug,
         @Valid @NotNull Data article
 ) implements Command<UpdateArticleResult> {
 
+    /**
+     * Constraints on the type argument apply to a present field only, so each field rejects an
+     * explicit null.
+     */
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     public record Data(
-            @Nullable String title,
-            @Nullable String description,
-            @Nullable String body
+            @Nullable JsonNullable<@NotBlank String> title,
+            @Nullable JsonNullable<@NotBlank String> description,
+            @Nullable JsonNullable<@NotBlank String> body,
+            @Nullable JsonNullable<@NotNull List<String>> tagList
     ) {
 
     }
