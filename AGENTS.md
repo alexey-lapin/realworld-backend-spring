@@ -73,6 +73,30 @@ Aggregated coverage report:
 ./gradlew jacocoReport
 ```
 
+RealWorld API spec compliance (gating in CI, and the thing to run after any
+change to controllers, DTOs, error handling or status codes — `./gradlew check`
+does not cover it):
+
+```bash
+# One-time checkout of the upstream spec into .realworld-spec (gitignored):
+git clone --filter=blob:none --sparse https://github.com/realworld-apps/realworld .realworld-spec
+git -C .realworld-spec sparse-checkout set specs/api
+
+# Pin it to the same revision CI uses, then run the suite against a live app:
+SPEC_REF=$(grep -E '^  SPEC_REF:' .github/workflows/main.yml | awk '{print $2}')
+git -C .realworld-spec fetch origin && git -C .realworld-spec checkout --detach "$SPEC_REF"
+
+./gradlew :service:bootJar
+java -jar service/build/libs/realworld-backend-spring*.jar &
+hurl --test --jobs 1 \
+  --variable host=http://localhost:8080 \
+  --variable uid=$(date +%s) \
+  .realworld-spec/specs/api/hurl/*.hurl
+```
+
+`host` is the origin without `/api`; the `.hurl` files add the prefix. Always run
+the pinned `SPEC_REF` — an older checkout enforces rules upstream has dropped.
+
 ### Run a single test
 
 Use Gradle `--tests` to target a class or method.
@@ -153,6 +177,9 @@ Tip: prefix with `:service:` when iterating locally to avoid running all modules
 - Integration tests live in `service/src/intTest/java` and run via `integrationTest`.
 - Keep test data small and focus on behavior; follow existing naming patterns
   within the same test class.
+- The upstream hurl suite pins the public contract: error envelope shape, status
+  codes and field-level error keys. Changing any of those means running it, since
+  no Gradle task does.
 
 ## When editing
 

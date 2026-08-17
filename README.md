@@ -73,8 +73,7 @@ The project features a comprehensive automated pipeline:
 - Multi-platform builds: JVM JAR + native executables for 4 platforms
 - Automated testing with JUnit and integration tests
 - RealWorld spec compliance verification
-  via [Postman collection](https://github.com/gothinkster/realworld/blob/master/api/Conduit.postman_collection.json)
-  with newman
+  via the upstream [hurl collection](https://github.com/realworld-apps/realworld/tree/main/specs/api)
 - Code coverage tracking with [Codecov](https://codecov.io/gh/alexey-lapin/realworld-backend-spring)
 - Docker image building and publishing
   to [GitHub Container Registry](https://github.com/alexey-lapin/realworld-backend-spring/pkgs/container/realworld-backend-spring)
@@ -154,15 +153,50 @@ testing:
 # Run integration tests
 ./gradlew integrationTest
 
-# Build and run newman tests
+# Verify against the RealWorld API spec (needs https://hurl.dev installed).
+# The spec lives upstream; check it out into .realworld-spec, the same path CI
+# uses. The revision is read from the workflow rather than repeated here, so a
+# local run and a CI run cannot drift onto different specs.
+SPEC_REF=$(grep -E '^  SPEC_REF:' .github/workflows/main.yml | awk '{print $2}')
+
+# First time only:
+git clone --filter=blob:none --sparse https://github.com/realworld-apps/realworld .realworld-spec
+git -C .realworld-spec sparse-checkout set specs/api
+
+# Before each run (also refreshes an existing checkout):
+git -C .realworld-spec fetch origin && git -C .realworld-spec checkout --detach "$SPEC_REF"
+
 ./gradlew build
+java -jar service/build/libs/realworld-backend-spring*.jar &
+hurl --test --jobs 1 \
+  --variable host=http://localhost:8080 \
+  --variable uid=$(date +%s) \
+  .realworld-spec/specs/api/hurl/*.hurl
 ```
+
+`.realworld-spec` is a foreign clone with its own `.git`, so it is gitignored
+and excluded from the Docker build context. It is about 2 MB.
+
+Two things worth knowing:
+
+- `host` is the origin **without** `/api` — the `.hurl` files append the prefix
+  themselves. Upstream's own README example gets this wrong.
+- **Check out `SPEC_REF`, don't just run whatever the checkout happens to be on.**
+  The spec is a moving target and its requirements change: duplicate article
+  titles once had to return `409`, and now must be accepted with distinct slugs.
+  A stale copy fails locally on rules CI no longer enforces, which looks like a
+  bug in this service and isn't. To move to a newer spec, bump `SPEC_REF` in
+  `.github/workflows/main.yml` deliberately and fix whatever it turns red.
+
+A Bruno collection generated from the same files is available upstream if you
+prefer to explore the requests interactively; the hurl files are the source of
+truth and are what CI runs.
 
 Test suite includes:
 
 - Unit tests for business logic and handlers
 - Integration tests using Spring's declarative HTTP clients
-- RealWorld Postman collection validation
+- RealWorld API spec validation with [hurl](https://hurl.dev)
 - Code coverage reporting via JaCoCo and Codecov
 
 ### Manual API Testing
