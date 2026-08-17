@@ -1,6 +1,7 @@
 Thumbs.db
 .DS_Store
 .gradle
+.kotlin
 build/
 target/
 out/
@@ -11,3 +12,6 @@ out/
 .project
 .settings
 .classpath
+
+# RealWorld API spec checkout
+.realworld-spec/
