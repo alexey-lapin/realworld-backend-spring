@@ -36,8 +36,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import static com.github.al.realworld.application.exception.BadRequestException.badRequest;
-import static com.github.al.realworld.application.exception.UnauthorizedException.unauthorized;
+import static com.github.al.realworld.application.exception.UnauthorizedException.invalidCredentials;
 
 @RequiredArgsConstructor
 @Service
@@ -54,10 +53,10 @@ public class LoginUserHandler implements CommandHandler<LoginUserResult, LoginUs
         var userData = command.user();
 
         var user = userRepository.findByEmail(userData.email())
-                .orElseThrow(() -> badRequest("user [email=%s] does not exist", userData.email()));
+                .orElseThrow(() -> invalidCredentials("user [email=%s] does not exist", userData.email()));
 
         if (!passwordEncoder.matches(userData.password(), user.password())) {
-            throw unauthorized("user [email=%s] password is incorrect", userData.email());
+            throw invalidCredentials("user [email=%s] password is incorrect", userData.email());
         }
 
         var token = jwtService.getToken(user);

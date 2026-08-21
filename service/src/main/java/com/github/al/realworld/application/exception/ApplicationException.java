@@ -23,11 +23,31 @@
  */
 package com.github.al.realworld.application.exception;
 
+/**
+ * Base class for errors rendered as an error envelope.
+ *
+ * <p>Carries the response field and message reported to the client, alongside the exception
+ * message, which is retained for logging only.
+ */
 public sealed abstract class ApplicationException extends RuntimeException
-        permits BadRequestException, ForbiddenException, NotFoundException, UnauthorizedException {
+        permits BadRequestException, ConflictException, ForbiddenException, NotFoundException,
+        UnauthorizedException {
 
-    public ApplicationException(String message) {
-        super(message);
+    private final String field;
+    private final String error;
+
+    protected ApplicationException(String field, String error, String detail) {
+        super(detail);
+        this.field = field;
+        this.error = error;
+    }
+
+    public String field() {
+        return field;
+    }
+
+    public String error() {
+        return error;
     }
 
 }

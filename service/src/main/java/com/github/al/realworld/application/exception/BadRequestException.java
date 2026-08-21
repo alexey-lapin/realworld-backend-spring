@@ -27,12 +27,13 @@ import org.jspecify.annotations.Nullable;
 
 public final class BadRequestException extends ApplicationException {
 
-    public BadRequestException(String message) {
-        super(message);
+    private BadRequestException(String field, String error, String detail) {
+        super(field, error, detail);
     }
 
-    public static BadRequestException badRequest(String message, @Nullable Object... args) {
-        return new BadRequestException(String.format(message, args));
+    public static BadRequestException badRequest(String field, String error, String detail,
+                                                 @Nullable Object... args) {
+        return new BadRequestException(field, error, String.format(detail, args));
     }
 
 }

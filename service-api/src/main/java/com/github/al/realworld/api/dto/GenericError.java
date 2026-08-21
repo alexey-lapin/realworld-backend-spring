@@ -23,16 +23,31 @@
  */
 package com.github.al.realworld.api.dto;
 
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
+/**
+ * The error response envelope, mapping each field at fault to its messages.
+ */
 public record GenericError(
-        Errors errors
+        Map<String, List<String>> errors
 ) {
 
-    public record Errors(
-            List<String> body
-    ) {
+    public static GenericError of(String field, String message) {
+        return new GenericError(Map.of(field, List.of(message)));
+    }
 
+    /**
+     * Groups {@code field} to {@code message} pairs, preserving encounter order and merging
+     * repeated fields into a single list.
+     */
+    public static GenericError ofPairs(List<Map.Entry<String, String>> pairs) {
+        Map<String, List<String>> grouped = new LinkedHashMap<>();
+        for (var pair : pairs) {
+            grouped.computeIfAbsent(pair.getKey(), _ -> new java.util.ArrayList<>()).add(pair.getValue());
+        }
+        return new GenericError(Map.copyOf(grouped));
     }
 
 }

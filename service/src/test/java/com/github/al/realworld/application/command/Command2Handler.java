@@ -33,4 +33,5 @@ public class Command2Handler implements CommandHandler<String, Command2> {
     public String handle(Command2 command) {
         return null;
     }
+
 }

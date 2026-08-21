@@ -53,7 +53,7 @@ public class AddCommentHandler implements CommandHandler<AddCommentResult, AddCo
         var currentUserId = authenticationService.getRequiredCurrentUserId();
 
         var articleId = articleRepository.findIdBySlug(command.slug())
-                .orElseThrow(() -> notFound("article [slug=%s] does not exist", command.slug()));
+                .orElseThrow(() -> notFound("article", "article [slug=%s] does not exist", command.slug()));
 
         var comment = Comment.builder()
                 .articleId(articleId)

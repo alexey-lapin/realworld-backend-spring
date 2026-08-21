@@ -25,6 +25,7 @@ package com.github.al.realworld.application.command;
 
 import com.github.al.realworld.api.command.UpdateUser;
 import com.github.al.realworld.api.command.UpdateUserResult;
+import com.github.al.realworld.api.dto.JsonNullable;
 import com.github.al.realworld.api.dto.UserDto;
 import com.github.al.realworld.application.service.AuthenticationService;
 import com.github.al.realworld.application.service.ConversionService;
@@ -33,14 +34,18 @@ import com.github.al.realworld.bus.CommandHandler;
 import com.github.al.realworld.domain.model.UserWithToken;
 import com.github.al.realworld.domain.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.Nullable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Objects;
 
+import static com.github.al.realworld.api.dto.JsonNullable.unwrap;
 import static com.github.al.realworld.application.exception.BadRequestException.badRequest;
-import static com.github.al.realworld.application.exception.NotFoundException.notFound;
+import static com.github.al.realworld.application.exception.ConflictException.alreadyTaken;
+import static com.github.al.realworld.application.exception.UnauthorizedException.invalidToken;
+import static java.util.Objects.requireNonNullElse;
 
 @RequiredArgsConstructor
 @Service
@@ -58,36 +63,38 @@ public class UpdateUserHandler implements CommandHandler<UpdateUserResult, Updat
         var currentUserId = authenticationService.getRequiredCurrentUserId();
 
         var user = userRepository.findById(currentUserId)
-                .orElseThrow(() -> notFound("user [name=%s] does not exist",
+                .orElseThrow(() -> invalidToken("user [name=%s] does not exist",
                         authenticationService.getCurrentUserName()));
 
         var userData = command.user();
+        if (userData.isEmpty()) {
+            throw badRequest("body", "can't be empty", "update payload contains no fields");
+        }
 
-        var newUsername = userData.username();
+        var newUsername = unwrap(userData.username());
         if (newUsername != null
             && !newUsername.equals(user.username())
             && userRepository.existsByUsername(newUsername)) {
-            throw badRequest("user [name=%s] already exists", newUsername);
+            throw alreadyTaken("username", "user [name=%s] already exists", newUsername);
         }
 
-        var newEmail = userData.email();
+        var newEmail = unwrap(userData.email());
         if (newEmail != null
             && !newEmail.equals(user.email())
             && userRepository.existsByEmail(newEmail)) {
-            throw badRequest("user [email=%s] already exists", newEmail);
+            throw alreadyTaken("email", "user [email=%s] already exists", newEmail);
         }
 
-        var encodedPassword = userData.password() == null
-                ? user.password()
-                : encoder.encode(userData.password());
+        var newPassword = unwrap(userData.password());
+        var encodedPassword = newPassword == null ? user.password() : encoder.encode(newPassword);
         Objects.requireNonNull(encodedPassword);
 
         var alteredUser = user.toBuilder()
-                .email(newEmail != null ? newEmail : user.email())
-                .username(newUsername != null ? newUsername : user.username())
+                .email(requireNonNullElse(newEmail, user.email()))
+                .username(requireNonNullElse(newUsername, user.username()))
                 .password(encodedPassword)
-                .bio(userData.bio() != null ? userData.bio() : user.bio())
-                .image(userData.image() != null ? userData.image() : user.image())
+                .bio(normalized(userData.bio(), user.bio()))
+                .image(normalized(userData.image(), user.image()))
                 .build();
 
         var savedUser = userRepository.save(alteredUser);
@@ -96,6 +103,19 @@ public class UpdateUserHandler implements CommandHandler<UpdateUserResult, Updat
         var data = conversionService.convert(new UserWithToken(savedUser, token), UserDto.class);
 
         return new UpdateUserResult(data);
+    }
+
+    /**
+     * Returns the new value of a nullable field, treating an empty string as {@code null} and an
+     * absent field as {@code current}.
+     */
+    private static @Nullable String normalized(@Nullable JsonNullable<String> field,
+                                               @Nullable String current) {
+        if (field == null) {
+            return current;
+        }
+        var value = field.value();
+        return value == null || value.isEmpty() ? null : value;
     }
 
 }

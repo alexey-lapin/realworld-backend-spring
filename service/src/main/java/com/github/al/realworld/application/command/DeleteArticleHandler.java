@@ -52,10 +52,10 @@ public class DeleteArticleHandler implements CommandHandler<DeleteArticleResult,
         var currentUserId = authenticationService.getRequiredCurrentUserId();
 
         var article = articleRepository.findBySlug(command.slug())
-                .orElseThrow(() -> notFound("article [slug=%s] does not exist", command.slug()));
+                .orElseThrow(() -> notFound("article", "article [slug=%s] does not exist", command.slug()));
 
         if (article.authorId() != currentUserId) {
-            throw forbidden("article [slug=%s] is not owned by %s", command.slug(),
+            throw forbidden("article", "article [slug=%s] is not owned by %s", command.slug(),
                     authenticationService.getCurrentUserName());
         }
 

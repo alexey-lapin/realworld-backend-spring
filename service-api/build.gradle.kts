@@ -12,4 +12,8 @@ dependencies {
     implementation(libs.jackson.jacksonAnnotations)
     implementation(libs.jakarta.jakartaValidationApi)
     implementation(libs.spring.springWeb)
+
+    testImplementation(libs.spring.springBootStarterTest)
+    testImplementation(libs.spring.springBootStarterValidation)
+    testRuntimeOnly(libs.junit.junitPlatformLauncher)
 }

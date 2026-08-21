@@ -27,12 +27,12 @@ import org.jspecify.annotations.Nullable;
 
 public final class NotFoundException extends ApplicationException {
 
-    public NotFoundException(String message) {
-        super(message);
+    private NotFoundException(String field, String detail) {
+        super(field, "not found", detail);
     }
 
-    public static NotFoundException notFound(String message, @Nullable Object... args) {
-        return new NotFoundException(String.format(message, args));
+    public static NotFoundException notFound(String field, String detail, @Nullable Object... args) {
+        return new NotFoundException(field, String.format(detail, args));
     }
 
 }

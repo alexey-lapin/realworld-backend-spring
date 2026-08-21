@@ -27,6 +27,7 @@ import com.github.al.realworld.api.command.DeleteComment;
 import com.github.al.realworld.api.command.DeleteCommentResult;
 import com.github.al.realworld.application.service.AuthenticationService;
 import com.github.al.realworld.bus.CommandHandler;
+import com.github.al.realworld.domain.repository.ArticleRepository;
 import com.github.al.realworld.domain.repository.CommentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -40,6 +41,7 @@ import static com.github.al.realworld.application.exception.NotFoundException.no
 public class DeleteCommentHandler implements CommandHandler<DeleteCommentResult, DeleteComment> {
 
     private final AuthenticationService authenticationService;
+    private final ArticleRepository articleRepository;
     private final CommentRepository commentRepository;
 
     @Transactional
@@ -47,11 +49,15 @@ public class DeleteCommentHandler implements CommandHandler<DeleteCommentResult,
     public DeleteCommentResult handle(DeleteComment command) {
         var currentUserId = authenticationService.getRequiredCurrentUserId();
 
+        if (articleRepository.findBySlug(command.slug()).isEmpty()) {
+            throw notFound("article", "article [slug=%s] does not exist", command.slug());
+        }
+
         var comment = commentRepository.findById(command.id())
-                .orElseThrow(() -> notFound("comment [id=%s] does not exist", command.id()));
+                .orElseThrow(() -> notFound("comment", "comment [id=%s] does not exist", command.id()));
 
         if (comment.authorId() != currentUserId) {
-            throw forbidden("comment [id=%s] is not owned by %s", comment.id(),
+            throw forbidden("comment", "comment [id=%s] is not owned by %s", comment.id(),
                     authenticationService.getCurrentUserName());
         }
 

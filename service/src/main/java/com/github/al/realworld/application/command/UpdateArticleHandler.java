@@ -30,13 +30,19 @@ import com.github.al.realworld.application.service.AuthenticationService;
 import com.github.al.realworld.application.service.ConversionService;
 import com.github.al.realworld.application.service.SlugService;
 import com.github.al.realworld.bus.CommandHandler;
+import com.github.al.realworld.domain.model.Tag;
 import com.github.al.realworld.domain.repository.ArticleRepository;
+import com.github.al.realworld.domain.repository.TagRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
+import static com.github.al.realworld.api.dto.JsonNullable.unwrap;
 import static com.github.al.realworld.application.exception.ForbiddenException.forbidden;
 import static com.github.al.realworld.application.exception.NotFoundException.notFound;
+import static java.util.Objects.requireNonNullElse;
 
 @RequiredArgsConstructor
 @Service
@@ -44,6 +50,7 @@ public class UpdateArticleHandler implements CommandHandler<UpdateArticleResult,
 
     private final AuthenticationService authenticationService;
     private final ArticleRepository articleRepository;
+    private final TagRepository tagRepository;
     private final SlugService slugService;
     private final ConversionService conversionService;
 
@@ -54,27 +61,43 @@ public class UpdateArticleHandler implements CommandHandler<UpdateArticleResult,
         var articleData = command.article();
 
         var article = articleRepository.findBySlug(command.slug())
-                .orElseThrow(() -> notFound("article [slug=%s] does not exist", command.slug()));
+                .orElseThrow(() -> notFound("article", "article [slug=%s] does not exist", command.slug()));
 
         if (article.authorId() != currentUserId) {
-            throw forbidden("article [slug=%s] is not owned by %s",
+            throw forbidden("article", "article [slug=%s] is not owned by %s",
                     command.slug(), authenticationService.getCurrentUserName());
         }
 
-        var newTitle = articleData.title();
-        var alteredArticle = article.toBuilder()
-                .slug(newTitle != null ? slugService.makeSlug(newTitle) : article.slug())
-                .title(newTitle != null ? newTitle : article.title())
-                .description(articleData.description() != null ? articleData.description() : article.description())
-                .body(articleData.body() != null ? articleData.body() : article.body())
-                .build();
+        var newTitle = unwrap(articleData.title());
+        var newDescription = unwrap(articleData.description());
+        var newBody = unwrap(articleData.body());
+        var newTagNames = unwrap(articleData.tagList());
 
-        articleRepository.save(alteredArticle);
+        var builder = article.toBuilder()
+                .slug(newTitle == null ? article.slug() : slugService.makeSlug(newTitle))
+                .title(requireNonNullElse(newTitle, article.title()))
+                .description(requireNonNullElse(newDescription, article.description()))
+                .body(requireNonNullElse(newBody, article.body()));
+
+        if (newTagNames != null) {
+            builder.clearTags().tags(resolveTags(newTagNames));
+        }
+
+        articleRepository.save(builder.build());
 
         var articleAssembly = articleRepository.findAssemblyById(currentUserId, article.id()).orElseThrow();
         var data = conversionService.convert(articleAssembly, ArticleDto.class);
 
         return new UpdateArticleResult(data);
+    }
+
+    private List<Tag> resolveTags(List<String> names) {
+        return names.stream()
+                .distinct()
+                .map(Tag::new)
+                .map(tagRepository::saveOrGet)
+                .sorted()
+                .toList();
     }
 
 }
