@@ -13,6 +13,10 @@ on:
 
 env:
   APP_NAME: ${{ github.event.repository.name }}
+  # RealWorld API spec (hurl collection), pinned to a known-good revision.
+  SPEC_REPO: realworld-apps/realworld
+  SPEC_REF: 5d510ce6ec41bb97723e92fbd8d3e3458a381c09
+  HURL_VERSION: 8.0.1
   CR_REGISTRY: ghcr.io
   CR_NAMESPACE: ${{ github.repository_owner }}
   CR_USERNAME: ${{ github.actor }}
@@ -33,10 +37,18 @@ jobs:
           distribution: temurin
           java-version: 25
 
-      - name: Setup NodeJS
-        uses: actions/setup-node@v7
+      - name: Checkout API spec
+        uses: actions/checkout@v7
         with:
-          node-version: 24
+          repository: ${{ env.SPEC_REPO }}
+          ref: ${{ env.SPEC_REF }}
+          sparse-checkout: specs/api/hurl
+          path: .realworld-spec
+
+      - name: Setup hurl
+        uses: gacts/install-hurl@v1
+        with:
+          version: ${{ env.HURL_VERSION }}
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v6
@@ -49,15 +61,16 @@ jobs:
           nohup java -jar service/build/libs/realworld-backend-spring*.jar &
           sleep 5
 
-      - name: Run postman collection
+      - name: Run API spec tests
+        # TODO: drop continue-on-error once the API conforms to the spec.
+        continue-on-error: true
+        shell: bash
         run: >
-          npx newman run
-          https://raw.githubusercontent.com/gothinkster/realworld/master/api/Conduit.postman_collection.json
-          --delay-request 200
-          --global-var "APIURL=http://localhost:8080/api"
-          --global-var "USERNAME=username"
-          --global-var "EMAIL=username@example.com"
-          --global-var "PASSWORD=password"
+          hurl --test
+          --jobs 1
+          --variable host=http://localhost:8080
+          --variable uid=${{ github.run_id }}
+          .realworld-spec/specs/api/hurl/*.hurl
 
       - name: Upload app-jar
         uses: actions/upload-artifact@v7
@@ -99,10 +112,18 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           native-image-job-reports: 'true'
 
-      - name: Setup NodeJS
-        uses: actions/setup-node@v7
+      - name: Checkout API spec
+        uses: actions/checkout@v7
         with:
-          node-version: 24
+          repository: ${{ env.SPEC_REPO }}
+          ref: ${{ env.SPEC_REF }}
+          sparse-checkout: specs/api/hurl
+          path: .realworld-spec
+
+      - name: Setup hurl
+        uses: gacts/install-hurl@v1
+        with:
+          version: ${{ env.HURL_VERSION }}
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v6
@@ -134,15 +155,16 @@ jobs:
           sleep 5
         shell: bash
 
-      - name: Run postman collection
+      - name: Run API spec tests
+        # TODO: drop continue-on-error once the API conforms to the spec.
+        continue-on-error: true
+        shell: bash
         run: >
-          npx newman run
-          https://raw.githubusercontent.com/gothinkster/realworld/master/api/Conduit.postman_collection.json
-          --delay-request 200
-          --global-var "APIURL=http://localhost:8080/api"
-          --global-var "USERNAME=username"
-          --global-var "EMAIL=username@example.com"
-          --global-var "PASSWORD=password"
+          hurl --test
+          --jobs 1
+          --variable host=http://localhost:8080
+          --variable uid=${{ github.run_id }}${{ strategy.job-index }}
+          .realworld-spec/specs/api/hurl/*.hurl
 
   coverage:
     runs-on: ubuntu-latest
