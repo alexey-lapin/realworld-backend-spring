@@ -31,6 +31,7 @@ import com.github.al.realworld.application.exception.NotFoundException;
 import com.github.al.realworld.application.exception.UnauthorizedException;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
+import org.jspecify.annotations.Nullable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
@@ -52,7 +53,7 @@ public class RestExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<GenericError> handleException(Exception e) {
         log.error("Exception occurred", e);
-        var message = List.of(e.getMessage());
+        var message = toMessages(e.getMessage());
         if (e instanceof ApplicationException ex) {
             return switch (ex) {
                 case BadRequestException _ -> responseEntity(HttpStatus.UNPROCESSABLE_CONTENT, message);
@@ -107,6 +108,10 @@ public class RestExceptionHandler {
                 .map(ObjectError::getDefaultMessage)
                 .toList();
         return responseEntity(httpStatusCode, messages);
+    }
+
+    private static List<String> toMessages(@Nullable String message) {
+        return message != null ? List.of(message) : List.of();
     }
 
     private static ResponseEntity<GenericError> responseEntity(
