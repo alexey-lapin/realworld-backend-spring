@@ -4,7 +4,7 @@ mapstruct-spring = "2.0.0"
 springBoot = "4.1.1"
 
 [libraries]
-gradle-plugin-release = { group = "pl.allegro.tech.build", name = "axion-release-plugin", version = "1.21.2" }
+gradle-plugin-release = { group = "pl.allegro.tech.build", name = "axion-release-plugin", version = "1.21.3" }
 gradle-plugin-spotless = { group = "com.diffplug.spotless", name = "spotless-plugin-gradle", version = "8.5.1" }
 mapstruct-core = { group = "org.mapstruct", name = "mapstruct", version.ref = "mapstruct" }
 mapstruct-processor = { group = "org.mapstruct", name = "mapstruct-processor", version.ref = "mapstruct" }
