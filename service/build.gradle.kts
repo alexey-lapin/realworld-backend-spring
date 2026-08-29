@@ -83,7 +83,7 @@ tasks {
         }
     }
 
-    val writeArtifactFile by registering {
+    val writeArtifactFile = register("writeArtifactFile") {
         doLast {
             val outputDirectory = getByName<BuildNativeImageTask>("nativeCompile").outputDirectory
             outputDirectory.get().asFile.mkdirs()
