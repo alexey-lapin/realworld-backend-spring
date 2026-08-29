@@ -5,7 +5,7 @@ plugins {
 }
 
 // A resolvable configuration to collect source code
-val sourcesPath: Configuration by configurations.creating {
+val sourcesPath = configurations.create("sourcesPath") {
     isCanBeResolved = true
     isCanBeConsumed = false
     extendsFrom(configurations.implementation.get())
@@ -17,7 +17,7 @@ val sourcesPath: Configuration by configurations.creating {
 }
 
 // A resolvable configuration to collect source code
-val classesPath: Configuration by configurations.creating {
+val classesPath = configurations.create("classesPath") {
     isCanBeResolved = true
     isCanBeConsumed = false
     extendsFrom(configurations.implementation.get())
@@ -29,7 +29,7 @@ val classesPath: Configuration by configurations.creating {
 }
 
 // A resolvable configuration to collect JaCoCo coverage data
-val coverageDataPath: Configuration by configurations.creating {
+val coverageDataPath = configurations.create("coverageDataPath") {
     isCanBeResolved = true
     isCanBeConsumed = false
     extendsFrom(configurations.implementation.get())
@@ -41,7 +41,7 @@ val coverageDataPath: Configuration by configurations.creating {
 }
 
 // Task to gather code coverage from multiple subprojects
-val jacocoReport by tasks.registering(JacocoReport::class) {
+val jacocoReport = tasks.register<JacocoReport>("jacocoReport") {
     additionalClassDirs(classesPath.incoming.artifactView { lenient(true) }.files)
     additionalSourceDirs(sourcesPath.incoming.artifactView { lenient(true) }.files)
     executionData(coverageDataPath.incoming.artifactView { lenient(true) }.files.filter { it.exists() })
