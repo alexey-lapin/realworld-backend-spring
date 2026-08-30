@@ -1,5 +1,3 @@
-import org.graalvm.buildtools.gradle.tasks.BuildNativeImageTask
-import org.gradle.internal.os.OperatingSystem
 import org.springframework.boot.gradle.tasks.bundling.BootJar
 
 plugins {
@@ -65,31 +63,5 @@ springBoot {
 tasks {
     named<BootJar>("bootJar") {
         archiveFileName.set("${rootProject.name}-${archiveVersion.get()}.${archiveExtension.get()}")
-    }
-
-    val writeArtifactFile = register("writeArtifactFile") {
-        doLast {
-            val outputDirectory = getByName<BuildNativeImageTask>("nativeCompile").outputDirectory
-            outputDirectory.get().asFile.mkdirs()
-            outputDirectory.file("gradle-artifact.txt")
-                .get().asFile
-                .writeText("${rootProject.name}-${project.version}-${platform()}")
-        }
-    }
-
-    named("nativeCompile") {
-        finalizedBy(writeArtifactFile)
-    }
-
-}
-
-fun platform(): String {
-    val os = OperatingSystem.current()
-    val arc = System.getProperty("os.arch")
-    return when {
-        OperatingSystem.current().isWindows -> "windows-${arc}"
-        OperatingSystem.current().isLinux -> "linux-${arc}"
-        OperatingSystem.current().isMacOsX -> "darwin-${arc}"
-        else -> os.nativePrefix
     }
 }
