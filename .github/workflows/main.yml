@@ -67,9 +67,15 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
 
       - name: Run app for testing
+        shell: bash
         run: |
           nohup java -jar service/build/libs/realworld-backend-spring*.jar &
-          sleep 5
+          for _ in {1..60}; do
+            curl --fail --silent --output /dev/null http://localhost:8080/actuator/health && exit 0
+            sleep 1
+          done
+          echo "::error::app did not become healthy within 60s"
+          exit 1
 
       - name: Run API spec tests
         shell: bash
@@ -146,23 +152,29 @@ jobs:
         run: ./gradlew :service:nativeCompile -x check
 
       - name: Prepare Artifacts
+        shell: bash
         run: |
-          mkdir /tmp/${{ matrix.artifact }}
-          cp **/build/native/nativeCompile/${{ env.APP_NAME }}* /tmp/${{ matrix.artifact }}
-          cp **/build/native/nativeCompile/gradle-artifact.txt /tmp/${{ matrix.artifact }}
+          mkdir -p "${{ runner.temp }}/${{ matrix.artifact }}"
+          cp service/build/native/nativeCompile/${{ env.APP_NAME }}* "${{ runner.temp }}/${{ matrix.artifact }}"
+          cp service/build/native/nativeCompile/gradle-artifact.txt "${{ runner.temp }}/${{ matrix.artifact }}"
 
       - name: Upload app-native
         uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.artifact }}
           path: |
-            /tmp/${{ matrix.artifact }}/*
+            ${{ runner.temp }}/${{ matrix.artifact }}/*
 
       - name: Run app for testing
+        shell: bash
         run: |
           nohup ./service/build/native/nativeCompile/realworld-backend-spring* &
-          sleep 5
-        shell: bash
+          for _ in {1..60}; do
+            curl --fail --silent --output /dev/null http://localhost:8080/actuator/health && exit 0
+            sleep 1
+          done
+          echo "::error::app did not become healthy within 60s"
+          exit 1
 
       - name: Run API spec tests
         shell: bash
