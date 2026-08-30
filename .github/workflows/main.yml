@@ -18,7 +18,6 @@ env:
   SPEC_REF: 5d510ce6ec41bb97723e92fbd8d3e3458a381c09
   HURL_VERSION: 8.0.1
   CR_REGISTRY: ghcr.io
-  CR_NAMESPACE: ${{ github.repository_owner }}
   CR_USERNAME: ${{ github.actor }}
   CR_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
 
