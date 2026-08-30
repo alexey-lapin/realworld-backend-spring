@@ -293,5 +293,6 @@ jobs:
           cache-to: type=gha,mode=max
 
       - name: Deploy on Render
-        run: |
-          curl -X POST ${{ secrets.RENDER_WEBHOOK }}
+        env:
+          RENDER_WEBHOOK: ${{ secrets.RENDER_WEBHOOK }}
+        run: curl --fail --silent --show-error --request POST "$RENDER_WEBHOOK"
