@@ -1,6 +1,5 @@
 import org.graalvm.buildtools.gradle.tasks.BuildNativeImageTask
 import org.gradle.internal.os.OperatingSystem
-import org.springframework.boot.gradle.tasks.bundling.BootBuildImage
 import org.springframework.boot.gradle.tasks.bundling.BootJar
 
 plugins {
@@ -66,21 +65,6 @@ springBoot {
 tasks {
     named<BootJar>("bootJar") {
         archiveFileName.set("${rootProject.name}-${archiveVersion.get()}.${archiveExtension.get()}")
-    }
-
-    named<BootBuildImage>("bootBuildImage") {
-        val registry = System.getenv("CR_REGISTRY")!!
-        val namespace = System.getenv("CR_NAMESPACE")!!
-        imageName = "${registry}/${namespace}/${rootProject.name}:${project.version}"
-        publish = true
-        tags = setOf("${registry}/${namespace}/${rootProject.name}:latest")
-        docker {
-            publishRegistry {
-                url = System.getenv("CR_REGISTRY")
-                username = System.getenv("CR_USERNAME")
-                password = System.getenv("CR_PASSWORD")
-            }
-        }
     }
 
     val writeArtifactFile = register("writeArtifactFile") {
