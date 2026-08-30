@@ -8,8 +8,6 @@ on:
     tags:
       - 'v*.*.*'
   pull_request:
-    branches:
-      - '*'
 
 env:
   APP_NAME: ${{ github.event.repository.name }}
@@ -274,11 +272,12 @@ jobs:
         uses: docker/metadata-action@v6
         with:
           images: ghcr.io/${{ github.repository }}
+          # latest=auto follows the newest semver tag and skips pre-releases.
+          flavor: latest=auto
           tags: |
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
             type=semver,pattern={{major}}
-            type=raw,value=latest,enable={{is_default_branch}}
 
       - name: Build and push multi-arch image
         uses: docker/build-push-action@v7
