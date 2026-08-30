@@ -54,7 +54,12 @@ jobs:
         uses: gradle/actions/setup-gradle@v6
 
       - name: Gradle build
-        run: ./gradlew build
+        run: ./gradlew build jacocoReport
+
+      - name: Codecov
+        uses: codecov/codecov-action@v7
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
 
       - name: Run app for testing
         run: |
@@ -161,31 +166,6 @@ jobs:
           --variable host=http://localhost:8080
           --variable uid=${{ github.run_id }}${{ strategy.job-index }}
           .realworld-spec/specs/api/hurl/*.hurl
-
-  coverage:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-
-      - name: Setup JDK
-        uses: actions/setup-java@v6
-        with:
-          distribution: temurin
-          java-version: 25
-
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v6
-
-      - name: Gradle jacocoReport
-        shell: bash
-        run: |
-          ./gradlew --version
-          ./gradlew --scan --no-parallel --stacktrace --warning-mode=all jacocoReport
-
-      - name: Codecov
-        uses: codecov/codecov-action@v7
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
 
   release:
     runs-on: ubuntu-latest
