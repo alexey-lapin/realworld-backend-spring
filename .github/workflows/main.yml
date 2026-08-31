@@ -11,7 +11,7 @@ on:
 
 env:
   APP_NAME: ${{ github.event.repository.name }}
-  # RealWorld API spec (hurl collection), pinned to a known-good revision.
+  # RealWorld API spec (hurl collection), pinned to a main-branch commit; Renovate bumps SPEC_REF.
   SPEC_REPO: realworld-apps/realworld
   SPEC_REF: 5d510ce6ec41bb97723e92fbd8d3e3458a381c09
   HURL_VERSION: 8.0.1
