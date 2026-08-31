@@ -48,7 +48,7 @@ Run unit tests only:
 ./gradlew test
 ```
 
-Run integration tests (defined in `service/src/intTest`):
+Run integration tests (defined in `service/src/integrationTest`):
 
 ```bash
 ./gradlew integrationTest
@@ -174,7 +174,7 @@ Tip: prefix with `:service:` when iterating locally to avoid running all modules
 
 - JUnit 6 (`@Test`, `@BeforeAll`) with AssertJ assertions.
 - Unit tests live in `service/src/test/java`.
-- Integration tests live in `service/src/intTest/java` and run via `integrationTest`.
+- Integration tests live in `service/src/integrationTest/java` and run via `integrationTest`.
 - Keep test data small and focus on behavior; follow existing naming patterns
   within the same test class.
 - The upstream hurl suite pins the public contract: error envelope shape, status

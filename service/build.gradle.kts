@@ -35,10 +35,31 @@ dependencies {
     testAnnotationProcessor(libs.projectlombok.lombok)
     testCompileOnly(libs.projectlombok.lombok)
     testImplementation(libs.spring.springBootStarterTest)
+}
 
-    intTestAnnotationProcessor(libs.projectlombok.lombok)
-    intTestCompileOnly(libs.projectlombok.lombok)
-    intTestImplementation(libs.spring.springBootStarterRestclientTest)
+testing {
+    suites {
+        register<JvmTestSuite>("integrationTest") {
+            dependencies {
+                annotationProcessor(libs.projectlombok.lombok)
+                compileOnly(libs.projectlombok.lombok)
+
+                implementation(project())
+                implementation(project(":service-api"))
+                implementation(project(":service-bus"))
+                implementation(libs.spring.springBootStarterDataJdbc)
+                implementation(libs.spring.springBootStarterRestclientTest)
+            }
+
+            targets.configureEach {
+                testTask.configure { shouldRunAfter(tasks.test) }
+            }
+        }
+    }
+}
+
+tasks.check {
+    dependsOn(testing.suites.named("integrationTest"))
 }
 
 graalvmNative {

@@ -5,22 +5,6 @@ plugins {
     id("realworld.project-conventions")
 }
 
-val hasIntTests = layout.projectDirectory.dir("src").dir("intTest").asFile.exists()
-
-if (hasIntTests) {
-    sourceSets {
-        create("intTest") {
-            compileClasspath += sourceSets.main.get().output
-            runtimeClasspath += sourceSets.main.get().output
-        }
-    }
-
-    configurations["intTestImplementation"].extendsFrom(configurations["implementation"])
-    configurations["intTestImplementation"].extendsFrom(configurations["testImplementation"])
-    configurations["intTestRuntimeOnly"].extendsFrom(configurations["runtimeOnly"])
-    configurations["intTestRuntimeOnly"].extendsFrom(configurations["testRuntimeOnly"])
-}
-
 val javaVersion = 25
 
 configure<JavaPluginExtension> {
@@ -47,20 +31,6 @@ spotless {
 }
 
 tasks {
-    if (hasIntTests) {
-        register<Test>("integrationTest") {
-            description = "Runs the integration tests."
-            group = "verification"
-
-            testClassesDirs = sourceSets["intTest"].output.classesDirs
-            classpath = sourceSets["intTest"].runtimeClasspath
-
-            shouldRunAfter("test")
-        }
-
-        named("check") { dependsOn("integrationTest") }
-    }
-
     withType<Test> {
         useJUnitPlatform()
         testLogging {
@@ -75,60 +45,7 @@ tasks {
     }
 }
 
-// Do not generate reports for individual projects
+// coverage is aggregated in the root project
 tasks.jacocoTestReport {
     enabled = false
-}
-
-// Share sources folder with other projects for aggregated JaCoCo reports
-configurations.create("transitiveSourcesElements") {
-    isCanBeResolved = false
-    isCanBeConsumed = true
-    extendsFrom(configurations.implementation.get())
-    attributes {
-        attribute(Usage.USAGE_ATTRIBUTE, objects.named(Usage.JAVA_RUNTIME))
-        attribute(Category.CATEGORY_ATTRIBUTE, objects.named(Category.DOCUMENTATION))
-        attribute(DocsType.DOCS_TYPE_ATTRIBUTE, objects.named("source-folders"))
-    }
-    sourceSets.main.get().java.srcDirs.forEach {
-        outgoing.artifact(it)
-    }
-}
-
-// Share sources folder with other projects for aggregated JaCoCo reports
-configurations.create("transitiveCompiledElements") {
-    isCanBeResolved = false
-    isCanBeConsumed = true
-    extendsFrom(configurations.implementation.get())
-    attributes {
-        attribute(Usage.USAGE_ATTRIBUTE, objects.named(Usage.JAVA_RUNTIME))
-        attribute(Category.CATEGORY_ATTRIBUTE, objects.named(Category.DOCUMENTATION))
-        attribute(DocsType.DOCS_TYPE_ATTRIBUTE, objects.named("classes-folders"))
-    }
-    sourceSets.main.get().output.classesDirs.forEach {
-        outgoing.artifact(it)
-    }
-}
-
-// Share the coverage data to be aggregated for the whole product
-configurations.create("coverageDataElements") {
-    isCanBeResolved = false
-    isCanBeConsumed = true
-    extendsFrom(configurations.implementation.get())
-    attributes {
-        attribute(Usage.USAGE_ATTRIBUTE, objects.named(Usage.JAVA_RUNTIME))
-        attribute(Category.CATEGORY_ATTRIBUTE, objects.named(Category.DOCUMENTATION))
-        attribute(DocsType.DOCS_TYPE_ATTRIBUTE, objects.named("jacoco-coverage-data"))
-    }
-
-    // This will cause the test task to run if the coverage data is requested by the aggregation task
-    outgoing.artifact(tasks.test.map { task ->
-        task.extensions.getByType<JacocoTaskExtension>().destinationFile!!
-    })
-
-    if (hasIntTests) {
-        outgoing.artifact(tasks.named("integrationTest").map { task ->
-            task.extensions.getByType<JacocoTaskExtension>().destinationFile!!
-        })
-    }
 }
