@@ -21,9 +21,17 @@ if (hasIntTests) {
     configurations["intTestRuntimeOnly"].extendsFrom(configurations["testRuntimeOnly"])
 }
 
+val javaVersion = 25
+
 configure<JavaPluginExtension> {
-    sourceCompatibility = JavaVersion.VERSION_25
-    targetCompatibility = JavaVersion.VERSION_25
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(javaVersion)
+    }
+}
+
+tasks.withType<JavaCompile>().configureEach {
+    // fails the build if a newer API leaks in, whatever JDK the toolchain resolves
+    options.release = javaVersion
 }
 
 spotless {
