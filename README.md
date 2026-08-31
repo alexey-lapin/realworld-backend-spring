@@ -83,7 +83,7 @@ The project features a comprehensive automated pipeline:
 
 ## Getting started
 
-**Requirements:** Java 17 or above
+**Requirements:** Java 25 or above
 
 Choose your preferred way to run the application:
 

@@ -13,7 +13,7 @@ Links:
 
 ## Scope and modules
 
-- Root project: Gradle multi-module build using Java 17.
+- Root project: Gradle multi-module build using Java 25.
 - Modules: 
   - `service` (Spring Boot app), 
   - `service-api` (DTOs/commands/operations),
