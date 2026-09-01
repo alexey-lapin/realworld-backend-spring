@@ -9,7 +9,7 @@ Spring Boot codebase containing real world examples (CRUD, auth, advanced patter
 the *RealWorld* spec and API.
 
 Links:
-- https://github.com/gothinkster/realworld/blob/main/api/openapi.yml
+- https://github.com/realworld-apps/realworld/blob/main/specs/api/openapi.yml
 
 ## Scope and modules
 

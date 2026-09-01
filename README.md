@@ -1,6 +1,6 @@
 # ![RealWorld Example App using Spring](example-logo.png)
 
-> **A Spring Boot implementation of the [RealWorld](https://github.com/gothinkster/realworld) API specification.**
+> **A Spring Boot implementation of the [RealWorld](https://github.com/realworld-apps/realworld) API specification.**
 >
 > Built with modern Java 25, Spring Boot 4, and GraalVM native image support for instant startup and minimal resource
 > footprint.
@@ -8,7 +8,7 @@
 [![CI](https://github.com/alexey-lapin/realworld-backend-spring/workflows/CI/badge.svg)](https://github.com/alexey-lapin/realworld-backend-spring/actions)
 [![Codecov](https://codecov.io/gh/alexey-lapin/realworld-backend-spring/branch/master/graph/badge.svg)](https://codecov.io/gh/alexey-lapin/realworld-backend-spring)
 
-A complete implementation of the [RealWorld](https://github.com/gothinkster/realworld) API spec on
+A complete implementation of the [RealWorld](https://github.com/realworld-apps/realworld) API spec on
 **[Spring Boot](https://spring.io/projects/spring-boot)** 4 and Java 25, built and shipped as a GraalVM native image
 alongside the usual JVM jar. Every release is checked against the upstream spec in CI on both, so "complete" is
 machine-verified rather than asserted, and it works with any RealWorld frontend.
@@ -62,20 +62,20 @@ Check out the live application on [**Render**](https://render.com/):
 **Native Compilation:**
 
 - Full GraalVM native image support with optimized runtime hints
-- Multi-platform builds: Linux (AMD64/ARM64), macOS (ARM64), Windows
-- Native Docker images with minimal [Wolfi](https://images.chainguard.dev/directory/image/wolfi-base/overview) base for
-  production deployment
+- Multi-platform builds: Linux (AMD64/ARM64), macOS (ARM64), Windows (AMD64)
+- Native Docker images for linux/amd64 and linux/arm64, on a minimal
+  [Wolfi](https://images.chainguard.dev/directory/image/wolfi-base/overview) base for production deployment
 
 ### CI/CD Pipeline
 
 The project features a comprehensive automated pipeline:
 
-- Multi-platform builds: JVM JAR + native executables for 4 platforms
+- Multi-platform builds: JVM JAR + native executables for four platforms
 - Automated testing with JUnit and integration tests
 - RealWorld spec compliance verification
   via the upstream [hurl collection](https://github.com/realworld-apps/realworld/tree/main/specs/api)
 - Code coverage tracking with [Codecov](https://codecov.io/gh/alexey-lapin/realworld-backend-spring)
-- Docker image building and publishing
+- Multi-arch Docker image building and publishing
   to [GitHub Container Registry](https://github.com/alexey-lapin/realworld-backend-spring/pkgs/container/realworld-backend-spring)
 - Automated [GitHub releases](https://github.com/alexey-lapin/realworld-backend-spring/releases) with platform-specific
   artifacts
@@ -116,11 +116,11 @@ the [releases](https://github.com/alexey-lapin/realworld-backend-spring/releases
 ./realworld-backend-spring
 ```
 
-Available platforms: Linux (AMD64/ARM64), macOS (ARM64), Windows
+Available platforms: Linux (AMD64/ARM64), macOS (ARM64), Windows (AMD64)
 
 ### Docker
 
-Run the containerized native image:
+Run the containerized native image, published for linux/amd64 and linux/arm64:
 
 ```bash
 docker run -p 8080:8080 ghcr.io/alexey-lapin/realworld-backend-spring:latest
@@ -134,7 +134,7 @@ The application will be available at:
 ## Frontend Integration
 
 This backend implements the complete RealWorld API specification and works seamlessly with
-any [RealWorld frontend](https://github.com/gothinkster/realworld).
+any [RealWorld frontend](https://github.com/realworld-apps/realworld).
 
 **API Base URL:** `http://localhost:8080/api`
 
