@@ -8,16 +8,16 @@
 [![CI](https://github.com/alexey-lapin/realworld-backend-spring/workflows/CI/badge.svg)](https://github.com/alexey-lapin/realworld-backend-spring/actions)
 [![Codecov](https://codecov.io/gh/alexey-lapin/realworld-backend-spring/branch/master/graph/badge.svg)](https://codecov.io/gh/alexey-lapin/realworld-backend-spring)
 
-This implementation goes beyond a simple demo. It's a production-ready backend featuring modern Spring Boot
-architecture, GraalVM native compilation, comprehensive testing, and automated CI/CD pipelines. Every design decision
-prioritizes maintainability, performance, and developer experience.
+A complete implementation of the [RealWorld](https://github.com/gothinkster/realworld) API spec on
+**[Spring Boot](https://spring.io/projects/spring-boot)** 4 and Java 25, built and shipped as a GraalVM native image
+alongside the usual JVM jar. Every release is checked against the upstream spec in CI on both, so "complete" is
+machine-verified rather than asserted, and it works with any RealWorld frontend.
 
-Built with **[Spring Boot](https://spring.io/projects/spring-boot)** 4 and the latest Java features, this project
-demonstrates real-world patterns including JWT authentication, CQRS-inspired command/query separation, database
-versioning with Liquibase, and multi-platform native executable generation.
+What it demonstrates: JWT authentication, a CQRS-inspired command and query split, Spring Data JDBC, schema versioning
+with Liquibase, layered testing, and native binaries for four platforms produced on every release.
 
-This backend fully implements the [RealWorld](https://github.com/gothinkster/realworld) specification and can work with
-any RealWorld frontend.
+What it does not: the demo runs H2 in memory on a free instance, so read this as a worked reference rather than a
+production deployment.
 
 ## Live Demo
 
@@ -143,8 +143,7 @@ filtering are fully supported.
 
 ## Testing
 
-The project includes comprehensive test coverage with unit tests, integration tests, and RealWorld spec compliance
-testing:
+Three layers of tests: unit tests, integration tests, and compliance against the RealWorld spec itself.
 
 ```bash
 # Run all tests
@@ -179,13 +178,13 @@ and excluded from the Docker build context. It is about 2 MB.
 
 Two things worth knowing:
 
-- `host` is the origin **without** `/api` — the `.hurl` files append the prefix
-  themselves. Upstream's own README example gets this wrong.
+- `host` is the origin **without** `/api`. The `.hurl` files append the prefix
+  themselves, and upstream's own README example gets this wrong.
 - **Check out `SPEC_REF`, don't just run whatever the checkout happens to be on.**
   The spec is a moving target and its requirements change: duplicate article
   titles once had to return `409`, and now must be accepted with distinct slugs.
-  A stale copy fails locally on rules CI no longer enforces, which looks like a
-  bug in this service and isn't. To move to a newer spec, bump `SPEC_REF` in
+  An old checkout still enforces rules the spec has since dropped, so tests fail
+  against a service that is correct. To move to a newer spec, bump `SPEC_REF` in
   `.github/workflows/main.yml` deliberately and fix whatever it turns red.
 
 A Bruno collection generated from the same files is available upstream if you
