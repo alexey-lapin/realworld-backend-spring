@@ -83,7 +83,7 @@ The project features a comprehensive automated pipeline:
 
 ## Getting started
 
-**Requirements:** Java 25 or above
+**Requirements:** Java 25
 
 Choose your preferred way to run the application:
 
@@ -92,7 +92,7 @@ Choose your preferred way to run the application:
 Traditional Spring Boot application with the full JVM:
 
 ```bash
-./gradlew run
+./gradlew bootRun
 ```
 
 Or download the JAR from the [releases](https://github.com/alexey-lapin/realworld-backend-spring/releases/latest) page:
@@ -146,11 +146,14 @@ filtering are fully supported.
 Three layers of tests: unit tests, integration tests, and compliance against the RealWorld spec itself.
 
 ```bash
-# Run all tests
+# Unit tests
 ./gradlew test
 
-# Run integration tests
+# Integration tests, which are a separate suite and do not run as part of `test`
 ./gradlew integrationTest
+
+# Both suites plus Spotless, the same verification the CI build runs
+./gradlew check
 
 # Verify against the RealWorld API spec (needs https://hurl.dev installed).
 # The spec lives upstream; check it out into .realworld-spec, the same path CI
