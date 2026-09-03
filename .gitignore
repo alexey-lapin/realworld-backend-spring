@@ -15,3 +15,8 @@ out/
 
 # RealWorld API spec checkout
 .realworld-spec/
+
+# Benchmark output; the published run is committed separately when it is used.
+benchmark/results/
+benchmark/smoke/
+__pycache__/
