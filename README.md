@@ -5,7 +5,7 @@
 > Built with modern Java 25, Spring Boot 4, and GraalVM native image support for instant startup and minimal resource
 > footprint.
 
-[![CI](https://github.com/alexey-lapin/realworld-backend-spring/workflows/CI/badge.svg)](https://github.com/alexey-lapin/realworld-backend-spring/actions)
+[![CI](https://github.com/alexey-lapin/realworld-backend-spring/actions/workflows/main.yml/badge.svg?branch=master&event=push)](https://github.com/alexey-lapin/realworld-backend-spring/actions/workflows/main.yml?query=branch%3Amaster+event%3Apush)
 [![Codecov](https://codecov.io/gh/alexey-lapin/realworld-backend-spring/branch/master/graph/badge.svg)](https://codecov.io/gh/alexey-lapin/realworld-backend-spring)
 
 A complete implementation of the [RealWorld](https://github.com/realworld-apps/realworld) API spec on
