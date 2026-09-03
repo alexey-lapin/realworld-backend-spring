@@ -257,7 +257,7 @@ class App:
 
 def writer(path, fieldnames):
     handle = open(path, "w", newline="")
-    csv_writer = csv.DictWriter(handle, fieldnames=fieldnames)
+    csv_writer = csv.DictWriter(handle, fieldnames=fieldnames, lineterminator="\n")
     csv_writer.writeheader()
     return handle, csv_writer
 

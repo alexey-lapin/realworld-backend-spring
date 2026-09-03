@@ -1,0 +1,301 @@
+{
+  "environment": {
+    "recorded_at": "2026-09-03T03:16:23+00:00",
+    "commit": "70c00598d499db90a7c73bb46c0969c9a7a43c8e",
+    "dirty_working_tree": false,
+    "machine": "Apple M4 Pro",
+    "cpus": 14,
+    "memory_gib": 24,
+    "os": "Darwin 25.6.0 (arm64)",
+    "java": "openjdk version \"25.0.2\" 2026-01-20 / OpenJDK Runtime Environment GraalVM CE 25.0.2+10.1 (build 25.0.2+10-jvmci-b01) / OpenJDK 64-Bit Server VM GraalVM CE 25.0.2+10.1 (build 25.0.2+10-jvmci-b01, mixed mode, sharing)",
+    "k6": "k6 v2.2.0 (commit/devel, go1.26.5, darwin/arm64)",
+    "python": "3.14.6",
+    "artifacts": {
+      "jar": "realworld-backend-spring-0.4.2-feature-startup-and-memory-numbers-SNAPSHOT.jar 0ee465868e0a180b",
+      "native": "realworld-backend-spring 1d2fea97d44e4f3b"
+    },
+    "heap_setting": "none; each runtime uses its own ergonomics",
+    "load_generator": "k6 on the same host over loopback, so the generator competes with the server",
+    "memory_accounting": "host process RSS on macOS; not cgroup accounting, so this is not a container result"
+  },
+  "results": {
+    "build": {
+      "bootJar": {
+        "wall_s": 6.2,
+        "gradle_state": "clean outputs, warm cache"
+      },
+      "nativeCompile": {
+        "wall_s": 62.3,
+        "gradle_state": "clean outputs, warm cache"
+      }
+    },
+    "sizes": {
+      "jar": {
+        "mib": 45.7,
+        "gzip_mib": 41.1
+      },
+      "native": {
+        "mib": 152.5,
+        "gzip_mib": 52.1
+      }
+    },
+    "startup": {
+      "jvm": {
+        "ready_s": {
+          "n": 20,
+          "min": 2.932,
+          "median": 3.04,
+          "max": 4.624,
+          "iqr": 0.232
+        },
+        "first_api_after_health_s": {
+          "n": 20,
+          "min": 2.973,
+          "median": 3.077,
+          "max": 4.661,
+          "iqr": 0.235
+        },
+        "peak_startup_rss_mib": {
+          "n": 20,
+          "min": 392.734,
+          "median": 435.766,
+          "max": 479.328,
+          "iqr": 14.762
+        }
+      },
+      "native": {
+        "ready_s": {
+          "n": 20,
+          "min": 0.709,
+          "median": 1.057,
+          "max": 2.425,
+          "iqr": 0.627
+        },
+        "first_api_after_health_s": {
+          "n": 20,
+          "min": 0.71,
+          "median": 1.058,
+          "max": 2.427,
+          "iqr": 0.627
+        },
+        "peak_startup_rss_mib": {
+          "n": 20,
+          "min": 174.016,
+          "median": 179.32,
+          "max": 186.75,
+          "iqr": 6.617
+        }
+      }
+    },
+    "idle": {
+      "jvm": {
+        "n": 5,
+        "min": 352.531,
+        "median": 358.594,
+        "max": 374.688,
+        "iqr": 16.305
+      },
+      "native": {
+        "n": 5,
+        "min": 173.172,
+        "median": 177.609,
+        "max": 186.938,
+        "iqr": 10.016
+      }
+    },
+    "load": {
+      "jvm@50": {
+        "repeats": 2,
+        "achieved_rps": {
+          "n": 2,
+          "min": 50.0,
+          "median": 50.0,
+          "max": 50.0,
+          "iqr": null
+        },
+        "dropped_iterations": 0,
+        "p95_ms": {
+          "n": 2,
+          "min": 4.07,
+          "median": 4.14,
+          "max": 4.21,
+          "iqr": null
+        },
+        "p99_ms": {
+          "n": 2,
+          "min": 6.35,
+          "median": 6.435,
+          "max": 6.52,
+          "iqr": null
+        },
+        "steady_rss_mib": {
+          "n": 2,
+          "min": 434.234,
+          "median": 437.664,
+          "max": 441.094,
+          "iqr": null
+        }
+      },
+      "native@50": {
+        "repeats": 2,
+        "achieved_rps": {
+          "n": 2,
+          "min": 50.0,
+          "median": 50.0,
+          "max": 50.0,
+          "iqr": null
+        },
+        "dropped_iterations": 0,
+        "p95_ms": {
+          "n": 2,
+          "min": 5.2,
+          "median": 5.335,
+          "max": 5.47,
+          "iqr": null
+        },
+        "p99_ms": {
+          "n": 2,
+          "min": 6.68,
+          "median": 7.61,
+          "max": 8.54,
+          "iqr": null
+        },
+        "steady_rss_mib": {
+          "n": 2,
+          "min": 172.078,
+          "median": 174.234,
+          "max": 176.391,
+          "iqr": null
+        }
+      },
+      "jvm@200": {
+        "repeats": 2,
+        "achieved_rps": {
+          "n": 2,
+          "min": 200.0,
+          "median": 200.0,
+          "max": 200.0,
+          "iqr": null
+        },
+        "dropped_iterations": 0,
+        "p95_ms": {
+          "n": 2,
+          "min": 2.26,
+          "median": 2.285,
+          "max": 2.31,
+          "iqr": null
+        },
+        "p99_ms": {
+          "n": 2,
+          "min": 3.02,
+          "median": 3.04,
+          "max": 3.06,
+          "iqr": null
+        },
+        "steady_rss_mib": {
+          "n": 2,
+          "min": 440.391,
+          "median": 446.039,
+          "max": 451.688,
+          "iqr": null
+        }
+      },
+      "native@200": {
+        "repeats": 2,
+        "achieved_rps": {
+          "n": 2,
+          "min": 200.0,
+          "median": 200.0,
+          "max": 200.0,
+          "iqr": null
+        },
+        "dropped_iterations": 0,
+        "p95_ms": {
+          "n": 2,
+          "min": 4.82,
+          "median": 4.835,
+          "max": 4.85,
+          "iqr": null
+        },
+        "p99_ms": {
+          "n": 2,
+          "min": 12.82,
+          "median": 12.865,
+          "max": 12.91,
+          "iqr": null
+        },
+        "steady_rss_mib": {
+          "n": 2,
+          "min": 173.734,
+          "median": 175.0,
+          "max": 176.266,
+          "iqr": null
+        }
+      },
+      "jvm@500": {
+        "repeats": 2,
+        "achieved_rps": {
+          "n": 2,
+          "min": 500.0,
+          "median": 500.0,
+          "max": 500.0,
+          "iqr": null
+        },
+        "dropped_iterations": 0,
+        "p95_ms": {
+          "n": 2,
+          "min": 2.87,
+          "median": 2.91,
+          "max": 2.95,
+          "iqr": null
+        },
+        "p99_ms": {
+          "n": 2,
+          "min": 3.27,
+          "median": 3.365,
+          "max": 3.46,
+          "iqr": null
+        },
+        "steady_rss_mib": {
+          "n": 2,
+          "min": 596.312,
+          "median": 622.547,
+          "max": 648.781,
+          "iqr": null
+        }
+      },
+      "native@500": {
+        "repeats": 2,
+        "achieved_rps": {
+          "n": 2,
+          "min": 500.0,
+          "median": 500.0,
+          "max": 500.0,
+          "iqr": null
+        },
+        "dropped_iterations": 0,
+        "p95_ms": {
+          "n": 2,
+          "min": 8.25,
+          "median": 8.38,
+          "max": 8.51,
+          "iqr": null
+        },
+        "p99_ms": {
+          "n": 2,
+          "min": 22.7,
+          "median": 23.395,
+          "max": 24.09,
+          "iqr": null
+        },
+        "steady_rss_mib": {
+          "n": 2,
+          "min": 479.797,
+          "median": 499.664,
+          "max": 519.531,
+          "iqr": null
+        }
+      }
+    }
+  }
+}

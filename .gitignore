@@ -17,6 +17,7 @@ out/
 .realworld-spec/
 
 # Benchmark output; the published run is committed separately when it is used.
-benchmark/results/
+benchmark/results/*/logs/
+benchmark/results/*/k6/
 benchmark/smoke/
 __pycache__/
