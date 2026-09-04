@@ -9,8 +9,8 @@ for the load phase.
   ./benchmark/run.py startup --trials 20
   ./benchmark/run.py load --rates 50,200,500
 
-Measures host process RSS. That is not cgroup accounting, so these numbers describe a
-process on this machine, not a container under a memory limit.
+Measures host process RSS. Pass --container-memory to run both artifacts under a docker
+memory limit instead, which also records the cgroup's own peak.
 """
 
 import argparse
@@ -202,41 +202,103 @@ def command(variant, port, heap):
     return [str(binary), *heap_args, port_arg]
 
 
-class App:
-    """One application run: launch, wait for ready, sample memory, stop."""
+def docker_command(variant, port, args):
+    """Same artifacts, mounted into a memory-limited container.
 
-    def __init__(self, variant, heap, log_path):
+    Mounting rather than building images keeps the measured bytes identical to the ones the
+    other phases use, and keeps image-build choices out of the comparison.
+    """
+    jar, binary = artifacts()
+    heap_args = [f"-Xmx{args.heap}"] if args.heap else []
+    limits = ["-m", args.container_memory, "--cpus", args.container_cpus]
+    common = ["docker", "run", "-d", "--rm", *limits, "-p", f"127.0.0.1:{port}:8080"]
+    if variant == "jvm":
+        return [
+            *common,
+            "-v", f"{jar.parent}:/libs:ro",
+            args.jvm_image,
+            "java", *heap_args, "-jar", f"/libs/{jar.name}",
+        ]
+    return [
+        *common,
+        "-v", f"{binary.parent}:/opt/app:ro",
+        args.native_image,
+        f"/opt/app/{binary.name}", *heap_args,
+    ]
+
+
+def docker(*argv, check=True):
+    result = subprocess.run(["docker", *argv], capture_output=True, text=True)
+    if check and result.returncode != 0:
+        raise TrialFailed(f"docker {' '.join(argv)} failed: {result.stderr.strip()[:400]}")
+    return result.stdout.strip()
+
+
+class App:
+    """One application run: launch, wait for ready, sample memory, stop.
+
+    Runs the artifact directly, or inside a memory-limited container when one is configured.
+    Either way memory is sampled from the process, so the two profiles stay comparable; the
+    container profile additionally reports the cgroup's own peak.
+    """
+
+    def __init__(self, variant, args, log_path):
         self.variant = variant
-        self.heap = heap
+        self.args = args
+        self.heap = args.heap
         self.log_path = log_path
         self.port = free_port()
+        self.containerised = bool(args.container_memory)
         self.proc = None
+        self.container = None
+        self.pid = None
         self.sampler = None
         self.launched_at = None
+        self.cgroup_peak_kb = None
 
     def __enter__(self):
         self.log_file = open(self.log_path, "w")
         self.launched_at = time.monotonic()
-        self.proc = subprocess.Popen(
-            command(self.variant, self.port, self.heap),
-            cwd=ROOT,
-            stdout=self.log_file,
-            stderr=subprocess.STDOUT,
-        )
-        self.sampler = RssSampler(self.proc.pid)
+        if self.containerised:
+            self.container = docker(*docker_command(self.variant, self.port, self.args)[1:])
+            self.pid = int(docker("inspect", "-f", "{{.State.Pid}}", self.container))
+            if not self.pid:
+                raise TrialFailed(f"{self.variant} container has no pid; it exited immediately")
+        else:
+            self.proc = subprocess.Popen(
+                command(self.variant, self.port, self.heap),
+                cwd=ROOT,
+                stdout=self.log_file,
+                stderr=subprocess.STDOUT,
+            )
+            self.pid = self.proc.pid
+        self.sampler = RssSampler(self.pid)
         self.sampler.start()
         return self
+
+    def alive(self):
+        if self.containerised:
+            return docker("inspect", "-f", "{{.State.Running}}", self.container, check=False) == "true"
+        return self.proc.poll() is None
 
     def wait_ready(self, path=HEALTH_PATH):
         """Seconds from launch until the endpoint first answers 2xx headers."""
         deadline = self.launched_at + READY_TIMEOUT
         while time.monotonic() < deadline:
-            if self.proc.poll() is not None:
-                raise TrialFailed(f"{self.variant} exited with {self.proc.returncode}; see {self.log_path}")
+            if not self.alive():
+                raise TrialFailed(f"{self.variant} exited before becoming ready; see {self.log_path}")
             if probe(self.port, path):
                 return time.monotonic() - self.launched_at
             time.sleep(POLL_INTERVAL)
         raise TrialFailed(f"{self.variant} not ready within {READY_TIMEOUT}s; see {self.log_path}")
+
+    def read_cgroup_peak(self):
+        """cgroup v2 memory.peak, which counts everything charged to the container."""
+        if not self.containerised:
+            return None
+        raw = docker("exec", self.container, "cat", "/sys/fs/cgroup/memory.peak", check=False)
+        self.cgroup_peak_kb = int(raw) // 1024 if raw.isdigit() else None
+        return self.cgroup_peak_kb
 
     def __exit__(self, *exc):
         if self.sampler:
@@ -244,7 +306,10 @@ class App:
                 self.sampler.stop()
             except TrialFailed as failure:
                 log(f"  warning: {failure}")
-        if self.proc and self.proc.poll() is None:
+        if self.containerised and self.container:
+            self.log_file.write(docker("logs", self.container, check=False))
+            docker("rm", "-f", self.container, check=False)
+        elif self.proc and self.proc.poll() is None:
             self.proc.terminate()
             try:
                 self.proc.wait(timeout=20)
@@ -286,7 +351,7 @@ def order_for(index):
 def phase_startup(out_dir, args):
     handle, rows = writer(
         out_dir / "startup.csv",
-        ["variant", "heap", "trial", "order", "ready_s", "first_api_after_health_s", "peak_startup_rss_kb"],
+        ["variant", "profile", "trial", "order", "ready_s", "first_api_after_health_s", "peak_startup_rss_kb"],
     )
     logs = out_dir / "logs"
     logs.mkdir(exist_ok=True)
@@ -295,7 +360,7 @@ def phase_startup(out_dir, args):
     for trial in range(1, args.trials + args.warmups + 1):
         for variant in order_for(trial):
             order += 1
-            with App(variant, args.heap, logs / f"startup-{variant}-{trial}.log") as app:
+            with App(variant, args, logs / f"startup-{variant}-{trial}.log") as app:
                 ready = app.wait_ready()
                 # Sequential by construction: the API is probed only after health passes, so
                 # this is "first API response after the health gate", not independent readiness.
@@ -310,7 +375,7 @@ def phase_startup(out_dir, args):
             rows.writerow(
                 {
                     "variant": variant,
-                    "heap": args.heap or "runtime default",
+                    "profile": args.profile,
                     "trial": trial - args.warmups,
                     "order": order,
                     "ready_s": round(ready, 4),
@@ -332,24 +397,26 @@ def phase_startup(out_dir, args):
 
 def phase_idle(out_dir, args):
     """RSS after the process has settled, which is what an idle replica actually holds."""
-    handle, rows = writer(out_dir / "idle.csv", ["variant", "heap", "trial", "settle_s", "idle_rss_kb"])
+    handle, rows = writer(out_dir / "idle.csv", ["variant", "profile", "trial", "settle_s", "idle_rss_kb", "cgroup_peak_kb"])
     logs = out_dir / "logs"
     logs.mkdir(exist_ok=True)
     results = {"jvm": [], "native": []}
     for trial in range(1, args.idle_trials + 1):
         for variant in order_for(trial):
-            with App(variant, args.heap, logs / f"idle-{variant}-{trial}.log") as app:
+            with App(variant, args, logs / f"idle-{variant}-{trial}.log") as app:
                 app.wait_ready()
                 time.sleep(args.settle)
-                idle = require_rss(app.proc.pid, f"{variant} idle trial {trial}")
+                idle = require_rss(app.pid, f"{variant} idle trial {trial}")
+                cgroup_peak = app.read_cgroup_peak()
             log(f"  idle {variant:6s} trial {trial}: {idle // 1024} MiB after {args.settle}s")
             rows.writerow(
                 {
                     "variant": variant,
-                    "heap": args.heap or "runtime default",
+                    "profile": args.profile,
                     "trial": trial,
                     "settle_s": args.settle,
                     "idle_rss_kb": idle,
+                    "cgroup_peak_kb": cgroup_peak,
                 }
             )
             results[variant].append(idle / 1024)
@@ -378,7 +445,7 @@ def k6(script, port, token, rate, duration, summary_out):
 
 def load_cell(script, variant, rate, repeat, args, logs, summaries):
     """One runtime at one offered rate: seed, warm up, then measure a clean window."""
-    with App(variant, args.heap, logs / f"load-{variant}-{rate}-r{repeat}.log") as app:
+    with App(variant, args, logs / f"load-{variant}-{rate}-r{repeat}.log") as app:
         app.wait_ready()
         app.wait_ready(API_PATH)
         token = seed_dataset(app.port)
@@ -396,13 +463,14 @@ def load_cell(script, variant, rate, repeat, args, logs, summaries):
         if not during:
             raise TrialFailed(f"no RSS samples inside the measured window for {variant} at {rate} rps")
         time.sleep(args.recovery)
-        post = require_rss(app.proc.pid, f"{variant} post-load at {rate} rps")
+        post = require_rss(app.pid, f"{variant} post-load at {rate} rps")
+        cgroup_peak = app.read_cgroup_peak()
     metrics = json.loads(summary_path.read_text())["metrics"]
     duration_metric = metrics["http_req_duration"]["values"]
     dropped = int(metrics.get("dropped_iterations", {}).get("values", {}).get("count", 0))
     return {
         "variant": variant,
-        "heap": args.heap or "runtime default",
+        "profile": args.profile,
         "rate": rate,
         "repeat": repeat,
         "achieved_rps": round(metrics["http_reqs"]["values"]["rate"], 1),
@@ -415,6 +483,7 @@ def load_cell(script, variant, rate, repeat, args, logs, summaries):
         "steady_rss_kb": int(statistics.median(during)),
         "peak_load_rss_kb": max(during),
         "post_load_rss_kb": post,
+        "cgroup_peak_kb": cgroup_peak,
     }
 
 
@@ -422,9 +491,9 @@ def phase_load(out_dir, args):
     """Fixed arrival rate so both runtimes see identical offered load."""
     script = ROOT / "benchmark/k6-steady-load.js"
     fields = [
-        "variant", "heap", "rate", "repeat", "achieved_rps", "dropped_iterations", "max_vus",
+        "variant", "profile", "rate", "repeat", "achieved_rps", "dropped_iterations", "max_vus",
         "error_rate", "p50_ms", "p95_ms", "p99_ms",
-        "steady_rss_kb", "peak_load_rss_kb", "post_load_rss_kb",
+        "steady_rss_kb", "peak_load_rss_kb", "post_load_rss_kb", "cgroup_peak_kb",
     ]
     handle, rows = writer(out_dir / "load.csv", fields)
     logs = out_dir / "logs"
@@ -518,9 +587,18 @@ def environment(args):
         "k6": capture(["k6", "version"]),
         "python": platform.python_version(),
         "artifacts": {"jar": f"{jar.name} {digest(jar)}", "native": f"{binary.name} {digest(binary)}"},
+        "profile": args.profile,
         "heap_setting": f"-Xmx{args.heap} on both runtimes" if args.heap else "none; each runtime uses its own ergonomics",
+        "container": (
+            f"docker, -m {args.container_memory} --cpus {args.container_cpus}, "
+            f"jar on {args.jvm_image}, binary on {args.native_image}"
+        ) if args.container_memory else "none; artifacts run directly on the host",
         "load_generator": "k6 on the same host over loopback, so the generator competes with the server",
-        "memory_accounting": "host process RSS on macOS; not cgroup accounting, so this is not a container result",
+        "memory_accounting": (
+            "process RSS plus the container cgroup peak (memory.peak)"
+            if args.container_memory
+            else "host process RSS; not cgroup accounting, so this is not a container result"
+        ),
     }
 
 
@@ -546,10 +624,20 @@ def main():
     parser.add_argument("--warmup-duration", default="30s")
     parser.add_argument("--recovery", type=int, default=30, help="seconds after load before reading RSS")
     parser.add_argument("--heap", default="", help="value for -Xmx applied to both runtimes, e.g. 512m")
+    parser.add_argument("--container-memory", default="", help="run both artifacts under a docker memory limit, e.g. 512m")
+    parser.add_argument("--container-cpus", default="4", help="docker --cpus when a container limit is used")
+    parser.add_argument("--jvm-image", default="eclipse-temurin:25-jre", help="base image for the jar")
+    parser.add_argument("--native-image", default="debian:13-slim", help="base image for the native binary")
     parser.add_argument("--allow-dirty", action="store_true", help="measure anyway with uncommitted changes")
     parser.add_argument("--out", default="benchmark/results")
     args = parser.parse_args()
     args.rates = [int(r) for r in args.rates.split(",") if r]
+    args.profile = " + ".join(
+        filter(None, [
+            f"container {args.container_memory}/{args.container_cpus}cpu" if args.container_memory else "host process",
+            f"-Xmx{args.heap}" if args.heap else "",
+        ])
+    )
 
     selected = list(PHASES) if "all" in args.phases else args.phases
     unknown = [p for p in selected if p not in PHASES]
