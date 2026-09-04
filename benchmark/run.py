@@ -565,6 +565,33 @@ def phase_sizes(out_dir, _args):
     return results
 
 
+def cpu_model():
+    """Portable-enough CPU name: sysctl on macOS, /proc/cpuinfo on Linux."""
+    if platform.system() == "Darwin":
+        out = subprocess.run(["sysctl", "-n", "machdep.cpu.brand_string"], capture_output=True, text=True)
+        return out.stdout.strip() or "unknown"
+    try:
+        for line in Path("/proc/cpuinfo").read_text().splitlines():
+            if line.startswith("model name"):
+                return line.split(":", 1)[1].strip()
+    except OSError:
+        pass
+    return platform.processor() or "unknown"
+
+
+def memory_gib():
+    if platform.system() == "Darwin":
+        out = subprocess.run(["sysctl", "-n", "hw.memsize"], capture_output=True, text=True)
+        return round(int(out.stdout.strip()) / 1024**3) if out.stdout.strip().isdigit() else None
+    try:
+        for line in Path("/proc/meminfo").read_text().splitlines():
+            if line.startswith("MemTotal"):
+                return round(int(line.split()[1]) / 1024**2)
+    except OSError:
+        pass
+    return None
+
+
 def environment(args):
     def capture(cmd, lines=1):
         try:
@@ -578,9 +605,9 @@ def environment(args):
         "recorded_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "commit": run(["git", "rev-parse", "HEAD"]).stdout.strip(),
         "dirty_working_tree": bool(run(["git", "status", "--porcelain"]).stdout.strip()),
-        "machine": capture(["sysctl", "-n", "machdep.cpu.brand_string"]),
+        "machine": cpu_model(),
         "cpus": os.cpu_count(),
-        "memory_gib": round(int(capture(["sysctl", "-n", "hw.memsize"])) / 1024**3),
+        "memory_gib": memory_gib(),
         "os": f"{platform.system()} {platform.release()} ({platform.machine()})",
         # Three lines, so the GraalVM distribution identity survives rather than just "openjdk".
         "java": capture(["java", "-version"], lines=3),
