@@ -41,9 +41,14 @@ export function setup() {
 
 // iterationInTest is a scenario-wide counter, so the mix holds across the run. __ITER would
 // be per-VU, which makes every newly allocated VU start the cycle again and skews it to reads.
+// MIX=read drops the write path. The ramp uses it so that a rate sweep measures capacity
+// rather than the cost of an ever-growing table: at several thousand writes per second the
+// dataset, not the runtime, becomes the variable.
+const READ_ONLY = __ENV.MIX === "read";
+
 export default function (data) {
   const slot = exec.scenario.iterationInTest % 5;
-  if (slot === 4) {
+  if (slot === 4 && !READ_ONLY) {
     const res = http.post(
       `${BASE_URL}/articles`,
       JSON.stringify({
@@ -60,7 +65,7 @@ export default function (data) {
       },
     );
     check(res, { "create article 201": (r) => r.status === 201 });
-  } else if (slot === 3) {
+  } else if (slot === 3 || (slot === 4 && READ_ONLY)) {
     const res = http.get(`${BASE_URL}/tags`, { tags: { op: "list_tags" } });
     check(res, { "list tags 200": (r) => r.status === 200 });
   } else {

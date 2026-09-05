@@ -488,13 +488,17 @@ def phase_idle(out_dir, args):
     return {variant: summarise(values) for variant, values in results.items()}
 
 
-def k6(script, port, token, rate, duration, summary_out):
+def k6(script, port, token, rate, duration, summary_out, mix="mixed"):
     env = {
         **os.environ,
         "BASE_URL": f"http://127.0.0.1:{port}/api",
         "TOKEN": token,
         "RATE": str(rate),
         "DURATION": duration,
+        "MIX": mix,
+        # Headroom for a rate sweep: at several thousand a second the default pool is the limit.
+        "PREALLOC": str(max(128, rate // 2)),
+        "MAX_VUS": str(max(1024, rate * 4)),
     }
     if summary_out:
         env["SUMMARY_OUT"] = str(summary_out)
@@ -588,6 +592,83 @@ def phase_load(out_dir, args):
         }
         for cell, cell_rows in collected.items()
     }
+
+
+def phase_ramp(out_dir, args):
+    """Step the offered rate up until the service stops keeping up.
+
+    The fixed-rate phase answers "what is latency at this load". This answers "how much load
+    is there", which is the question those rates could not reach: on an unconstrained host
+    50-500 req/s never approached anything. A step is judged failed when k6 drops iterations,
+    errors appear, or the tail crosses --ramp-p99-limit; the knee is the last rate before that.
+
+    Reads only, because a write-heavy sweep at thousands of requests per second grows the
+    dataset fast enough that the table size, not the runtime, becomes the variable.
+    """
+    script = ROOT / "benchmark/k6-steady-load.js"
+    fields = [
+        "variant", "profile", "rate", "achieved_rps", "dropped_iterations", "error_rate",
+        "p50_ms", "p95_ms", "p99_ms", "steady_rss_kb", "sustained",
+    ]
+    handle, rows = writer(out_dir / "ramp.csv", fields)
+    logs = out_dir / "logs"
+    logs.mkdir(exist_ok=True)
+    summaries = out_dir / "k6"
+    summaries.mkdir(exist_ok=True)
+    knees = {}
+    for variant in ("jvm", "native"):
+        with App(variant, args, logs / f"ramp-{variant}.log") as app:
+            app.wait_ready()
+            app.wait_ready(API_PATH)
+            token = seed_dataset(app.port)
+            warmup = k6(script, app.port, token, args.ramp_rates[0], args.warmup_duration, None, mix="read")
+            if warmup.returncode != 0:
+                raise TrialFailed(f"k6 warmup failed for {variant}:\n{warmup.stderr[-1500:]}")
+            knee = None
+            for rate in args.ramp_rates:
+                summary_path = summaries / f"ramp-{variant}-{rate}.json"
+                started = time.monotonic()
+                result = k6(script, app.port, token, rate, args.ramp_duration, summary_path, mix="read")
+                ended = time.monotonic()
+                if result.returncode != 0 or not summary_path.exists():
+                    raise TrialFailed(f"k6 failed for {variant} at {rate} rps:\n{result.stderr[-1500:]}")
+                metrics = json.loads(summary_path.read_text())["metrics"]
+                latency = metrics["http_req_duration"]["values"]
+                dropped = int(metrics.get("dropped_iterations", {}).get("values", {}).get("count", 0))
+                errors = metrics["http_req_failed"]["values"]["rate"]
+                during = app.sampler.between(started + STEADY_LEAD_IN, ended - STEADY_LEAD_OUT)
+                sustained = dropped == 0 and errors <= args.ramp_error_limit and latency["p(99)"] <= args.ramp_p99_limit
+                rows.writerow(
+                    {
+                        "variant": variant,
+                        "profile": args.profile,
+                        "rate": rate,
+                        "achieved_rps": round(metrics["http_reqs"]["values"]["rate"], 1),
+                        "dropped_iterations": dropped,
+                        "error_rate": round(errors, 5),
+                        "p50_ms": round(latency["med"], 2),
+                        "p95_ms": round(latency["p(95)"], 2),
+                        "p99_ms": round(latency["p(99)"], 2),
+                        "steady_rss_kb": int(statistics.median(during)) if during else None,
+                        "sustained": sustained,
+                    }
+                )
+                log(
+                    f"  ramp {variant:6s} @{rate:6d} rps: achieved {metrics['http_reqs']['values']['rate']:.0f}, "
+                    f"dropped {dropped}, p99 {latency['p(99)']:.1f}ms, errors {errors:.3f}"
+                    f"{'' if sustained else '  <- not sustained'}"
+                )
+                if sustained:
+                    knee = rate
+                else:
+                    break
+                time.sleep(args.ramp_settle)
+        knees[variant] = knee
+        log(f"  ramp {variant}: highest sustained {knee} req/s")
+    handle.close()
+    return {"highest_sustained_rps": knees, "criteria": {
+        "max_p99_ms": args.ramp_p99_limit, "max_error_rate": args.ramp_error_limit, "dropped_iterations": 0,
+    }}
 
 
 def phase_build(out_dir, args):
@@ -713,6 +794,7 @@ PHASES = {
     "startup": phase_startup,
     "idle": phase_idle,
     "load": phase_load,
+    "ramp": phase_ramp,
 }
 
 
@@ -729,6 +811,11 @@ def main():
     parser.add_argument("--warmup-duration", default="30s")
     parser.add_argument("--recovery", type=int, default=30, help="seconds after load before reading RSS")
     parser.add_argument("--heap", default="", help="value for -Xmx applied to both runtimes, e.g. 512m")
+    parser.add_argument("--ramp-rates", default="500,1000,2000,4000,8000,16000", help="offered rates to step through")
+    parser.add_argument("--ramp-duration", default="30s")
+    parser.add_argument("--ramp-settle", type=int, default=10, help="seconds between ramp steps")
+    parser.add_argument("--ramp-p99-limit", type=float, default=250.0, help="p99 ms above which a step counts as failed")
+    parser.add_argument("--ramp-error-limit", type=float, default=0.01)
     parser.add_argument("--container-memory", default="", help="run both artifacts under a docker memory limit, e.g. 512m")
     parser.add_argument("--container-cpus", default="4", help="docker --cpus when a container limit is used")
     parser.add_argument("--jvm-image", default="eclipse-temurin:25-jre", help="base image for the jar")
@@ -737,6 +824,7 @@ def main():
     parser.add_argument("--out", default="benchmark/results")
     args = parser.parse_args()
     args.rates = [int(r) for r in args.rates.split(",") if r]
+    args.ramp_rates = [int(r) for r in args.ramp_rates.split(",") if r]
     args.profile = " + ".join(
         filter(None, [
             f"container {args.container_memory}/{args.container_cpus}cpu" if args.container_memory else "host process",
@@ -744,11 +832,11 @@ def main():
         ])
     )
 
-    selected = list(PHASES) if "all" in args.phases else args.phases
+    selected = [p for p in PHASES if p != "ramp"] if "all" in args.phases else args.phases
     unknown = [p for p in selected if p not in PHASES]
     if unknown:
         raise SystemExit(f"unknown phase(s): {', '.join(unknown)}")
-    if "load" in selected and not shutil.which("k6"):
+    if {"load", "ramp"} & set(selected) and not shutil.which("k6"):
         raise SystemExit("k6 is required for the load phase")
 
     stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
