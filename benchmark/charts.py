@@ -341,32 +341,152 @@ def main():
         print(f"wrote {name}-light.svg, {name}-dark.svg")
 
     if args.page:
-        page = ROOT / args.page if not Path(args.page).is_absolute() else Path(args.page)
-        body = "\n".join(
-            f'<figure class="chart">{written[(name, "light")]}{written[(name, "dark")]}</figure>' for name in charts
-        )
-        page.write_text(PAGE.replace("{{charts}}", body).replace("{{ramp_run}}", ramp_run))
+        page = Path(args.page) if Path(args.page).is_absolute() else ROOT / args.page
+        page.write_text(build_page(written, list(charts), ramp, ramp_run))
         print(f"wrote {page}")
 
 
-PAGE = """<title>Benchmark charts</title>
+def table(headers, body_rows, caption):
+    head = "".join(f"<th>{esc(h)}</th>" for h in headers)
+    body = "".join("<tr>" + "".join(f"<td>{esc(c)}</td>" for c in row) + "</tr>" for row in body_rows)
+    return (
+        f'<details class="data"><summary>{esc(caption)}</summary><div class="scroll">'
+        f"<table><thead><tr>{head}</tr></thead><tbody>{body}</tbody></table></div></details>"
+    )
+
+
+def build_page(written, order, ramp, ramp_run):
+    """One page per chart: the figure, then the rows it was drawn from."""
+    environment = json.loads((RESULTS / ramp_run / "environment.json").read_text())
+    captions = {
+        "capacity": "Offered rate stepped until requests are dropped. The JVM holds twice the rate native does.",
+        "tail-latency": "p99 at each sustained step. Native's tail is worse at every rate on this workload.",
+        "idle-memory": "The JVM's idle footprint is a policy, not a floor: give it a container limit and it halves.",
+        "startup-composition": "Native removes config-class parsing entirely; what remains is the app's own boot work.",
+    }
+    tables = {
+        "capacity": table(
+            ["Runtime", "Offered", "Achieved", "Dropped", "p99 ms", "Sustained"],
+            [
+                [r["variant"], f'{int(r["rate"]):,}', f'{float(r["achieved_rps"]):,.0f}',
+                 f'{int(r["dropped_iterations"]):,}', r["p99_ms"], "yes" if r["sustained"] == "True" else "no"]
+                for r in ramp
+            ],
+            "Ramp data",
+        ),
+        "tail-latency": table(
+            ["Runtime", "Offered", "p50 ms", "p95 ms", "p99 ms"],
+            [[r["variant"], f'{int(r["rate"]):,}', r["p50_ms"], r["p95_ms"], r["p99_ms"]]
+             for r in ramp if r["sustained"] == "True"],
+            "Latency per step",
+        ),
+    }
+    figures = []
+    for name in order:
+        figures.append(
+            f'<section><figure class="chart">{written[(name, "light")]}{written[(name, "dark")]}'
+            f'<figcaption>{esc(captions[name])}</figcaption></figure>{tables.get(name, "")}</section>'
+        )
+    facts = [
+        ("Machine", f'{environment["machine"]}, {environment["cpus"]} cores, {environment["memory_gib"]} GiB'),
+        ("OS", environment["os"]),
+        ("Runtime", environment["java"].split(" / ")[1] if " / " in environment["java"] else environment["java"]),
+        ("Commit", environment["commit"][:12]),
+        ("Load generator", environment["load_generator"]),
+        ("Memory accounting", environment["memory_accounting"]),
+    ]
+    facts_html = "".join(f"<dt>{esc(k)}</dt><dd>{esc(v)}</dd>" for k, v in facts)
+    return PAGE.replace("{{figures}}", "".join(figures)).replace("{{facts}}", facts_html)
+
+
+PAGE = """<title>RealWorld Runtime Benchmarks</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
-  body { margin: 0; background: #fcfcfb; color: #0b0b0b; font: 14px ui-sans-serif, -apple-system, Segoe UI, sans-serif; }
-  main { max-width: 820px; margin: 0 auto; padding: 32px 20px 64px; }
-  .chart { margin: 0 0 34px; }
-  .chart svg { max-width: 100%; height: auto; border: 1px solid #e3e2df; border-radius: 8px; }
-  .chart svg:last-child { display: none; }
-  @media (prefers-color-scheme: dark) {
-    body { background: #1a1a19; color: #fff; }
-    .chart svg:first-child { display: none; }
-    .chart svg:last-child { display: block; }
-    .chart svg { border-color: #33322f; }
+  :root {
+    color-scheme: light;
+    --ground: #fbfbf9;
+    --raised: #f3f2ee;
+    --ink: #141413;
+    --muted: #5c5b56;
+    --hairline: #e4e3de;
+    --jvm: #2a78d6;
+    --native: #eb6834;
+    --sans: "IBM Plex Sans", system-ui, -apple-system, sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
   }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --ground: #1a1a19;
+      --raised: #232320;
+      --ink: #f7f7f4;
+      --muted: #b6b5ac;
+      --hairline: #33322f;
+      --jvm: #3987e5;
+      --native: #d95926;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --ground: #1a1a19;
+    --raised: #232320;
+    --ink: #f7f7f4;
+    --muted: #b6b5ac;
+    --hairline: #33322f;
+    --jvm: #3987e5;
+    --native: #d95926;
+  }
+  body { background: var(--ground); color: var(--ink); font-family: var(--sans); line-height: 1.55; }
+  main { max-width: 880px; margin: 0 auto; padding: 56px 24px 96px; display: flex; flex-direction: column; gap: 40px; }
+  h1 { font-size: 30px; font-weight: 600; letter-spacing: -0.02em; margin: 0 0 10px; text-wrap: balance; }
+  .lede { margin: 0; max-width: 62ch; color: var(--muted); font-size: 15.5px; }
+  .verdict { display: flex; flex-wrap: wrap; gap: 10px 28px; margin-top: 20px; font-family: var(--mono);
+             font-size: 13px; font-variant-numeric: tabular-nums; }
+  .verdict b { font-weight: 500; }
+  .verdict .jvm { color: var(--jvm); }
+  .verdict .native { color: var(--native); }
+  section { display: flex; flex-direction: column; gap: 12px; border-top: 1px solid var(--hairline); padding-top: 28px; }
+  .chart { margin: 0; display: flex; flex-direction: column; gap: 10px; }
+  .chart svg { max-width: 100%; height: auto; }
+  .chart svg:last-of-type { display: none; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .chart svg:first-of-type { display: none; }
+    :root:not([data-theme="light"]) .chart svg:last-of-type { display: block; }
+  }
+  :root[data-theme="dark"] .chart svg:first-of-type { display: none; }
+  :root[data-theme="dark"] .chart svg:last-of-type { display: block; }
+  figcaption { color: var(--muted); font-size: 14px; max-width: 62ch; }
+  .data summary { cursor: pointer; font-family: var(--mono); font-size: 12.5px; color: var(--muted);
+                  padding: 6px 0; width: fit-content; }
+  .data summary:focus-visible { outline: 2px solid var(--jvm); outline-offset: 3px; }
+  .scroll { overflow-x: auto; }
+  table { border-collapse: collapse; font-family: var(--mono); font-size: 12.5px;
+          font-variant-numeric: tabular-nums; margin-top: 6px; }
+  th, td { text-align: right; padding: 5px 14px 5px 0; border-bottom: 1px solid var(--hairline); white-space: nowrap; }
+  th:first-child, td:first-child { text-align: left; }
+  th { font-weight: 500; color: var(--muted); }
+  dl { display: grid; grid-template-columns: max-content 1fr; gap: 6px 20px; margin: 0;
+       font-size: 13px; }
+  dt { font-family: var(--mono); color: var(--muted); }
+  dd { margin: 0; }
+  footer { border-top: 1px solid var(--hairline); padding-top: 24px; color: var(--muted); font-size: 13.5px; }
 </style>
 <main>
-<h1>JVM vs native image</h1>
-<p>Charts drawn from the committed CSVs; ramp data from {{ramp_run}}. Hover any mark for its exact values.</p>
-{{charts}}
+  <header>
+    <h1>JVM against native image, measured</h1>
+    <p class="lede">Every figure below comes from the CSVs committed alongside this page, drawn by
+      <span style="font-family:var(--mono)">benchmark/charts.py</span>. Hover any mark for its exact values;
+      the rows behind each chart are one click away.</p>
+    <p class="verdict">
+      <span><b class="native">Native</b> 0.88 s to healthy · 218 MiB idle</span>
+      <span><b class="jvm">JVM</b> 4.19 s · 495 MiB idle</span>
+      <span><b class="jvm">JVM</b> 4,000 req/s sustained vs <b class="native">2,000</b></span>
+    </p>
+  </header>
+  {{figures}}
+  <footer>
+    <dl>{{facts}}</dl>
+  </footer>
 </main>
 """
 
