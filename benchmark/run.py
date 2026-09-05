@@ -774,6 +774,7 @@ def environment(args):
         "python": platform.python_version(),
         "artifacts": {"jar": f"{jar.name} {digest(jar)}", "native": f"{binary.name} {digest(binary)}"},
         "profile": args.profile,
+        "note": args.note or "none",
         "heap_setting": f"-Xmx{args.heap} on both runtimes" if args.heap else "none; each runtime uses its own ergonomics",
         "container": (
             f"docker, -m {args.container_memory} --cpus {args.container_cpus}, "
@@ -811,6 +812,7 @@ def main():
     parser.add_argument("--warmup-duration", default="30s")
     parser.add_argument("--recovery", type=int, default=30, help="seconds after load before reading RSS")
     parser.add_argument("--heap", default="", help="value for -Xmx applied to both runtimes, e.g. 512m")
+    parser.add_argument("--note", default="", help="free text recorded with the run, e.g. the native collector")
     parser.add_argument("--ramp-rates", default="500,1000,2000,4000,8000,16000", help="offered rates to step through")
     parser.add_argument("--ramp-duration", default="30s")
     parser.add_argument("--ramp-settle", type=int, default=10, help="seconds between ramp steps")
@@ -829,6 +831,7 @@ def main():
         filter(None, [
             f"container {args.container_memory}/{args.container_cpus}cpu" if args.container_memory else "host process",
             f"-Xmx{args.heap}" if args.heap else "",
+            args.note,
         ])
     )
 
