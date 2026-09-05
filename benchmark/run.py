@@ -20,6 +20,7 @@ import http.client
 import json
 import os
 import platform
+import re
 import shutil
 import socket
 import statistics
@@ -37,6 +38,7 @@ READY_TIMEOUT = 120.0
 POLL_INTERVAL = 0.002
 RSS_SAMPLE_INTERVAL = 0.02
 SEED_ARTICLES = 20
+TOP_STARTUP_STEPS = 12
 # Trimmed off each end of the measured load window: VU ramp at the start, gracefulStop at the end.
 STEADY_LEAD_IN = 3.0
 STEADY_LEAD_OUT = 6.0
@@ -170,6 +172,38 @@ def seed_dataset(port):
         if status != 201:
             raise TrialFailed(f"seed article {index} returned {status}: {body[:200]}")
     return token
+
+
+def startup_breakdown(port):
+    """Self time per startup step from actuator/startup.
+
+    The app wires BufferingApplicationStartup, so Spring records the whole tree. Parent
+    durations include their children, so the interesting figure is duration minus the sum of
+    direct children: that attributes time to the step that actually spent it. Reading the
+    endpoint drains the buffer, so call it once per process.
+    """
+    status, body = request(port, "GET", "/actuator/startup")
+    if status != 200:
+        return []
+    events = json.loads(body).get("timeline", {}).get("events", [])
+    duration, parent, label = {}, {}, {}
+    for event in events:
+        step = event["startupStep"]
+        match = re.match(r"PT(?:(\d+)M)?([\d.]+)S", event["duration"])
+        if not match:
+            continue
+        step_id = step["id"]
+        duration[step_id] = int(match.group(1) or 0) * 60 + float(match.group(2))
+        parent[step_id] = step.get("parentId")
+        tags = {t["key"]: t["value"] for t in step.get("tags", [])}
+        named = tags.get("beanName") or tags.get("name") or ""
+        label[step_id] = f"{step['name']}[{named}]" if named else step["name"]
+    children = {}
+    for step_id, parent_id in parent.items():
+        if parent_id is not None:
+            children[parent_id] = children.get(parent_id, 0) + duration[step_id]
+    rows = [(duration[i] - children.get(i, 0), label[i]) for i in duration]
+    return sorted(rows, reverse=True)
 
 
 def artifacts():
@@ -353,6 +387,9 @@ def phase_startup(out_dir, args):
         out_dir / "startup.csv",
         ["variant", "profile", "trial", "order", "ready_s", "first_api_after_health_s", "peak_startup_rss_kb"],
     )
+    steps_handle, step_rows = writer(
+        out_dir / "startup_steps.csv", ["variant", "profile", "trial", "step", "self_s"]
+    )
     logs = out_dir / "logs"
     logs.mkdir(exist_ok=True)
     results = {"jvm": [], "native": []}
@@ -365,6 +402,7 @@ def phase_startup(out_dir, args):
                 # Sequential by construction: the API is probed only after health passes, so
                 # this is "first API response after the health gate", not independent readiness.
                 first_api = app.wait_ready(API_PATH)
+                breakdown = startup_breakdown(app.port)
                 peak = app.sampler.peak
             if peak is None:
                 raise TrialFailed(f"no RSS samples for {variant} trial {trial}")
@@ -383,16 +421,42 @@ def phase_startup(out_dir, args):
                     "peak_startup_rss_kb": peak,
                 }
             )
-            results[variant].append((ready, first_api, peak))
+            for self_s, step in breakdown[:TOP_STARTUP_STEPS]:
+                step_rows.writerow(
+                    {
+                        "variant": variant,
+                        "profile": args.profile,
+                        "trial": trial - args.warmups,
+                        "step": step,
+                        "self_s": round(self_s, 4),
+                    }
+                )
+            results[variant].append((ready, first_api, peak, breakdown))
     handle.close()
+    steps_handle.close()
     return {
         variant: {
-            "ready_s": summarise([r for r, _, _ in trials]),
-            "first_api_after_health_s": summarise([a for _, a, _ in trials]),
-            "peak_startup_rss_mib": summarise([p / 1024 for _, _, p in trials]),
+            "ready_s": summarise([r for r, _, _, _ in trials]),
+            "first_api_after_health_s": summarise([a for _, a, _, _ in trials]),
+            "peak_startup_rss_mib": summarise([p / 1024 for _, _, p, _ in trials]),
+            "slowest_steps_median_s": {
+                step: round(statistics.median(times), 3)
+                for step, times in sorted(
+                    step_times(trials).items(), key=lambda kv: -statistics.median(kv[1])
+                )[:5]
+            },
         }
         for variant, trials in results.items()
     }
+
+
+def step_times(trials):
+    """Self times per step across trials, so the breakdown carries a median too."""
+    collected = {}
+    for *_, breakdown in trials:
+        for self_s, step in breakdown[:TOP_STARTUP_STEPS]:
+            collected.setdefault(step, []).append(self_s)
+    return collected
 
 
 def phase_idle(out_dir, args):
