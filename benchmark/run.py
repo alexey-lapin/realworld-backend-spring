@@ -565,6 +565,20 @@ def phase_sizes(out_dir, _args):
     return results
 
 
+def is_dirty(args):
+    """Uncommitted changes, ignoring the harness's own output directory.
+
+    Writing results into the working tree would otherwise make every run after the first
+    one refuse to start.
+    """
+    out = (ROOT / args.out).resolve()
+    for line in run(["git", "status", "--porcelain"]).stdout.splitlines():
+        path = line[3:].split(" -> ")[-1].strip().strip('"')
+        if not (ROOT / path).resolve().is_relative_to(out):
+            return True
+    return False
+
+
 def cpu_model():
     """Portable-enough CPU name: sysctl on macOS, /proc/cpuinfo on Linux."""
     if platform.system() == "Darwin":
@@ -604,7 +618,7 @@ def environment(args):
     return {
         "recorded_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "commit": run(["git", "rev-parse", "HEAD"]).stdout.strip(),
-        "dirty_working_tree": bool(run(["git", "status", "--porcelain"]).stdout.strip()),
+        "dirty_working_tree": is_dirty(args),
         "machine": cpu_model(),
         "cpus": os.cpu_count(),
         "memory_gib": memory_gib(),
