@@ -245,7 +245,9 @@ def docker_command(variant, port, args):
     jar, binary = artifacts()
     heap_args = [f"-Xmx{args.heap}"] if args.heap else []
     limits = ["-m", args.container_memory, "--cpus", args.container_cpus]
-    common = ["docker", "run", "-d", "--rm", *limits, "-p", f"127.0.0.1:{port}:8080"]
+    network = ["--network", args.docker_network] if args.docker_network else []
+    env = [arg for pair in args.app_env for arg in ("-e", pair)]
+    common = ["docker", "run", "-d", "--rm", *limits, *network, *env, "-p", f"127.0.0.1:{port}:8080"]
     if variant == "jvm":
         return [
             *common,
@@ -820,6 +822,9 @@ def main():
     parser.add_argument("--ramp-error-limit", type=float, default=0.01)
     parser.add_argument("--container-memory", default="", help="run both artifacts under a docker memory limit, e.g. 512m")
     parser.add_argument("--container-cpus", default="4", help="docker --cpus when a container limit is used")
+    parser.add_argument("--docker-network", default="", help="attach the app container to this docker network")
+    parser.add_argument("--app-env", action="append", default=[], metavar="KEY=VALUE",
+                        help="environment variable for the app container, repeatable")
     parser.add_argument("--jvm-image", default="eclipse-temurin:25-jre", help="base image for the jar")
     parser.add_argument("--native-image", default="debian:13-slim", help="base image for the native binary")
     parser.add_argument("--allow-dirty", action="store_true", help="measure anyway with uncommitted changes")
