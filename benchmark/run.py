@@ -618,7 +618,7 @@ def phase_ramp(out_dir, args):
     summaries = out_dir / "k6"
     summaries.mkdir(exist_ok=True)
     knees = {}
-    for variant in ("jvm", "native"):
+    for variant in args.variants:
         with App(variant, args, logs / f"ramp-{variant}.log") as app:
             app.wait_ready()
             app.wait_ready(API_PATH)
@@ -814,6 +814,7 @@ def main():
     parser.add_argument("--warmup-duration", default="30s")
     parser.add_argument("--recovery", type=int, default=30, help="seconds after load before reading RSS")
     parser.add_argument("--heap", default="", help="value for -Xmx applied to both runtimes, e.g. 512m")
+    parser.add_argument("--variants", default="jvm,native", help="which runtimes to measure")
     parser.add_argument("--note", default="", help="free text recorded with the run, e.g. the native collector")
     parser.add_argument("--ramp-rates", default="500,1000,2000,4000,8000,16000", help="offered rates to step through")
     parser.add_argument("--ramp-duration", default="30s")
@@ -832,6 +833,7 @@ def main():
     args = parser.parse_args()
     args.rates = [int(r) for r in args.rates.split(",") if r]
     args.ramp_rates = [int(r) for r in args.ramp_rates.split(",") if r]
+    args.variants = [v.strip() for v in args.variants.split(",") if v.strip()]
     args.profile = " + ".join(
         filter(None, [
             f"container {args.container_memory}/{args.container_cpus}cpu" if args.container_memory else "host process",
