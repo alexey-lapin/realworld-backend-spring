@@ -498,9 +498,11 @@ def k6(script, port, token, rate, duration, summary_out, mix="mixed"):
         "RATE": str(rate),
         "DURATION": duration,
         "MIX": mix,
-        # Headroom for a rate sweep: at several thousand a second the default pool is the limit.
-        "PREALLOC": str(max(128, rate // 2)),
-        "MAX_VUS": str(max(1024, rate * 4)),
+        # Concurrency at these rates is single digits when the service is healthy, so 128 is
+        # already generous; maxVUs is the headroom that lets a struggling server show drops
+        # rather than the generator running out of workers first.
+        "PREALLOC": "128",
+        "MAX_VUS": str(max(1024, rate * 2)),
     }
     if summary_out:
         env["SUMMARY_OUT"] = str(summary_out)
@@ -596,68 +598,85 @@ def phase_load(out_dir, args):
     }
 
 
+def ramp_step(script, app, token, variant, rate, repeat, args, summaries):
+    """One measured window at one rate."""
+    summary_path = summaries / f"ramp-{variant}-{rate}-r{repeat}.json"
+    started = time.monotonic()
+    result = k6(script, app.port, token, rate, args.ramp_duration, summary_path, mix="read")
+    ended = time.monotonic()
+    if result.returncode != 0 or not summary_path.exists():
+        raise TrialFailed(f"k6 failed for {variant} at {rate} rps:\n{result.stderr[-1500:]}")
+    metrics = json.loads(summary_path.read_text())["metrics"]
+    latency = metrics["http_req_duration"]["values"]
+    during = app.sampler.between(started + STEADY_LEAD_IN, ended - STEADY_LEAD_OUT)
+    return {
+        "variant": variant,
+        "profile": args.profile,
+        "rate": rate,
+        "repeat": repeat,
+        "achieved_rps": round(metrics["http_reqs"]["values"]["rate"], 1),
+        "dropped_iterations": int(metrics.get("dropped_iterations", {}).get("values", {}).get("count", 0)),
+        "error_rate": round(metrics["http_req_failed"]["values"]["rate"], 5),
+        "p50_ms": round(latency["med"], 2),
+        "p95_ms": round(latency["p(95)"], 2),
+        "p99_ms": round(latency["p(99)"], 2),
+        "steady_rss_kb": int(statistics.median(during)) if during else None,
+    }
+
+
 def phase_ramp(out_dir, args):
     """Step the offered rate up until the service stops keeping up.
 
-    The fixed-rate phase answers "what is latency at this load". This answers "how much load
-    is there", which is the question those rates could not reach: on an unconstrained host
-    50-500 req/s never approached anything. A step is judged failed when k6 drops iterations,
-    errors appear, or the tail crosses --ramp-p99-limit; the knee is the last rate before that.
-
-    Reads only, because a write-heavy sweep at thousands of requests per second grows the
-    dataset fast enough that the table size, not the runtime, becomes the variable.
+    Every rate is measured --ramp-repeats times and judged on the median, because a single
+    30-second window is not a measurement: one run of this suite reported 438ms at a rate
+    that gave 8ms four times afterwards, and a database checkpoint inside the window is
+    enough to do that. Reads only, so a rate sweep is not also a test of a growing table.
     """
     script = ROOT / "benchmark/k6-steady-load.js"
     fields = [
-        "variant", "profile", "rate", "achieved_rps", "dropped_iterations", "error_rate",
-        "p50_ms", "p95_ms", "p99_ms", "steady_rss_kb", "sustained",
+        "variant", "profile", "rate", "repeat", "achieved_rps", "dropped_iterations",
+        "error_rate", "p50_ms", "p95_ms", "p99_ms", "steady_rss_kb", "sustained",
     ]
     handle, rows = writer(out_dir / "ramp.csv", fields)
     logs = out_dir / "logs"
     logs.mkdir(exist_ok=True)
     summaries = out_dir / "k6"
     summaries.mkdir(exist_ok=True)
-    knees = {}
+    results = {}
     for variant in args.variants:
         with App(variant, args, logs / f"ramp-{variant}.log") as app:
             app.wait_ready()
             app.wait_ready(API_PATH)
             token = seed_dataset(app.port)
-            warmup = k6(script, app.port, token, args.ramp_rates[0], args.warmup_duration, None, mix="read")
+            # Warm at the top of the sweep: warming at the lowest rate leaves the first
+            # measured step under-compiled, which showed up as a slow first step every time.
+            warmup = k6(script, app.port, token, max(args.ramp_rates), args.warmup_duration, None, mix="read")
             if warmup.returncode != 0:
                 raise TrialFailed(f"k6 warmup failed for {variant}:\n{warmup.stderr[-1500:]}")
-            knee = None
+            knee, spread = None, {}
             for rate in args.ramp_rates:
-                summary_path = summaries / f"ramp-{variant}-{rate}.json"
-                started = time.monotonic()
-                result = k6(script, app.port, token, rate, args.ramp_duration, summary_path, mix="read")
-                ended = time.monotonic()
-                if result.returncode != 0 or not summary_path.exists():
-                    raise TrialFailed(f"k6 failed for {variant} at {rate} rps:\n{result.stderr[-1500:]}")
-                metrics = json.loads(summary_path.read_text())["metrics"]
-                latency = metrics["http_req_duration"]["values"]
-                dropped = int(metrics.get("dropped_iterations", {}).get("values", {}).get("count", 0))
-                errors = metrics["http_req_failed"]["values"]["rate"]
-                during = app.sampler.between(started + STEADY_LEAD_IN, ended - STEADY_LEAD_OUT)
-                sustained = dropped == 0 and errors <= args.ramp_error_limit and latency["p(99)"] <= args.ramp_p99_limit
-                rows.writerow(
-                    {
-                        "variant": variant,
-                        "profile": args.profile,
-                        "rate": rate,
-                        "achieved_rps": round(metrics["http_reqs"]["values"]["rate"], 1),
-                        "dropped_iterations": dropped,
-                        "error_rate": round(errors, 5),
-                        "p50_ms": round(latency["med"], 2),
-                        "p95_ms": round(latency["p(95)"], 2),
-                        "p99_ms": round(latency["p(99)"], 2),
-                        "steady_rss_kb": int(statistics.median(during)) if during else None,
-                        "sustained": sustained,
-                    }
+                measured = [
+                    ramp_step(script, app, token, variant, rate, repeat, args, summaries)
+                    for repeat in range(1, args.ramp_repeats + 1)
+                ]
+                p99s = [row["p99_ms"] for row in measured]
+                dropped = [row["dropped_iterations"] for row in measured]
+                errors = [row["error_rate"] for row in measured]
+                sustained = (
+                    statistics.median(dropped) == 0
+                    and statistics.median(errors) <= args.ramp_error_limit
+                    and statistics.median(p99s) <= args.ramp_p99_limit
                 )
+                for row in measured:
+                    rows.writerow({**row, "sustained": sustained})
+                spread[rate] = {
+                    "p99_ms": summarise(p99s),
+                    "dropped_total": sum(dropped),
+                    "achieved_rps": summarise([row["achieved_rps"] for row in measured]),
+                }
                 log(
-                    f"  ramp {variant:6s} @{rate:6d} rps: achieved {metrics['http_reqs']['values']['rate']:.0f}, "
-                    f"dropped {dropped}, p99 {latency['p(99)']:.1f}ms, errors {errors:.3f}"
+                    f"  ramp {variant:6s} @{rate:6d} rps: p99 median {statistics.median(p99s):7.1f}ms "
+                    f"(runs: {', '.join(f'{p:.1f}' for p in p99s)})  dropped {sum(dropped)}"
                     f"{'' if sustained else '  <- not sustained'}"
                 )
                 if sustained:
@@ -665,12 +684,18 @@ def phase_ramp(out_dir, args):
                 else:
                     break
                 time.sleep(args.ramp_settle)
-        knees[variant] = knee
+        results[variant] = {"highest_sustained_rps": knee, "per_rate": spread}
         log(f"  ramp {variant}: highest sustained {knee} req/s")
     handle.close()
-    return {"highest_sustained_rps": knees, "criteria": {
-        "max_p99_ms": args.ramp_p99_limit, "max_error_rate": args.ramp_error_limit, "dropped_iterations": 0,
-    }}
+    return {
+        "runtimes": results,
+        "criteria": {
+            "judged_on": f"median of {args.ramp_repeats} runs per rate",
+            "max_p99_ms": args.ramp_p99_limit,
+            "max_error_rate": args.ramp_error_limit,
+            "dropped_iterations": 0,
+        },
+    }
 
 
 def phase_build(out_dir, args):
@@ -817,6 +842,7 @@ def main():
     parser.add_argument("--variants", default="jvm,native", help="which runtimes to measure")
     parser.add_argument("--note", default="", help="free text recorded with the run, e.g. the native collector")
     parser.add_argument("--ramp-rates", default="500,1000,2000,4000,8000,16000", help="offered rates to step through")
+    parser.add_argument("--ramp-repeats", type=int, default=3, help="measured runs per rate")
     parser.add_argument("--ramp-duration", default="30s")
     parser.add_argument("--ramp-settle", type=int, default=10, help="seconds between ramp steps")
     parser.add_argument("--ramp-p99-limit", type=float, default=250.0, help="p99 ms above which a step counts as failed")
