@@ -37,7 +37,6 @@ API_PATH = "/api/tags"
 READY_TIMEOUT = 120.0
 POLL_INTERVAL = 0.002
 RSS_SAMPLE_INTERVAL = 0.02
-SEED_ARTICLES = 20
 TOP_STARTUP_STEPS = 12
 # Trimmed off each end of the measured load window: VU ramp at the start, gracefulStop at the end.
 STEADY_LEAD_IN = 3.0
@@ -138,7 +137,7 @@ def probe(port, path):
         return False
 
 
-def seed_dataset(port):
+def seed_dataset(port, articles):
     """Register a user and create articles from the harness.
 
     Deliberately not done in k6's setup(): k6 records built-in HTTP metrics for setup
@@ -154,7 +153,18 @@ def seed_dataset(port):
     if status != 201:
         raise TrialFailed(f"seed user registration returned {status}: {body[:200]}")
     token = json.loads(body)["user"]["token"]
-    for index in range(SEED_ARTICLES):
+    # Registration leaves bio null, so a seeded corpus never exercises that column unless it
+    # is set here. Every article page reads the author's bio through the view.
+    status, body = request(
+        port,
+        "PUT",
+        "/api/user",
+        {"user": {"bio": "Bench author. " * 12}},
+        token=token,
+    )
+    if status != 200:
+        raise TrialFailed(f"seed bio update returned {status}: {body[:200]}")
+    for index in range(articles):
         status, body = request(
             port,
             "POST",
@@ -171,6 +181,7 @@ def seed_dataset(port):
         )
         if status != 201:
             raise TrialFailed(f"seed article {index} returned {status}: {body[:200]}")
+    log(f"    seeded {articles} articles and an author bio")
     return token
 
 
@@ -520,7 +531,7 @@ def load_cell(script, variant, rate, repeat, args, logs, summaries):
     with App(variant, args, logs / f"load-{variant}-{rate}-r{repeat}.log") as app:
         app.wait_ready()
         app.wait_ready(API_PATH)
-        token = seed_dataset(app.port)
+        token = seed_dataset(app.port, args.seed_articles)
         # Warm up outside the measured window; for the JVM this is where the JIT works.
         warmup = k6(script, app.port, token, rate, args.warmup_duration, None)
         if warmup.returncode != 0:
@@ -647,7 +658,7 @@ def phase_ramp(out_dir, args):
         with App(variant, args, logs / f"ramp-{variant}.log") as app:
             app.wait_ready()
             app.wait_ready(API_PATH)
-            token = seed_dataset(app.port)
+            token = seed_dataset(app.port, args.seed_articles)
             # Warm at the top of the sweep: warming at the lowest rate leaves the first
             # measured step under-compiled, which showed up as a slow first step every time.
             warmup = k6(script, app.port, token, max(args.ramp_rates), args.warmup_duration, None, mix="read")
@@ -807,6 +818,7 @@ def environment(args):
             f"docker, -m {args.container_memory} --cpus {args.container_cpus}, "
             f"jar on {args.jvm_image}, binary on {args.native_image}"
         ) if args.container_memory else "none; artifacts run directly on the host",
+        "seed_articles": args.seed_articles,
         "load_generator": "k6 on the same host over loopback, so the generator competes with the server",
         "memory_accounting": (
             "process RSS plus the container cgroup peak (memory.peak)"
@@ -842,6 +854,8 @@ def main():
     parser.add_argument("--variants", default="jvm,native", help="which runtimes to measure")
     parser.add_argument("--note", default="", help="free text recorded with the run, e.g. the native collector")
     parser.add_argument("--ramp-rates", default="500,1000,2000,4000,8000,16000", help="offered rates to step through")
+    parser.add_argument("--seed-articles", type=int, default=200,
+                        help="rows seeded before a measured window; 20 makes every page identical")
     parser.add_argument("--ramp-repeats", type=int, default=3, help="measured runs per rate")
     parser.add_argument("--ramp-duration", default="30s")
     parser.add_argument("--ramp-settle", type=int, default=10, help="seconds between ramp steps")
