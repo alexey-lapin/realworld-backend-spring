@@ -30,6 +30,7 @@ dependencies {
     implementation(libs.springdoc.openapiStarterWebmvcUi)
 
     runtimeOnly(libs.h2.h2)
+    runtimeOnly(libs.postgresql.postgresql)
     runtimeOnly(libs.spring.springBootH2console)
 
     testAnnotationProcessor(libs.projectlombok.lombok)
@@ -69,6 +70,8 @@ graalvmNative {
             imageName.set(rootProject.name)
             buildArgs.add("--verbose")
             buildArgs.add("-H:DeadlockWatchdogInterval=120")
+            // -PnativeGc=parallel picks a collector where the toolchain has one; CE only has serial.
+            providers.gradleProperty("nativeGc").orNull?.let { buildArgs.add("--gc=$it") }
         }
     }
 }

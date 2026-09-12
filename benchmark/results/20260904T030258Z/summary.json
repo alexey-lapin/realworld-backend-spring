@@ -1,0 +1,303 @@
+{
+  "environment": {
+    "recorded_at": "2026-09-04T03:02:58+00:00",
+    "commit": "7bae4cb5889f59e7da79e07d9dc4d35437479b11",
+    "dirty_working_tree": false,
+    "machine": "Intel(R) Core(TM) i5-14500",
+    "cpus": 8,
+    "memory_gib": 16,
+    "os": "Linux 7.0.12-1-pve (x86_64)",
+    "java": "openjdk version \"25.0.2\" 2026-01-20 / OpenJDK Runtime Environment GraalVM CE 25.0.2+10.1 (build 25.0.2+10-jvmci-b01) / OpenJDK 64-Bit Server VM GraalVM CE 25.0.2+10.1 (build 25.0.2+10-jvmci-b01, mixed mode, sharing)",
+    "k6": "k6 v2.2.0 (commit/00a9a1b7f5, go1.26.5, linux/amd64)",
+    "python": "3.13.5",
+    "artifacts": {
+      "jar": "realworld-backend-spring-0.4.2-feature-startup-and-memory-numbers-SNAPSHOT.jar 87629559e4e9290d",
+      "native": "realworld-backend-spring d0f13554c0e1a096"
+    },
+    "profile": "host process",
+    "heap_setting": "none; each runtime uses its own ergonomics",
+    "container": "none; artifacts run directly on the host",
+    "load_generator": "k6 on the same host over loopback, so the generator competes with the server",
+    "memory_accounting": "host process RSS; not cgroup accounting, so this is not a container result"
+  },
+  "results": {
+    "build": {
+      "bootJar": {
+        "wall_s": 8.8,
+        "gradle_state": "clean outputs, warm cache"
+      },
+      "nativeCompile": {
+        "wall_s": 97.8,
+        "gradle_state": "clean outputs, warm cache"
+      }
+    },
+    "sizes": {
+      "jar": {
+        "mib": 45.7,
+        "gzip_mib": 41.1
+      },
+      "native": {
+        "mib": 165.6,
+        "gzip_mib": 54.0
+      }
+    },
+    "startup": {
+      "jvm": {
+        "ready_s": {
+          "n": 20,
+          "min": 4.013,
+          "median": 4.194,
+          "max": 4.4,
+          "iqr": 0.274
+        },
+        "first_api_after_health_s": {
+          "n": 20,
+          "min": 4.066,
+          "median": 4.253,
+          "max": 4.457,
+          "iqr": 0.276
+        },
+        "peak_startup_rss_mib": {
+          "n": 20,
+          "min": 508.418,
+          "median": 578.797,
+          "max": 626.168,
+          "iqr": 84.755
+        }
+      },
+      "native": {
+        "ready_s": {
+          "n": 20,
+          "min": 0.723,
+          "median": 0.876,
+          "max": 1.258,
+          "iqr": 0.201
+        },
+        "first_api_after_health_s": {
+          "n": 20,
+          "min": 0.726,
+          "median": 0.878,
+          "max": 1.259,
+          "iqr": 0.201
+        },
+        "peak_startup_rss_mib": {
+          "n": 20,
+          "min": 208.762,
+          "median": 213.877,
+          "max": 216.195,
+          "iqr": 2.847
+        }
+      }
+    },
+    "idle": {
+      "jvm": {
+        "n": 5,
+        "min": 402.883,
+        "median": 494.668,
+        "max": 532.629,
+        "iqr": 108.25
+      },
+      "native": {
+        "n": 5,
+        "min": 216.727,
+        "median": 217.723,
+        "max": 217.73,
+        "iqr": 0.508
+      }
+    },
+    "load": {
+      "jvm@50": {
+        "repeats": 2,
+        "achieved_rps": {
+          "n": 2,
+          "min": 50.0,
+          "median": 50.0,
+          "max": 50.0,
+          "iqr": null
+        },
+        "dropped_iterations": 0,
+        "p95_ms": {
+          "n": 2,
+          "min": 2.19,
+          "median": 2.2,
+          "max": 2.21,
+          "iqr": null
+        },
+        "p99_ms": {
+          "n": 2,
+          "min": 2.73,
+          "median": 2.75,
+          "max": 2.77,
+          "iqr": null
+        },
+        "steady_rss_mib": {
+          "n": 2,
+          "min": 512.383,
+          "median": 514.34,
+          "max": 516.297,
+          "iqr": null
+        }
+      },
+      "native@50": {
+        "repeats": 2,
+        "achieved_rps": {
+          "n": 2,
+          "min": 50.0,
+          "median": 50.0,
+          "max": 50.0,
+          "iqr": null
+        },
+        "dropped_iterations": 0,
+        "p95_ms": {
+          "n": 2,
+          "min": 1.55,
+          "median": 1.62,
+          "max": 1.69,
+          "iqr": null
+        },
+        "p99_ms": {
+          "n": 2,
+          "min": 2.8,
+          "median": 2.89,
+          "max": 2.98,
+          "iqr": null
+        },
+        "steady_rss_mib": {
+          "n": 2,
+          "min": 214.699,
+          "median": 215.531,
+          "max": 216.363,
+          "iqr": null
+        }
+      },
+      "jvm@200": {
+        "repeats": 2,
+        "achieved_rps": {
+          "n": 2,
+          "min": 200.0,
+          "median": 200.0,
+          "max": 200.0,
+          "iqr": null
+        },
+        "dropped_iterations": 0,
+        "p95_ms": {
+          "n": 2,
+          "min": 1.83,
+          "median": 1.85,
+          "max": 1.87,
+          "iqr": null
+        },
+        "p99_ms": {
+          "n": 2,
+          "min": 2.73,
+          "median": 2.755,
+          "max": 2.78,
+          "iqr": null
+        },
+        "steady_rss_mib": {
+          "n": 2,
+          "min": 523.793,
+          "median": 524.893,
+          "max": 525.992,
+          "iqr": null
+        }
+      },
+      "native@200": {
+        "repeats": 2,
+        "achieved_rps": {
+          "n": 2,
+          "min": 200.0,
+          "median": 200.0,
+          "max": 200.0,
+          "iqr": null
+        },
+        "dropped_iterations": 0,
+        "p95_ms": {
+          "n": 2,
+          "min": 5.01,
+          "median": 5.04,
+          "max": 5.07,
+          "iqr": null
+        },
+        "p99_ms": {
+          "n": 2,
+          "min": 14.56,
+          "median": 14.72,
+          "max": 14.88,
+          "iqr": null
+        },
+        "steady_rss_mib": {
+          "n": 2,
+          "min": 211.062,
+          "median": 211.489,
+          "max": 211.916,
+          "iqr": null
+        }
+      },
+      "jvm@500": {
+        "repeats": 2,
+        "achieved_rps": {
+          "n": 2,
+          "min": 500.0,
+          "median": 500.0,
+          "max": 500.0,
+          "iqr": null
+        },
+        "dropped_iterations": 0,
+        "p95_ms": {
+          "n": 2,
+          "min": 4.28,
+          "median": 4.335,
+          "max": 4.39,
+          "iqr": null
+        },
+        "p99_ms": {
+          "n": 2,
+          "min": 6.13,
+          "median": 6.185,
+          "max": 6.24,
+          "iqr": null
+        },
+        "steady_rss_mib": {
+          "n": 2,
+          "min": 807.996,
+          "median": 821.928,
+          "max": 835.859,
+          "iqr": null
+        }
+      },
+      "native@500": {
+        "repeats": 2,
+        "achieved_rps": {
+          "n": 2,
+          "min": 499.8,
+          "median": 499.9,
+          "max": 500.0,
+          "iqr": null
+        },
+        "dropped_iterations": 0,
+        "p95_ms": {
+          "n": 2,
+          "min": 14.81,
+          "median": 16.05,
+          "max": 17.29,
+          "iqr": null
+        },
+        "p99_ms": {
+          "n": 2,
+          "min": 35.45,
+          "median": 37.035,
+          "max": 38.62,
+          "iqr": null
+        },
+        "steady_rss_mib": {
+          "n": 2,
+          "min": 541.984,
+          "median": 552.613,
+          "max": 563.242,
+          "iqr": null
+        }
+      }
+    }
+  }
+}
