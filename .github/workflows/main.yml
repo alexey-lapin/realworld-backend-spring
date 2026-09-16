@@ -38,7 +38,7 @@ jobs:
         uses: actions/setup-java@v6
         with:
           distribution: temurin
-          java-version: 25
+          java-version: 25.0.4+101.0.LTS
 
       - name: Checkout API spec
         uses: actions/checkout@v7
@@ -120,7 +120,7 @@ jobs:
       - name: Setup GraalVM
         uses: graalvm/setup-graalvm@v1
         with:
-          java-version: 25
+          java-version: 25.0.4+101.0.LTS
           distribution: liberica
           github-token: ${{ secrets.GITHUB_TOKEN }}
           native-image-job-reports: 'true'
