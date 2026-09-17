@@ -1,0 +1,10 @@
+variant,profile,rate,achieved_rps,dropped_iterations,error_rate,p50_ms,p95_ms,p99_ms,steady_rss_kb,sustained
+jvm,container 2g/2cpu,500,500.0,0,0,0.43,0.73,2.19,416844,True
+jvm,container 2g/2cpu,1000,1000.0,0,0,0.42,0.8,4.62,419508,True
+jvm,container 2g/2cpu,2000,1999.9,0,0,0.39,0.69,2.05,523064,True
+jvm,container 2g/2cpu,4000,3999.7,0,0,0.37,1.58,12.14,586424,True
+jvm,container 2g/2cpu,8000,4342.1,80248,0,1609.43,1802.75,2037.96,757816,False
+native,container 2g/2cpu,500,500.0,0,0,0.72,2.04,11.07,214448,True
+native,container 2g/2cpu,1000,1000.0,0,0,0.7,1.99,9.01,229836,True
+native,container 2g/2cpu,2000,1999.8,0,0,0.71,2.37,11.84,289676,True
+native,container 2g/2cpu,4000,2442.1,32767,0,2306.36,3112.74,3303.06,740932,False
