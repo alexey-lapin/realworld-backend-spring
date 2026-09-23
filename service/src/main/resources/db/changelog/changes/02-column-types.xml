@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!-- Quoted like the original changesets: the tables were created with lowercase names,
+         and unquoted identifiers are upper-cased by H2. -->
+    <changeSet id="010-tag-list-and-bio-to-varchar" author="alex" objectQuotingStrategy="QUOTE_ALL_OBJECTS">
+        <comment>
+            TEXT becomes CLOB on H2, and a CLOB is read by copying a character stream: every
+            row of every article page paid one. Unbounded VARCHAR holds the same values on
+            both H2 and PostgreSQL without that read path, so no length limit is introduced.
+        </comment>
+        <modifyDataType tableName="t_articles" columnName="tag_list" newDataType="VARCHAR"/>
+        <modifyDataType tableName="t_users" columnName="bio" newDataType="VARCHAR"/>
+    </changeSet>
+
+</databaseChangeLog>

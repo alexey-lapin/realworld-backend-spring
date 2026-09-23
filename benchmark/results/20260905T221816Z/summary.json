@@ -1,0 +1,87 @@
+{
+  "environment": {
+    "recorded_at": "2026-09-05T22:18:16+00:00",
+    "commit": "86ab1ea2fd81e329024da9068e3371fe6fabe27c",
+    "dirty_working_tree": false,
+    "machine": "Intel(R) Core(TM) i5-14500",
+    "cpus": 8,
+    "memory_gib": 16,
+    "os": "Linux 7.0.12-1-pve (x86_64)",
+    "java": "openjdk version \"25.0.2\" 2026-01-20 / OpenJDK Runtime Environment GraalVM CE 25.0.2+10.1 (build 25.0.2+10-jvmci-b01) / OpenJDK 64-Bit Server VM GraalVM CE 25.0.2+10.1 (build 25.0.2+10-jvmci-b01, mixed mode, sharing)",
+    "k6": "k6 v2.2.0 (commit/00a9a1b7f5, go1.26.5, linux/amd64)",
+    "python": "3.13.5",
+    "artifacts": {
+      "jar": "realworld-backend-spring-0.4.2-feature-startup-and-memory-numbers-SNAPSHOT.jar 1d3bb2e825022ee4",
+      "native": "realworld-backend-spring a2b2353640dae85e"
+    },
+    "profile": "container 512m/4cpu",
+    "heap_setting": "none; each runtime uses its own ergonomics",
+    "container": "docker, -m 512m --cpus 4, jar on eclipse-temurin:25-jre, binary on debian:13-slim",
+    "load_generator": "k6 on the same host over loopback, so the generator competes with the server",
+    "memory_accounting": "process RSS plus the container cgroup peak (memory.peak)"
+  },
+  "results": {
+    "startup": {
+      "jvm": {
+        "ready_s": {
+          "n": 20,
+          "min": 4.881,
+          "median": 5.084,
+          "max": 5.466,
+          "iqr": 0.213
+        },
+        "first_api_after_health_s": {
+          "n": 20,
+          "min": 4.947,
+          "median": 5.154,
+          "max": 5.559,
+          "iqr": 0.219
+        },
+        "peak_startup_rss_mib": {
+          "n": 20,
+          "min": 270.023,
+          "median": 283.906,
+          "max": 310.48,
+          "iqr": 15.842
+        },
+        "slowest_steps_median_s": {
+          "spring.beans.instantiate[liquibase]": 1.348,
+          "spring.context.config-classes.parse": 0.794,
+          "spring.beans.instantiate[rsaKey]": 0.158,
+          "spring.boot.application.environment-prepared": 0.149,
+          "spring.boot.webserver.create": 0.109
+        }
+      },
+      "native": {
+        "ready_s": {
+          "n": 20,
+          "min": 1.058,
+          "median": 1.209,
+          "max": 1.54,
+          "iqr": 0.189
+        },
+        "first_api_after_health_s": {
+          "n": 20,
+          "min": 1.068,
+          "median": 1.219,
+          "max": 1.55,
+          "iqr": 0.191
+        },
+        "peak_startup_rss_mib": {
+          "n": 20,
+          "min": 230.57,
+          "median": 239.836,
+          "max": 252.062,
+          "iqr": 7.296
+        },
+        "slowest_steps_median_s": {
+          "spring.beans.instantiate[liquibase]": 0.523,
+          "spring.beans.instantiate[rsaKey]": 0.159,
+          "spring.beans.instantiate[welcomePageHandlerMapping]": 0.024,
+          "spring.beans.instantiate[jdbcAuditingHandler]": 0.022,
+          "spring.beans.instantiate[articleController]": 0.021
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,11 @@
+variant,profile,trial,settle_s,idle_rss_kb,cgroup_peak_kb
+jvm,container 512m/4cpu,1,30,294604,277032
+native,container 512m/4cpu,1,30,245892,103332
+native,container 512m/4cpu,2,30,249608,106092
+jvm,container 512m/4cpu,2,30,290708,271900
+jvm,container 512m/4cpu,3,30,283420,265520
+native,container 512m/4cpu,3,30,238884,102348
+native,container 512m/4cpu,4,30,238892,102848
+jvm,container 512m/4cpu,4,30,282760,264012
+jvm,container 512m/4cpu,5,30,291864,273932
+native,container 512m/4cpu,5,30,245928,102624

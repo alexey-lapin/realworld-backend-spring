@@ -1,0 +1,21 @@
+{
+  "recorded_at": "2026-09-05T21:42:36+00:00",
+  "commit": "4192dab2c3ebebbc450febc197ce51862567bf65",
+  "dirty_working_tree": false,
+  "machine": "Intel(R) Core(TM) i5-14500",
+  "cpus": 8,
+  "memory_gib": 16,
+  "os": "Linux 7.0.12-1-pve (x86_64)",
+  "java": "openjdk version \"25.0.2\" 2026-01-20 / OpenJDK Runtime Environment GraalVM CE 25.0.2+10.1 (build 25.0.2+10-jvmci-b01) / OpenJDK 64-Bit Server VM GraalVM CE 25.0.2+10.1 (build 25.0.2+10-jvmci-b01, mixed mode, sharing)",
+  "k6": "k6 v2.2.0 (commit/00a9a1b7f5, go1.26.5, linux/amd64)",
+  "python": "3.13.5",
+  "artifacts": {
+    "jar": "realworld-backend-spring-0.4.2-feature-startup-and-memory-numbers-SNAPSHOT.jar 1d3bb2e825022ee4",
+    "native": "realworld-backend-spring a2b2353640dae85e"
+  },
+  "profile": "container 1g/4cpu",
+  "heap_setting": "none; each runtime uses its own ergonomics",
+  "container": "docker, -m 1g --cpus 4, jar on eclipse-temurin:25-jre, binary on debian:13-slim",
+  "load_generator": "k6 on the same host over loopback, so the generator competes with the server",
+  "memory_accounting": "process RSS plus the container cgroup peak (memory.peak)"
+}
