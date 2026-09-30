@@ -1,0 +1,11 @@
+variant,heap,trial,settle_s,idle_rss_kb
+jvm,512m,1,30,433872
+native,512m,1,30,186928
+native,512m,2,30,191920
+jvm,512m,2,30,437136
+jvm,512m,3,30,428768
+native,512m,3,30,191808
+native,512m,4,30,188752
+jvm,512m,4,30,431168
+jvm,512m,5,30,433568
+native,512m,5,30,183584

@@ -1,0 +1,11 @@
+variant,profile,trial,settle_s,idle_rss_kb,cgroup_peak_kb
+jvm,host process,1,30,412552,
+native,host process,1,30,221928,
+native,host process,2,30,222952,
+jvm,host process,2,30,506540,
+jvm,host process,3,30,545412,
+native,host process,3,30,222940,
+native,host process,4,30,222956,
+jvm,host process,4,30,454072,
+jvm,host process,5,30,542908,
+native,host process,5,30,222948,
