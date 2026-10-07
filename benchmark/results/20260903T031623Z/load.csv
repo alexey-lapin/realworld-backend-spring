@@ -1,0 +1,13 @@
+variant,heap,rate,repeat,achieved_rps,dropped_iterations,max_vus,error_rate,p50_ms,p95_ms,p99_ms,steady_rss_kb,peak_load_rss_kb,post_load_rss_kb
+jvm,runtime default,50,1,50.0,0,128,0,1.3,4.21,6.52,451680,460000,416752
+native,runtime default,50,1,50.0,0,128,0,2.08,5.47,8.54,176208,194016,141056
+native,runtime default,50,2,50.0,0,128,0,2.1,5.2,6.68,180624,203152,143072
+jvm,runtime default,50,2,50.0,0,128,0,1.22,4.07,6.35,444656,454112,381440
+jvm,runtime default,200,1,200.0,0,128,0,1.32,2.31,3.06,450960,468576,413072
+native,runtime default,200,1,200.0,0,128,0,1.77,4.82,12.91,177904,208992,192432
+native,runtime default,200,2,200.0,0,128,0,1.88,4.85,12.82,180496,213712,196320
+jvm,runtime default,200,2,200.0,0,128,0,1.3,2.26,3.02,462528,477248,425280
+jvm,runtime default,500,1,500.0,0,128,0,1.62,2.87,3.27,664352,834304,819840
+native,runtime default,500,1,500.0,0,128,0,2.98,8.51,24.09,532000,871120,843872
+native,runtime default,500,2,500.0,0,128,0,2.94,8.25,22.7,491312,914400,927552
+jvm,runtime default,500,2,500.0,0,128,0,1.63,2.95,3.46,610624,768528,730688
