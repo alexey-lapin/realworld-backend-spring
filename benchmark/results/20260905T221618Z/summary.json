@@ -1,0 +1,87 @@
+{
+  "environment": {
+    "recorded_at": "2026-09-05T22:16:18+00:00",
+    "commit": "86ab1ea2fd81e329024da9068e3371fe6fabe27c",
+    "dirty_working_tree": false,
+    "machine": "Intel(R) Core(TM) i5-14500",
+    "cpus": 8,
+    "memory_gib": 16,
+    "os": "Linux 7.0.12-1-pve (x86_64)",
+    "java": "openjdk version \"25.0.2\" 2026-01-20 / OpenJDK Runtime Environment GraalVM CE 25.0.2+10.1 (build 25.0.2+10-jvmci-b01) / OpenJDK 64-Bit Server VM GraalVM CE 25.0.2+10.1 (build 25.0.2+10-jvmci-b01, mixed mode, sharing)",
+    "k6": "k6 v2.2.0 (commit/00a9a1b7f5, go1.26.5, linux/amd64)",
+    "python": "3.13.5",
+    "artifacts": {
+      "jar": "realworld-backend-spring-0.4.2-feature-startup-and-memory-numbers-SNAPSHOT.jar 1d3bb2e825022ee4",
+      "native": "realworld-backend-spring a2b2353640dae85e"
+    },
+    "profile": "host process",
+    "heap_setting": "none; each runtime uses its own ergonomics",
+    "container": "none; artifacts run directly on the host",
+    "load_generator": "k6 on the same host over loopback, so the generator competes with the server",
+    "memory_accounting": "host process RSS; not cgroup accounting, so this is not a container result"
+  },
+  "results": {
+    "startup": {
+      "jvm": {
+        "ready_s": {
+          "n": 20,
+          "min": 4.15,
+          "median": 4.277,
+          "max": 4.74,
+          "iqr": 0.099
+        },
+        "first_api_after_health_s": {
+          "n": 20,
+          "min": 4.248,
+          "median": 4.337,
+          "max": 4.795,
+          "iqr": 0.103
+        },
+        "peak_startup_rss_mib": {
+          "n": 20,
+          "min": 469.875,
+          "median": 543.023,
+          "max": 721.062,
+          "iqr": 82.866
+        },
+        "slowest_steps_median_s": {
+          "spring.beans.instantiate[liquibase]": 1.266,
+          "spring.context.config-classes.parse": 0.709,
+          "spring.beans.instantiate[rsaKey]": 0.148,
+          "spring.boot.application.environment-prepared": 0.128,
+          "spring.boot.webserver.create": 0.102
+        }
+      },
+      "native": {
+        "ready_s": {
+          "n": 20,
+          "min": 0.687,
+          "median": 0.855,
+          "max": 1.301,
+          "iqr": 0.185
+        },
+        "first_api_after_health_s": {
+          "n": 20,
+          "min": 0.689,
+          "median": 0.857,
+          "max": 1.303,
+          "iqr": 0.185
+        },
+        "peak_startup_rss_mib": {
+          "n": 20,
+          "min": 229.887,
+          "median": 232.484,
+          "max": 252.0,
+          "iqr": 8.665
+        },
+        "slowest_steps_median_s": {
+          "spring.beans.instantiate[liquibase]": 0.516,
+          "spring.beans.instantiate[rsaKey]": 0.137,
+          "spring.beans.instantiate[jdbcAuditingHandler]": 0.022,
+          "spring.beans.instantiate[restExceptionHandler]": 0.02,
+          "spring.beans.instantiate[jacksonJsonMapper]": 0.02
+        }
+      }
+    }
+  }
+}

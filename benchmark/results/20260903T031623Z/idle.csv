@@ -1,0 +1,11 @@
+variant,heap,trial,settle_s,idle_rss_kb
+jvm,runtime default,1,30,367200
+native,runtime default,1,30,191424
+native,runtime default,2,30,177328
+jvm,runtime default,2,30,383680
+jvm,runtime default,3,30,376192
+native,runtime default,3,30,179808
+native,runtime default,4,30,186224
+jvm,runtime default,4,30,365488
+jvm,runtime default,5,30,360992
+native,runtime default,5,30,181872
