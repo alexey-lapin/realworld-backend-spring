@@ -48,11 +48,6 @@ jobs:
           sparse-checkout: specs/api/hurl
           path: .realworld-spec
 
-      - name: Setup hurl
-        uses: gacts/install-hurl@v1
-        with:
-          version: ${{ env.HURL_VERSION }}
-
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v6
 
@@ -78,7 +73,10 @@ jobs:
       - name: Run API spec tests
         shell: bash
         run: >
-          hurl --test
+          docker run --rm --network host
+          -v "$PWD:/work:ro" -w /work
+          ghcr.io/orange-opensource/hurl:${{ env.HURL_VERSION }}
+          --test
           --jobs 1
           --variable host=http://localhost:8080
           --variable uid=${{ github.run_id }}
@@ -134,6 +132,7 @@ jobs:
           path: .realworld-spec
 
       - name: Setup hurl
+        if: runner.os != 'Linux'
         uses: gacts/install-hurl@v1
         with:
           version: ${{ env.HURL_VERSION }}
@@ -175,12 +174,16 @@ jobs:
 
       - name: Run API spec tests
         shell: bash
-        run: >
-          hurl --test
-          --jobs 1
-          --variable host=http://localhost:8080
-          --variable uid=${{ github.run_id }}${{ strategy.job-index }}
-          .realworld-spec/specs/api/hurl/*.hurl
+        run: |
+          hurl=(hurl)
+          if [[ "$RUNNER_OS" == Linux ]]; then
+            hurl=(docker run --rm --network host -v "$PWD:/work:ro" -w /work "ghcr.io/orange-opensource/hurl:$HURL_VERSION")
+          fi
+          "${hurl[@]}" --test \
+            --jobs 1 \
+            --variable host=http://localhost:8080 \
+            --variable uid=${{ github.run_id }}${{ strategy.job-index }} \
+            .realworld-spec/specs/api/hurl/*.hurl
 
   release:
     runs-on: ubuntu-latest
