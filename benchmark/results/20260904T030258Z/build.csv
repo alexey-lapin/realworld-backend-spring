@@ -1,0 +1,3 @@
+target,wall_s,gradle_state
+bootJar,8.8,"clean outputs, warm cache"
+nativeCompile,97.8,"clean outputs, warm cache"

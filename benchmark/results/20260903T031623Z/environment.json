@@ -1,0 +1,19 @@
+{
+  "recorded_at": "2026-09-03T03:16:23+00:00",
+  "commit": "70c00598d499db90a7c73bb46c0969c9a7a43c8e",
+  "dirty_working_tree": false,
+  "machine": "Apple M4 Pro",
+  "cpus": 14,
+  "memory_gib": 24,
+  "os": "Darwin 25.6.0 (arm64)",
+  "java": "openjdk version \"25.0.2\" 2026-01-20 / OpenJDK Runtime Environment GraalVM CE 25.0.2+10.1 (build 25.0.2+10-jvmci-b01) / OpenJDK 64-Bit Server VM GraalVM CE 25.0.2+10.1 (build 25.0.2+10-jvmci-b01, mixed mode, sharing)",
+  "k6": "k6 v2.2.0 (commit/devel, go1.26.5, darwin/arm64)",
+  "python": "3.14.6",
+  "artifacts": {
+    "jar": "realworld-backend-spring-0.4.2-feature-startup-and-memory-numbers-SNAPSHOT.jar 0ee465868e0a180b",
+    "native": "realworld-backend-spring 1d2fea97d44e4f3b"
+  },
+  "heap_setting": "none; each runtime uses its own ergonomics",
+  "load_generator": "k6 on the same host over loopback, so the generator competes with the server",
+  "memory_accounting": "host process RSS on macOS; not cgroup accounting, so this is not a container result"
+}

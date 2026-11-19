@@ -2,3 +2,6 @@ databaseChangeLog:
   - include:
       file: changes/01-schema.xml
       relativeToChangelogFile: true
+  - include:
+      file: changes/02-column-types.xml
+      relativeToChangelogFile: true
